@@ -1,9 +1,10 @@
 import { resolve } from "path";
 import { defineConfig } from "electron-vite";
 import vue from "@vitejs/plugin-vue";
+import vueRouter from "vue-router/vite";
 import ui from "@nuxt/ui/vite";
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   main: {
     build: {
       rollupOptions: {
@@ -37,8 +38,20 @@ export default defineConfig({
       },
     },
     plugins: [
+      vueRouter({
+        root: resolve(__dirname, "frontend"),
+        dts: "src/typed-router.d.ts",
+        watch: command === "serve",
+      }),
       vue(),
-      ui({ autoImport: { eslintrc: { enabled: true, filepath: "frontend/.eslintrc-auto-import.json" } } }),
+      ui({
+        autoImport: {
+          eslintrc: {
+            enabled: true,
+            filepath: "frontend/.eslintrc-auto-import.json",
+          },
+        },
+      }),
     ],
   },
-});
+}));

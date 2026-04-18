@@ -2,17 +2,20 @@
   "extends": "@electron-toolkit/tsconfig/tsconfig.web.json",
   "include": [
     "electron/preload/*.d.ts",
-    "frontend/src/env.d.ts",
+    "frontend/src/*.d.ts",
     "frontend/src/**/*",
     "frontend/src/**/*.vue",
-    "frontend/auto-imports.d.ts",
-    "frontend/components.d.ts"
+    "frontend/*.d.ts"
   ],
   "compilerOptions": {
     "composite": true,
+    "moduleResolution": "Bundler",
     "paths": {
       "@renderer/*": ["./frontend/src/*"],
       "#build/ui/*": ["./frontend/node_modules/.nuxt-ui/ui/*"]
     }
+  },
+  "vueCompilerOptions": {
+    "plugins": ["vue-router/volar/sfc-typed-router", "vue-router/volar/sfc-route-blocks"]
   }
 }
