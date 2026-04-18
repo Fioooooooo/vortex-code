@@ -11,6 +11,7 @@
     "composite": true,
     "noImplicitAny": true,
     "moduleResolution": "Bundler",
+    "types": ["vitest/globals"],
     "paths": {
       "@renderer/*": ["./frontend/src/*"],
       "#build/ui/*": ["./frontend/node_modules/.nuxt-ui/ui/*"]
