@@ -3,6 +3,7 @@
   "include": ["electron.vite.config.*", "electron/main/**/*", "electron/preload/**/*"],
   "compilerOptions": {
     "composite": true,
+    "noImplicitAny": true,
     "types": ["electron-vite/node"],
     "paths": {
       "#build/ui": ["./frontend/node_modules/.nuxt-ui/ui"]

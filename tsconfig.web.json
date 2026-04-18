@@ -9,6 +9,7 @@
   ],
   "compilerOptions": {
     "composite": true,
+    "noImplicitAny": true,
     "moduleResolution": "Bundler",
     "paths": {
       "@renderer/*": ["./frontend/src/*"],

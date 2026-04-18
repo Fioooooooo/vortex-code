@@ -14,7 +14,7 @@
     "start": "electron-vite preview",
     "dev": "electron-vite dev",
     "build": "npm run typecheck && electron-vite build",
-    "postinstall": "electron-builder install-app-deps",
+    "postinstall": "electron-builder install-app-deps && simple-git-hooks",
     "build:unpack": "npm run build && electron-builder --dir",
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "npm run build && electron-builder --mac",
@@ -38,14 +38,28 @@
     "electron-vite": "^5.0.0",
     "eslint": "^10.2.1",
     "eslint-plugin-vue": "^10.8.0",
+    "lint-staged": "^16.4.0",
     "prettier": "^3.8.3",
+    "simple-git-hooks": "^2.13.1",
     "tailwindcss": "^4.2.2",
     "typescript": "^6.0.3",
     "vite": "^7.3.2",
     "vue": "^3.5.32",
-    "vue-router": "^5.0.4",
     "vue-eslint-parser": "^10.4.0",
+    "vue-router": "^5.0.4",
     "vue-tsc": "^3.2.6"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "npx lint-staged"
+  },
+  "lint-staged": {
+    "*.{js,ts,vue}": [
+      "eslint --cache --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,html,css}": [
+      "prettier --write"
+    ]
   },
   "pnpm": {
     "onlyBuiltDependencies": [
