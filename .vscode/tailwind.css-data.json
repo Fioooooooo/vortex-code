@@ -1,0 +1,25 @@
+{
+  "version": 1.1,
+  "atDirectives": [
+    {
+      "name": "@reference",
+      "description": "Tailwind directive to import stylesheet for reference without duplicating output CSS.",
+      "references": [
+        {
+          "name": "Tailwind docs",
+          "url": "https://tailwindcss.com/docs/functions-and-directives#reference-directive"
+        }
+      ]
+    },
+    {
+      "name": "@apply",
+      "description": "Tailwind directive to inline any existing utility classes into your own custom CSS.",
+      "references": [
+        {
+          "name": "Tailwind docs",
+          "url": "https://tailwindcss.com/docs/functions-and-directives#apply-directive"
+        }
+      ]
+    }
+  ]
+}

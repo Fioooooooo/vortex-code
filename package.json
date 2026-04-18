@@ -23,7 +23,11 @@
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
-    "electron-updater": "^6.3.9"
+    "@iconify-json/lucide": "^1.2.102",
+    "@nuxt/ui": "^4.6.1",
+    "electron-updater": "^6.3.9",
+    "tailwindcss": "^4.2.2",
+    "vue-router": "^4.6.4"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config-prettier": "3.0.0",

@@ -4,3 +4,8 @@ out
 .DS_Store
 .eslintcache
 *.log*
+
+# Auto-generated type declarations
+auto-imports.d.ts
+components.d.ts
+.eslintrc-auto-import.json

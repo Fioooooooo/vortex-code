@@ -1,18 +1,18 @@
 {
   "extends": "@electron-toolkit/tsconfig/tsconfig.web.json",
   "include": [
-    "src/renderer/src/env.d.ts",
-    "src/renderer/src/**/*",
-    "src/renderer/src/**/*.vue",
-    "src/preload/*.d.ts"
+    "electron/preload/*.d.ts",
+    "frontend/src/env.d.ts",
+    "frontend/src/**/*",
+    "frontend/src/**/*.vue",
+    "frontend/auto-imports.d.ts",
+    "frontend/components.d.ts"
   ],
   "compilerOptions": {
     "composite": true,
-    "baseUrl": ".",
     "paths": {
-      "@renderer/*": [
-        "src/renderer/src/*"
-      ]
+      "@renderer/*": ["./frontend/src/*"],
+      "#build/ui/*": ["./frontend/node_modules/.nuxt-ui/ui/*"]
     }
   }
 }
