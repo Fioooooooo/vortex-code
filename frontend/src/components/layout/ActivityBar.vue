@@ -11,7 +11,7 @@ interface NavItem {
 const items: NavItem[] = [
   { id: "workspace", icon: "i-lucide-layout-grid", label: "Workspace", to: "/workspace" },
   { id: "pipeline", icon: "i-lucide-git-branch", label: "Pipeline", to: "/pipeline" },
-  { id: "extension", icon: "i-lucide-puzzle", label: "Extension", to: "/extension" },
+  { id: "integration", icon: "i-lucide-puzzle", label: "Integrations", to: "/integration" },
 ];
 
 const props = defineProps<{

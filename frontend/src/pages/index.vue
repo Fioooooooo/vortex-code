@@ -10,11 +10,11 @@ const route = useRoute();
 const router = useRouter();
 const projectStore = useProjectStore();
 
-const protectedRoutes = ["/workspace", "/pipeline", "/extension", "/setting"];
+const protectedRoutes = ["/workspace", "/pipeline", "/integration", "/setting"];
 
 const activeItem = computed(() => {
   if (route.path.startsWith("/pipeline")) return "pipeline";
-  if (route.path.startsWith("/extension")) return "extension";
+  if (route.path.startsWith("/integration")) return "integration";
   if (route.path.startsWith("/setting")) return "setting";
   return "workspace";
 });

@@ -33,7 +33,7 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       Record<never, never>,
       | '//'
-      | '//extension'
+      | '//integration'
       | '//pipeline'
       | '//setting'
       | '//workspace'
@@ -45,9 +45,9 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
-    '//extension': RouteRecordInfo<
-      '//extension',
-      '/extension',
+    '//integration': RouteRecordInfo<
+      '//integration',
+      '/integration',
       Record<never, never>,
       Record<never, never>,
       | never
@@ -97,7 +97,7 @@ declare module 'vue-router/auto-routes' {
       routes:
         | '/'
         | '//'
-        | '//extension'
+        | '//integration'
         | '//pipeline'
         | '//setting'
         | '//workspace'
@@ -110,9 +110,9 @@ declare module 'vue-router/auto-routes' {
       views:
         | never
     }
-    'src/pages/index/extension.vue': {
+    'src/pages/index/integration.vue': {
       routes:
-        | '//extension'
+        | '//integration'
       views:
         | never
     }
