@@ -34,6 +34,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/workspace': RouteRecordInfo<
+      '/workspace',
+      '/workspace',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
   }
 
   /**
@@ -50,6 +57,12 @@ declare module 'vue-router/auto-routes' {
     'src/pages/index.vue': {
       routes:
         | '/'
+      views:
+        | never
+    }
+    'src/pages/workspace.vue': {
+      routes:
+        | '/workspace'
       views:
         | never
     }

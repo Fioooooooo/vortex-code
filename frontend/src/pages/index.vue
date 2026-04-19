@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import { useToast } from "@nuxt/ui/composables";
 
 const count = ref(0);
 const loading = ref(false);
