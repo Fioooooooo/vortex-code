@@ -18,7 +18,7 @@ const props = defineProps<{
   activeItem: string;
 }>();
 
-const bottomItems: NavItem[] = [{ id: "setting", icon: "i-lucide-settings", label: "Setting", to: "/setting" }];
+const bottomItems: NavItem[] = [{ id: "setting", icon: "i-lucide-settings", label: "Settings", to: "/setting" }];
 </script>
 
 <template>
@@ -44,7 +44,13 @@ const bottomItems: NavItem[] = [{ id: "setting", icon: "i-lucide-settings", labe
     <!-- Bottom Items -->
     <div class="flex flex-col gap-1">
       <UTooltip v-for="item in bottomItems" :key="item.id" :text="item.label" :delay-duration="200">
-        <UButton variant="ghost" size="sm" color="neutral" class="w-9 h-9 justify-center" :to="item.to">
+        <UButton
+          variant="ghost"
+          size="sm"
+          class="w-9 h-9 justify-center"
+          :color="props.activeItem === item.id ? 'primary' : 'neutral'"
+          :to="item.to"
+        >
           <UIcon :name="item.icon" class="w-4 h-4" />
         </UButton>
       </UTooltip>

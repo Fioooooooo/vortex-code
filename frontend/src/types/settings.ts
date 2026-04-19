@@ -1,0 +1,41 @@
+// Theme / appearance
+export type ThemeMode = "light" | "dark" | "system";
+
+// Agent execution mode
+export type AgentMode = "auto" | "manual";
+
+// Notification methods (multi-select)
+export type NotificationMethod = "system" | "sound" | "in-app";
+
+// Budget alert unit
+export type BudgetUnit = "tokens" | "usd";
+
+// Token stats reset period
+export type TokenStatsPeriod = "daily" | "weekly" | "monthly";
+
+// Supported CLI agent info
+export interface AgentInfo {
+  id: string;
+  name: string;
+  description: string;
+  installed: boolean;
+  version?: string;
+  docsUrl: string;
+}
+
+// Budget alert config
+export interface BudgetAlert {
+  value: number;
+  unit: BudgetUnit;
+}
+
+// Global preferences config
+export interface PreferencesConfig {
+  theme: ThemeMode;
+  language: string;
+  defaultAgentMode: AgentMode;
+  notificationMethods: NotificationMethod[];
+  autoSaveSession: boolean;
+  tokenStatsPeriod: TokenStatsPeriod;
+  budgetAlert: BudgetAlert;
+}
