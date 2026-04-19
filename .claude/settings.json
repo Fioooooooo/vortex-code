@@ -19,7 +19,9 @@
       "Bash(git log:*)",
       "Bash(git diff:*)",
       "Bash(git tag:*)",
-      "Bash(openspec:*)"
+      "Bash(openspec:*)",
+      "Skill(git:commit)",
+      "Skill(openspec:*)"
     ],
     "deny": [
       "Read(.env)",
