@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
+import { useRouter } from "vue-router";
+import { useProjectStore } from "@renderer/stores/project";
 import { useWelcomeStore } from "@renderer/stores/welcome";
 import type { CreateProjectForm } from "@renderer/types/project";
 import UModal from "@nuxt/ui/runtime/components/Modal.vue";
 import UFormField from "@nuxt/ui/runtime/components/FormField.vue";
 
+const router = useRouter();
+const projectStore = useProjectStore();
 const welcomeStore = useWelcomeStore();
 
 const form = ref<CreateProjectForm>({
@@ -39,8 +43,10 @@ async function handleSubmit(): Promise<void> {
 
   isSubmitting.value = true;
   try {
-    await welcomeStore.createProject({ ...form.value });
+    await projectStore.createProject({ ...form.value });
+    welcomeStore.toggleCreateProjectModal(false);
     resetForm();
+    await router.push("/workspace");
   } finally {
     isSubmitting.value = false;
   }

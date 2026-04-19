@@ -32,11 +32,50 @@ declare module 'vue-router/auto-routes' {
       '/',
       Record<never, never>,
       Record<never, never>,
+      | '//'
+      | '//extension'
+      | '//pipeline'
+      | '//setting'
+      | '//workspace'
+    >,
+    '//': RouteRecordInfo<
+      '//',
+      '/',
+      Record<never, never>,
+      Record<never, never>,
       | never
     >,
-    '/workspace': RouteRecordInfo<
+    '//extension': RouteRecordInfo<
+      '//extension',
+      '/extension',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '//pipeline': RouteRecordInfo<
+      '//pipeline',
+      '/pipeline',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '//setting': RouteRecordInfo<
+      '//setting',
+      '/setting',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '//workspace': RouteRecordInfo<
+      '//workspace',
       '/workspace',
-      '/workspace',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/welcome': RouteRecordInfo<
+      '/welcome',
+      '/welcome',
       Record<never, never>,
       Record<never, never>,
       | never
@@ -57,12 +96,47 @@ declare module 'vue-router/auto-routes' {
     'src/pages/index.vue': {
       routes:
         | '/'
+        | '//'
+        | '//extension'
+        | '//pipeline'
+        | '//setting'
+        | '//workspace'
+      views:
+        | 'default'
+    }
+    'src/pages/index/index.vue': {
+      routes:
+        | '//'
       views:
         | never
     }
-    'src/pages/workspace.vue': {
+    'src/pages/index/extension.vue': {
       routes:
-        | '/workspace'
+        | '//extension'
+      views:
+        | never
+    }
+    'src/pages/index/pipeline.vue': {
+      routes:
+        | '//pipeline'
+      views:
+        | never
+    }
+    'src/pages/index/setting.vue': {
+      routes:
+        | '//setting'
+      views:
+        | never
+    }
+    'src/pages/index/workspace.vue': {
+      routes:
+        | '//workspace'
+      views:
+        | never
+    }
+    'src/pages/welcome.vue': {
+      routes:
+        | '/welcome'
       views:
         | never
     }

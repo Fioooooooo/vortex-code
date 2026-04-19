@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { useProjectStore } from "@renderer/stores/project";
 import { useWorkspaceStore } from "@renderer/stores/workspace";
 import { useColorMode } from "@vueuse/core";
 
+const projectStore = useProjectStore();
 const workspaceStore = useWorkspaceStore();
 const colorMode = useColorMode();
 
@@ -50,7 +52,7 @@ function toggleTheme(): void {
     <!-- Left: Project Switcher -->
     <div class="flex items-center gap-2">
       <UButton variant="ghost" color="neutral" class="gap-2 font-semibold" @click="$emit('toggleProjectSwitcher')">
-        <span class="truncate max-w-[200px]">{{ workspaceStore.activeProject?.name ?? "No Project" }}</span>
+        <span class="truncate max-w-[200px]">{{ projectStore.currentProject?.name ?? "No Project" }}</span>
         <UBadge size="xs" variant="subtle" color="primary" class="text-[10px]">
           {{ workspaceStore.currentAgent.name }}
         </UBadge>

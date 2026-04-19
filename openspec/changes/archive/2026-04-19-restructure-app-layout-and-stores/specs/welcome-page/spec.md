@@ -1,3 +1,5 @@
+## MODIFIED Requirements
+
 ### Requirement: Welcome page displays when no project is open
 
 The system SHALL display the Welcome page as the standalone `/welcome` route when no project is currently open, and the Welcome page SHALL not render the shared application shell.

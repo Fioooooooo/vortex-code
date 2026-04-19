@@ -11,7 +11,6 @@ import type {
   ModeType,
   SidebarTab,
   DiffViewMode,
-  ProjectSummary,
   FileChangeType,
 } from "@renderer/types/workspace";
 
@@ -297,25 +296,11 @@ export const useWorkspaceStore = defineStore("workspace", () => {
 
   // Sidebar
   const sidebarTab = ref<SidebarTab>("sessions");
-  const sidebarCollapsed = ref(false);
 
   // Diff panel
   const diffPanelOpen = ref(false);
   const diffPanelFilePath = ref<string | null>(null);
   const diffViewMode = ref<DiffViewMode>("side-by-side");
-
-  // Project switcher
-  const projects = ref<ProjectSummary[]>([
-    {
-      id: "project-1",
-      name: "vortex-code-frontend",
-      agent: { id: "agent-1", name: "Claude Code", type: "claude-code" },
-    },
-    { id: "project-2", name: "design-system", agent: { id: "agent-2", name: "Codex", type: "codex" } },
-    { id: "project-3", name: "api-gateway", agent: { id: "agent-3", name: "Claude Code", type: "claude-code" } },
-  ]);
-
-  const activeProject = computed(() => projects.value.find((p) => p.id === "project-1") ?? null);
 
   // Computed
   const currentFileChange = computed<FileChange | null>(() => {
@@ -442,10 +427,6 @@ export const useWorkspaceStore = defineStore("workspace", () => {
     sidebarTab.value = tab;
   }
 
-  function toggleSidebar(): void {
-    sidebarCollapsed.value = !sidebarCollapsed.value;
-  }
-
   // Mode actions
   function setMode(newMode: ModeType): void {
     mode.value = newMode;
@@ -466,12 +447,9 @@ export const useWorkspaceStore = defineStore("workspace", () => {
     activeSession,
     fileTree,
     sidebarTab,
-    sidebarCollapsed,
     diffPanelOpen,
     diffPanelFilePath,
     diffViewMode,
-    projects,
-    activeProject,
     currentFileChange,
     changedFilePaths,
     createSession,
@@ -486,7 +464,6 @@ export const useWorkspaceStore = defineStore("workspace", () => {
     setDiffViewMode,
     toggleDiffPanel,
     setSidebarTab,
-    toggleSidebar,
     setMode,
     setAgentStatus,
   };

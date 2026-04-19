@@ -1,28 +1,34 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { useRouter } from "vue-router";
+import { useProjectStore } from "@renderer/stores/project";
 import { useWelcomeStore } from "@renderer/stores/welcome";
 import { useTimeAgo } from "@vueuse/core";
 import type { RecentProject } from "@renderer/types/project";
-import CreateProjectModal from "./CreateProjectModal.vue";
+import CreateProjectModal from "@renderer/components/CreateProjectModal.vue";
 
+const router = useRouter();
+const projectStore = useProjectStore();
 const welcomeStore = useWelcomeStore();
 
-const recentProjects = computed(() => welcomeStore.recentProjects);
+const recentProjects = computed(() => projectStore.recentProjects);
 
-function handleOpenFolder(): void {
-  welcomeStore.openFolder();
+async function handleOpenFolder(): Promise<void> {
+  await projectStore.openFolder();
+  await router.push("/workspace");
 }
 
 function handleCreateProject(): void {
   welcomeStore.toggleCreateProjectModal(true);
 }
 
-function handleOpenRecent(project: RecentProject): void {
-  welcomeStore.openRecentProject(project);
+async function handleOpenRecent(project: RecentProject): Promise<void> {
+  projectStore.openRecentProject(project);
+  await router.push("/workspace");
 }
 
 function handleRemove(projectId: string): void {
-  welcomeStore.removeRecentProject(projectId);
+  projectStore.removeRecentProject(projectId);
 }
 
 function formatTime(date: Date): string {

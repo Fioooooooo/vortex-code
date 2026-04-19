@@ -1,10 +1,4 @@
-# workspace-layout Specification
-
-## Purpose
-
-TBD - created by archiving change workspace-page. Update Purpose after archive.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Workspace page has a five-region layout
 

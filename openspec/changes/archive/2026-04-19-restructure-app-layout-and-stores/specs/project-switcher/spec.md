@@ -1,10 +1,4 @@
-# project-switcher Specification
-
-## Purpose
-
-TBD - created by archiving change workspace-page. Update Purpose after archive.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Project switcher displays current project and agent
 
@@ -17,7 +11,7 @@ The system SHALL display the current project name from the unified project conte
 
 ### Requirement: Project switcher dropdown supports navigation
 
-The system SHALL expand a dropdown on click containing a list of projects, and options to create a new project or enter project settings.
+The system SHALL expand a dropdown on click containing a list of available projects, and options to create a new project or enter project settings.
 
 #### Scenario: Switching projects
 

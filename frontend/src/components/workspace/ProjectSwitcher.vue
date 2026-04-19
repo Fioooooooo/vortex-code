@@ -1,16 +1,17 @@
 <script setup lang="ts">
-import { useWorkspaceStore } from "@renderer/stores/workspace";
+import { useRouter } from "vue-router";
+import { useProjectStore } from "@renderer/stores/project";
 
-const workspaceStore = useWorkspaceStore();
+const router = useRouter();
+const projectStore = useProjectStore();
 
-function switchProject(projectId: string): void {
-  // Mock: just log for now
-  console.log("Switch to project:", projectId);
+async function switchProject(projectId: string): Promise<void> {
+  projectStore.switchProject(projectId);
+  await router.push("/workspace");
 }
 
-function createNewProject(): void {
-  // Navigate to welcome page for project creation
-  window.location.href = "/";
+async function createNewProject(): Promise<void> {
+  await router.push("/welcome");
 }
 
 function openProjectSettings(): void {
@@ -22,10 +23,10 @@ function openProjectSettings(): void {
   <UCard class="w-72 shadow-lg">
     <div class="space-y-1">
       <div
-        v-for="project in workspaceStore.projects"
+        v-for="project in projectStore.projects"
         :key="project.id"
         class="flex items-center justify-between px-3 py-2 rounded-md cursor-pointer hover:bg-muted/50 transition-colors"
-        :class="{ 'bg-muted/70': project.id === workspaceStore.activeProject?.id }"
+        :class="{ 'bg-muted/70': project.id === projectStore.currentProject?.id }"
         @click="switchProject(project.id)"
       >
         <div class="flex items-center gap-2 min-w-0">
