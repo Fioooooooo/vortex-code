@@ -27,7 +27,7 @@ function saveCustomIntegration(): void {
         :name="expanded ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'"
         class="w-4 h-4"
       />
-      <span>Advanced — Custom Integration</span>
+      <span>高级 — 自定义集成</span>
     </button>
 
     <div v-if="expanded" class="mt-4 space-y-4 p-4 bg-muted/30 rounded-lg border border-default">
@@ -38,7 +38,7 @@ function saveCustomIntegration(): void {
       </div>
 
       <div class="space-y-1.5">
-        <label class="text-sm font-medium text-highlighted">Custom Skill Config (JSON)</label>
+        <label class="text-sm font-medium text-highlighted">自定义 Skill 配置 (JSON)</label>
         <UTextarea
           v-model="skillConfig"
           placeholder='{ "name": "my-skill", "endpoint": "..." }'
@@ -49,9 +49,7 @@ function saveCustomIntegration(): void {
       </div>
 
       <div class="flex justify-end">
-        <UButton size="sm" variant="soft" @click="saveCustomIntegration">
-          Save Configuration
-        </UButton>
+        <UButton size="sm" variant="soft" @click="saveCustomIntegration"> 保存配置 </UButton>
       </div>
     </div>
   </div>

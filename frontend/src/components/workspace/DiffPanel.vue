@@ -38,7 +38,7 @@ function getLineClass(type: string): string {
 
 <template>
   <div
-    class="relative shrink-0 transition-all duration-300 ease-in-out"
+    class="relative shrink-0 transition-all duration-300 ease-in-out h-full"
     :class="isOpen ? 'w-[400px]' : 'w-0'"
   >
     <!-- Collapsed Handle -->
@@ -53,7 +53,9 @@ function getLineClass(type: string): string {
     <!-- Panel Content -->
     <div v-if="isOpen" class="w-full h-full flex flex-col border-l border-default bg-default">
       <!-- Header -->
-      <div class="flex items-center gap-2 px-3 py-2 border-b border-default min-h-[40px]">
+      <div
+        class="flex items-center justify-between gap-2 px-3 py-2 border-b border-default min-h-10"
+      >
         <!-- File Selector -->
         <UDropdownMenu
           v-if="changedPaths.length > 1"
@@ -72,23 +74,25 @@ function getLineClass(type: string): string {
         <code v-else class="text-xs font-mono truncate flex-1">{{ filePath }}</code>
 
         <!-- View Mode Toggle -->
-        <UButton
-          variant="ghost"
-          color="neutral"
-          size="xs"
-          class="shrink-0"
-          @click="handleToggleViewMode"
-        >
-          <UIcon
-            :name="viewMode === 'side-by-side' ? 'i-lucide-columns-2' : 'i-lucide-align-justify'"
-            class="w-3.5 h-3.5"
-          />
-        </UButton>
+        <div>
+          <UButton
+            variant="ghost"
+            color="neutral"
+            size="xs"
+            class="shrink-0"
+            @click="handleToggleViewMode"
+          >
+            <UIcon
+              :name="viewMode === 'side-by-side' ? 'i-lucide-columns-2' : 'i-lucide-align-justify'"
+              class="w-3.5 h-3.5"
+            />
+          </UButton>
 
-        <!-- Close -->
-        <UButton variant="ghost" color="neutral" size="xs" class="shrink-0" @click="handleClose">
-          <UIcon name="i-lucide-x" class="w-4 h-4" />
-        </UButton>
+          <!-- Close -->
+          <UButton variant="ghost" color="neutral" size="xs" class="shrink-0" @click="handleClose">
+            <UIcon name="i-lucide-x" class="w-4 h-4" />
+          </UButton>
+        </div>
       </div>
 
       <!-- Diff Content -->

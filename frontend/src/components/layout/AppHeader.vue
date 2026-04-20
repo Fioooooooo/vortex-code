@@ -64,7 +64,7 @@ function toggleTheme(): void {
           class="flex items-center gap-2 px-3 py-0.5 rounded-md border border-default cursor-pointer hover:bg-muted/50 transition-colors"
           style="-webkit-app-region: no-drag"
         >
-          <span class="truncate max-w-50 text-sm font-normal">
+          <span class="truncate max-w-50 text-sm font-normal text-muted">
             {{ projectStore.currentProject?.name ?? "未选择项目" }}
           </span>
           <UBadge size="xs" variant="subtle" color="primary" class="text-[10px]">
@@ -78,6 +78,14 @@ function toggleTheme(): void {
     <!-- Right: Controls -->
     <div class="w-[20%] h-full flex items-center justify-end pr-2">
       <div class="flex items-center justify-end gap-1" style="-webkit-app-region: no-drag">
+        <!-- System Bell -->
+        <UButton
+          variant="ghost"
+          color="neutral"
+          class="w-5.5 h-5.5 flex items-center justify-center text-muted p-0"
+        >
+          <UIcon name="i-lucide-bell" class="w-4 h-4" />
+        </UButton>
         <!-- Theme Toggle -->
         <UButton
           variant="ghost"

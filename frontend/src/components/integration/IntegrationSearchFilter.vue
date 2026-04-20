@@ -13,9 +13,9 @@ const emit = defineEmits<{
 }>();
 
 const filterOptions: { label: string; value: FilterOption; disabled?: boolean }[] = [
-  { label: "All", value: "all" },
-  { label: "Connected", value: "connected" },
-  { label: "Enabled in Project", value: "enabled-in-project", disabled: !props.hasProject },
+  { label: "全部", value: "all" },
+  { label: "已连接", value: "connected" },
+  { label: "项目中已启用", value: "enabled-in-project", disabled: !props.hasProject },
 ];
 
 function onSearchInput(event: Event): void {
@@ -31,7 +31,7 @@ function onFilterChange(value: string): void {
   <div class="flex items-center gap-3">
     <UInput
       :model-value="modelValue"
-      placeholder="Search integrations..."
+      placeholder="搜索集成..."
       class="w-64"
       size="sm"
       @input="onSearchInput"

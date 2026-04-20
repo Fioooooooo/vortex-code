@@ -67,16 +67,16 @@ function onEnableToggle(): void {
         <!-- Connection Status -->
         <div class="flex items-center gap-1.5 shrink-0 ml-2">
           <template v-if="tool.comingSoon">
-            <UBadge size="xs" variant="soft" color="neutral">Coming Soon</UBadge>
+            <UBadge size="xs" variant="soft" color="neutral">即将推出</UBadge>
           </template>
           <template v-else-if="isConnected">
             <UBadge size="xs" variant="soft" color="success" class="flex items-center gap-1">
               <UIcon name="i-lucide-check" class="w-3 h-3" />
-              Connected
+              已连接
             </UBadge>
           </template>
           <template v-else>
-            <UBadge size="xs" variant="soft" color="neutral">Not Connected</UBadge>
+            <UBadge size="xs" variant="soft" color="neutral">未连接</UBadge>
           </template>
         </div>
       </div>
@@ -85,11 +85,11 @@ function onEnableToggle(): void {
       <div class="pt-2 border-t border-default">
         <div v-if="!hasProject" class="text-xs text-muted flex items-center gap-1.5">
           <UIcon name="i-lucide-folder-x" class="w-3.5 h-3.5" />
-          Open a project to enable
+          打开项目以启用
         </div>
         <div v-else-if="!isConnected" class="text-xs text-muted flex items-center gap-1.5">
           <UIcon name="i-lucide-plug" class="w-3.5 h-3.5" />
-          Connect first to enable in project
+          先连接才能在项目中启用
         </div>
         <div v-else class="flex items-center justify-between">
           <div class="flex items-center gap-2">

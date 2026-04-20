@@ -97,7 +97,7 @@ function saveProjectOverrides(): void {
     <div class="space-y-3">
       <h4 class="text-sm font-semibold text-highlighted flex items-center gap-2">
         <UIcon name="i-lucide-link" class="w-4 h-4 text-primary" />
-        Account Connection
+        账号连接
       </h4>
 
       <!-- API Token Form -->
@@ -115,7 +115,7 @@ function saveProjectOverrides(): void {
               class="text-xs text-primary hover:underline"
               @click.stop
             >
-              How to get
+              如何获取
             </a>
           </div>
           <UInput
@@ -143,11 +143,11 @@ function saveProjectOverrides(): void {
             @click="handleTestConnection"
           >
             <UIcon name="i-lucide-flask-conical" class="w-4 h-4" />
-            Test Connection
+            测试连接
           </UButton>
           <UButton size="sm" :loading="isTesting" @click="handleConnect">
             <UIcon name="i-lucide-plug" class="w-4 h-4" />
-            Connect
+            连接
           </UButton>
           <UBadge
             v-if="testSuccess"
@@ -157,7 +157,7 @@ function saveProjectOverrides(): void {
             class="flex items-center gap-1"
           >
             <UIcon name="i-lucide-check" class="w-3 h-3" />
-            Success
+            成功
           </UBadge>
         </div>
       </div>
@@ -166,7 +166,7 @@ function saveProjectOverrides(): void {
       <div v-if="tool.connectionType === 'oauth' && !isConnected" class="space-y-3">
         <UButton size="sm" :loading="isTesting" @click="handleOAuthConnect">
           <UIcon name="i-lucide-external-link" class="w-4 h-4" />
-          Connect with {{ tool.name }}
+          使用 {{ tool.name }} 连接
         </UButton>
       </div>
 
@@ -178,12 +178,12 @@ function saveProjectOverrides(): void {
           <div class="flex items-center gap-2">
             <UIcon name="i-lucide-check-circle" class="w-4 h-4 text-success" />
             <span class="text-sm text-highlighted">
-              Connected as <span class="font-medium">{{ connection?.accountName }}</span>
+              已连接为 <span class="font-medium">{{ connection?.accountName }}</span>
             </span>
           </div>
           <UButton size="xs" variant="ghost" color="error" @click="handleDisconnect">
             <UIcon name="i-lucide-unlink" class="w-3.5 h-3.5" />
-            Disconnect
+            断开连接
           </UButton>
         </div>
       </div>
@@ -196,7 +196,7 @@ function saveProjectOverrides(): void {
     >
       <h4 class="text-sm font-semibold text-highlighted flex items-center gap-2">
         <UIcon name="i-lucide-sliders-horizontal" class="w-4 h-4 text-secondary" />
-        Tool Parameters
+        工具参数
       </h4>
 
       <div class="space-y-3">
@@ -271,7 +271,7 @@ function saveProjectOverrides(): void {
       <div class="flex justify-end">
         <UButton size="sm" variant="soft" @click="saveToolParameters">
           <UIcon name="i-lucide-save" class="w-4 h-4" />
-          Save Parameters
+          保存参数
         </UButton>
       </div>
     </div>
@@ -283,7 +283,7 @@ function saveProjectOverrides(): void {
     >
       <h4 class="text-sm font-semibold text-highlighted flex items-center gap-2">
         <UIcon name="i-lucide-settings-2" class="w-4 h-4 text-info" />
-        Configuration for {{ currentProjectName }}
+        {{ currentProjectName }} 配置
       </h4>
 
       <div class="space-y-3">
@@ -338,7 +338,7 @@ function saveProjectOverrides(): void {
       <div class="flex justify-end">
         <UButton size="sm" variant="soft" @click="saveProjectOverrides">
           <UIcon name="i-lucide-save" class="w-4 h-4" />
-          Save Project Config
+          保存项目配置
         </UButton>
       </div>
     </div>

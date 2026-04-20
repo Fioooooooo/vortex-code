@@ -12,7 +12,7 @@ const tabs = [
 </script>
 
 <template>
-  <div class="w-[260px] flex flex-col border-r border-default bg-default shrink-0">
+  <div class="w-65 flex flex-col border-r border-default bg-default shrink-0">
     <!-- Tab Switcher -->
     <div class="flex border-b border-default">
       <button

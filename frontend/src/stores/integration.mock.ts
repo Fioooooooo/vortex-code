@@ -9,12 +9,12 @@ import type {
 export const categories: IntegrationCategory[] = [
   {
     id: "project-management",
-    name: "Project Management",
+    name: "项目管理",
     description: "任务与需求的来源和归宿",
   },
   {
     id: "source-control",
-    name: "Source Control",
+    name: "源码管理",
     description: "代码的版本管理",
   },
   {
@@ -24,17 +24,17 @@ export const categories: IntegrationCategory[] = [
   },
   {
     id: "deployment",
-    name: "Deployment",
+    name: "部署",
     description: "应用部署目标",
   },
   {
     id: "communication",
-    name: "Communication",
+    name: "通讯",
     description: "通知与协作",
   },
   {
     id: "observability",
-    name: "Observability",
+    name: "可观测性",
     description: "监控、日志与告警",
   },
 ];
@@ -91,7 +91,7 @@ export const tools: IntegrationTool[] = [
   {
     id: "jira",
     name: "Jira",
-    description: "Issue and project tracking",
+    description: "问题与项目跟踪",
     categoryId: "project-management",
     connectionType: "oauth",
     connectionFields: [],
@@ -104,7 +104,7 @@ export const tools: IntegrationTool[] = [
   {
     id: "linear",
     name: "Linear",
-    description: "Streamlined issue tracking",
+    description: "简洁的问题跟踪",
     categoryId: "project-management",
     connectionType: "oauth",
     connectionFields: [],
@@ -154,7 +154,7 @@ export const tools: IntegrationTool[] = [
         options: [
           { label: "feature/{name}", value: "feature/{name}" },
           { label: "feat/{name}", value: "feat/{name}" },
-          { label: "custom", value: "custom" },
+          { label: "自定义", value: "custom" },
         ],
         required: false,
       },
@@ -175,7 +175,7 @@ export const tools: IntegrationTool[] = [
   {
     id: "github",
     name: "GitHub",
-    description: "GitHub repositories and PRs",
+    description: "GitHub 仓库与 PR",
     categoryId: "source-control",
     connectionType: "oauth",
     connectionFields: [],
@@ -188,7 +188,7 @@ export const tools: IntegrationTool[] = [
   {
     id: "gitlab",
     name: "GitLab",
-    description: "GitLab repositories and MRs",
+    description: "GitLab 仓库与 MR",
     categoryId: "source-control",
     connectionType: "oauth",
     connectionFields: [],
@@ -259,7 +259,7 @@ export const tools: IntegrationTool[] = [
   {
     id: "github-actions",
     name: "GitHub Actions",
-    description: "Automate CI/CD with GitHub",
+    description: "使用 GitHub 自动化 CI/CD",
     categoryId: "ci-cd",
     connectionType: "oauth",
     connectionFields: [],
@@ -272,7 +272,7 @@ export const tools: IntegrationTool[] = [
   {
     id: "gitlab-ci",
     name: "GitLab CI",
-    description: "GitLab built-in CI/CD",
+    description: "GitLab 内置 CI/CD",
     categoryId: "ci-cd",
     connectionType: "oauth",
     connectionFields: [],
@@ -332,9 +332,9 @@ export const tools: IntegrationTool[] = [
         label: "环境标识",
         type: "select",
         options: [
-          { label: "dev", value: "dev" },
-          { label: "staging", value: "staging" },
-          { label: "prod", value: "prod" },
+          { label: "开发环境", value: "dev" },
+          { label: "预发环境", value: "staging" },
+          { label: "生产环境", value: "prod" },
         ],
         required: false,
       },
@@ -355,7 +355,7 @@ export const tools: IntegrationTool[] = [
   {
     id: "vercel",
     name: "Vercel",
-    description: "Deploy frontend applications",
+    description: "前端应用部署",
     categoryId: "deployment",
     connectionType: "oauth",
     connectionFields: [],
@@ -427,7 +427,7 @@ export const tools: IntegrationTool[] = [
   {
     id: "slack",
     name: "Slack",
-    description: "Team messaging and notifications",
+    description: "团队消息与通知",
     categoryId: "communication",
     connectionType: "oauth",
     connectionFields: [],
@@ -494,7 +494,7 @@ export const tools: IntegrationTool[] = [
   {
     id: "sentry",
     name: "Sentry",
-    description: "Error tracking and performance",
+    description: "错误追踪与性能监控",
     categoryId: "observability",
     connectionType: "oauth",
     connectionFields: [],

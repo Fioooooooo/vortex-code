@@ -32,13 +32,11 @@ function onToggleExpand(toolId: string): void {
 
 <template>
   <div class="flex-1 overflow-y-auto bg-default">
-    <div class="max-w-[960px] mx-auto px-6 py-8 space-y-8">
+    <div class="max-w-240 mx-auto px-6 py-8 space-y-8">
       <!-- Header -->
       <div class="space-y-1">
-        <h1 class="text-2xl font-bold text-highlighted">Integrations</h1>
-        <p class="text-sm text-muted">
-          Connect external tools to automate your development workflow through Pipeline stages.
-        </p>
+        <h1 class="text-2xl font-bold text-highlighted">集成</h1>
+        <p class="text-sm text-muted">连接外部工具，通过 Pipeline 阶段自动化你的开发工作流。</p>
       </div>
 
       <!-- Search & Filter -->
