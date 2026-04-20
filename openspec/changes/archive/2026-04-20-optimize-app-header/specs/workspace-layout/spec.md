@@ -1,10 +1,4 @@
-# workspace-layout Specification
-
-## Purpose
-
-TBD - created by archiving change workspace-page. Update Purpose after archive.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Workspace page has a five-region layout
 
@@ -21,17 +15,3 @@ The system SHALL render the Workspace experience by composing a shared applicati
 
 - **WHEN** the user opens a file diff in the Workspace
 - **THEN** the right Diff panel is displayed alongside the central main area
-
-### Requirement: Layout regions are responsive
-
-The system SHALL keep the Workspace layout optimized for desktop usage, ensuring the central main area always occupies the maximum available space when optional panels are closed.
-
-#### Scenario: Central area expands when diff panel closes
-
-- **WHEN** the right Diff panel is closed
-- **THEN** the central main area expands to fill the freed space
-
-#### Scenario: Sidebar remains visible in workspace
-
-- **WHEN** the user is on the `/workspace` route
-- **THEN** the left sidebar remains visible as part of the desktop Workspace layout

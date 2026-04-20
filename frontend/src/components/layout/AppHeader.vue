@@ -1,45 +1,37 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { useRouter } from "vue-router";
 import { useProjectStore } from "@renderer/stores/project";
 import { useWorkspaceStore } from "@renderer/stores/workspace";
+import { useWelcomeStore } from "@renderer/stores/welcome";
 import { useColorMode } from "@vueuse/core";
+import CreateProjectModal from "@renderer/components/CreateProjectModal.vue";
+import type { RecentProject } from "@renderer/types/project";
 
+const router = useRouter();
 const projectStore = useProjectStore();
 const workspaceStore = useWorkspaceStore();
+const welcomeStore = useWelcomeStore();
 const colorMode = useColorMode();
 
-defineEmits<{
-  (e: "toggleProjectSwitcher"): void;
-}>();
+const dropdownItems = computed(() => {
+  const projectItems = projectStore.recentProjects.map((project: RecentProject) => ({
+    label: project.name,
+    onSelect: () => {
+      projectStore.openRecentProject(project);
+      void router.push("/workspace");
+    },
+  }));
 
-const agentStatusLabel = computed(() => {
-  switch (workspaceStore.agentStatus) {
-    case "idle":
-      return "Idle";
-    case "thinking":
-      return "Thinking";
-    case "executing":
-      return "Executing";
-    case "awaiting-confirmation":
-      return "Awaiting";
-    default:
-      return "Idle";
-  }
-});
-
-const agentStatusColor = computed(() => {
-  switch (workspaceStore.agentStatus) {
-    case "idle":
-      return "bg-neutral-400 dark:bg-neutral-500";
-    case "thinking":
-      return "bg-warning";
-    case "executing":
-      return "bg-info";
-    case "awaiting-confirmation":
-      return "bg-error";
-    default:
-      return "bg-neutral-400 dark:bg-neutral-500";
-  }
+  return [
+    ...projectItems,
+    { type: "separator" as const },
+    {
+      label: "Create New Project",
+      icon: "i-lucide-plus",
+      onSelect: () => welcomeStore.toggleCreateProjectModal(true),
+    },
+  ];
 });
 
 function toggleTheme(): void {
@@ -49,77 +41,55 @@ function toggleTheme(): void {
 
 <template>
   <header
-    class="h-12 flex items-center justify-between px-4 border-b border-default bg-default shrink-0"
+    class="h-8.75 flex items-center border-b border-default bg-default shrink-0"
+    style="-webkit-app-region: drag"
   >
-    <!-- Left: Project Switcher -->
-    <div class="flex items-center gap-2">
-      <UButton
-        variant="ghost"
-        color="neutral"
-        class="gap-2 font-semibold"
-        @click="$emit('toggleProjectSwitcher')"
+    <!-- Left: Empty placeholder for macOS traffic lights -->
+    <div class="w-[20%] h-full" />
+
+    <!-- Center: Project Switcher -->
+    <div class="w-[60%] h-full flex items-center justify-center">
+      <UDropdownMenu
+        :items="dropdownItems"
+        :content="{
+          align: 'center',
+          side: 'bottom',
+          sideOffset: 4,
+        }"
+        :ui="{
+          content: 'w-full max-h-80 overflow-y-auto',
+        }"
       >
-        <span class="truncate max-w-50">{{
-          projectStore.currentProject?.name ?? "No Project"
-        }}</span>
-        <UBadge size="xs" variant="subtle" color="primary" class="text-[10px]">
-          {{ workspaceStore.currentAgent.name }}
-        </UBadge>
-        <UIcon name="i-lucide-chevron-down" class="w-4 h-4 text-muted" />
-      </UButton>
+        <div
+          class="flex items-center gap-2 px-3 py-0.5 rounded-md border border-default cursor-pointer hover:bg-muted/50 transition-colors"
+          style="-webkit-app-region: no-drag"
+        >
+          <span class="truncate max-w-50 text-sm font-semibold">
+            {{ projectStore.currentProject?.name ?? "No Project" }}
+          </span>
+          <UBadge size="xs" variant="subtle" color="primary" class="text-[10px]">
+            {{ workspaceStore.currentAgent.name }}
+          </UBadge>
+          <UIcon name="i-lucide-chevron-down" class="w-4 h-4 text-muted" />
+        </div>
+      </UDropdownMenu>
     </div>
 
     <!-- Right: Controls -->
-    <div class="flex items-center gap-3">
-      <!-- Token Usage -->
-      <UPopover mode="hover">
-        <UButton variant="ghost" color="neutral" size="xs" class="gap-1.5 text-muted">
-          <UIcon name="i-lucide-coins" class="w-3.5 h-3.5" />
-          <span class="text-xs tabular-nums">
-            {{ workspaceStore.tokenUsage.total.toLocaleString() }}
-          </span>
+    <div class="w-[20%] h-full flex items-center justify-end pr-2">
+      <div class="flex items-center justify-end gap-1" style="-webkit-app-region: no-drag">
+        <!-- Theme Toggle -->
+        <UButton
+          variant="ghost"
+          color="neutral"
+          class="w-5.5 h-5.5 flex items-center justify-center text-muted p-0"
+          @click="toggleTheme"
+        >
+          <UIcon :name="colorMode === 'dark' ? 'i-lucide-sun' : 'i-lucide-moon'" class="w-4 h-4" />
         </UButton>
-        <template #content>
-          <div class="p-3 space-y-2 min-w-45">
-            <p class="text-sm font-medium">Token Usage</p>
-            <div class="space-y-1 text-xs text-muted">
-              <div class="flex justify-between">
-                <span>Input</span>
-                <span class="tabular-nums">{{
-                  workspaceStore.tokenUsage.input.toLocaleString()
-                }}</span>
-              </div>
-              <div class="flex justify-between">
-                <span>Output</span>
-                <span class="tabular-nums">{{
-                  workspaceStore.tokenUsage.output.toLocaleString()
-                }}</span>
-              </div>
-              <div class="flex justify-between font-medium text-highlighted">
-                <span>Total</span>
-                <span class="tabular-nums">{{
-                  workspaceStore.tokenUsage.total.toLocaleString()
-                }}</span>
-              </div>
-              <div class="border-t border-default pt-1 flex justify-between text-success">
-                <span>Est. Cost</span>
-                <span>{{ workspaceStore.tokenUsage.estimatedCost }}</span>
-              </div>
-            </div>
-          </div>
-        </template>
-      </UPopover>
-
-      <!-- Agent Status -->
-      <div class="flex items-center gap-2 px-2 py-1 rounded-md bg-muted/50">
-        <span class="w-2 h-2 rounded-full shrink-0" :class="agentStatusColor" />
-        <span class="text-xs text-muted">{{ agentStatusLabel }}</span>
       </div>
-
-      <!-- Theme Toggle -->
-      <UButton variant="ghost" color="neutral" size="xs" class="text-muted" @click="toggleTheme">
-        <UIcon :name="colorMode === 'dark' ? 'i-lucide-sun' : 'i-lucide-moon'" class="w-4 h-4" />
-      </UButton>
     </div>
   </header>
+
+  <CreateProjectModal />
 </template>
