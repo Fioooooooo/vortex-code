@@ -32,50 +32,32 @@ declare module 'vue-router/auto-routes' {
       '/',
       Record<never, never>,
       Record<never, never>,
-      | '//'
-      | '//integration'
-      | '//pipeline'
-      | '//setting'
-      | '//workspace'
-    >,
-    '//': RouteRecordInfo<
-      '//',
-      '/',
-      Record<never, never>,
-      Record<never, never>,
       | never
     >,
-    '//integration': RouteRecordInfo<
-      '//integration',
+    '/integration': RouteRecordInfo<
+      '/integration',
       '/integration',
       Record<never, never>,
       Record<never, never>,
       | never
     >,
-    '//pipeline': RouteRecordInfo<
-      '//pipeline',
+    '/pipeline': RouteRecordInfo<
+      '/pipeline',
       '/pipeline',
       Record<never, never>,
       Record<never, never>,
       | never
     >,
-    '//setting': RouteRecordInfo<
-      '//setting',
-      '/setting',
+    '/settings': RouteRecordInfo<
+      '/settings',
+      '/settings',
       Record<never, never>,
       Record<never, never>,
       | never
     >,
-    '//workspace': RouteRecordInfo<
-      '//workspace',
+    '/workspace': RouteRecordInfo<
       '/workspace',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
-    '/welcome': RouteRecordInfo<
-      '/welcome',
-      '/welcome',
+      '/workspace',
       Record<never, never>,
       Record<never, never>,
       | never
@@ -96,47 +78,30 @@ declare module 'vue-router/auto-routes' {
     'src/pages/index.vue': {
       routes:
         | '/'
-        | '//'
-        | '//integration'
-        | '//pipeline'
-        | '//setting'
-        | '//workspace'
-      views:
-        | 'default'
-    }
-    'src/pages/index/index.vue': {
-      routes:
-        | '//'
       views:
         | never
     }
-    'src/pages/index/integration.vue': {
+    'src/pages/integration.vue': {
       routes:
-        | '//integration'
+        | '/integration'
       views:
         | never
     }
-    'src/pages/index/pipeline.vue': {
+    'src/pages/pipeline.vue': {
       routes:
-        | '//pipeline'
+        | '/pipeline'
       views:
         | never
     }
-    'src/pages/index/setting.vue': {
+    'src/pages/settings.vue': {
       routes:
-        | '//setting'
+        | '/settings'
       views:
         | never
     }
-    'src/pages/index/workspace.vue': {
+    'src/pages/workspace.vue': {
       routes:
-        | '//workspace'
-      views:
-        | never
-    }
-    'src/pages/welcome.vue': {
-      routes:
-        | '/welcome'
+        | '/workspace'
       views:
         | never
     }

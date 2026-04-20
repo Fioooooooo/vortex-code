@@ -27,7 +27,7 @@ const dropdownItems = computed(() => {
     ...projectItems,
     { type: "separator" as const },
     {
-      label: "Create New Project",
+      label: "创建新项目",
       icon: "i-lucide-plus",
       onSelect: () => welcomeStore.toggleCreateProjectModal(true),
     },
@@ -64,8 +64,8 @@ function toggleTheme(): void {
           class="flex items-center gap-2 px-3 py-0.5 rounded-md border border-default cursor-pointer hover:bg-muted/50 transition-colors"
           style="-webkit-app-region: no-drag"
         >
-          <span class="truncate max-w-50 text-sm font-semibold">
-            {{ projectStore.currentProject?.name ?? "No Project" }}
+          <span class="truncate max-w-50 text-sm font-normal">
+            {{ projectStore.currentProject?.name ?? "未选择项目" }}
           </span>
           <UBadge size="xs" variant="subtle" color="primary" class="text-[10px]">
             {{ workspaceStore.currentAgent.name }}

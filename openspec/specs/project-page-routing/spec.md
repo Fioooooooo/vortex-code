@@ -1,10 +1,35 @@
-# app-shell-routing Specification
+## ADDED Requirements
 
-## Purpose
+### Requirement: Project-scoped pages are top-level routes
 
-定义应用壳路由结构、根入口重定向规则，以及项目作用域页面的访问约束。
+The system SHALL route workspace, pipeline, and integration pages as top-level routes directly under `/`.
 
-## Requirements
+#### Scenario: Workspace route
+
+- **WHEN** the user navigates to `/workspace`
+- **THEN** the workspace page is rendered inside the shared application shell
+
+#### Scenario: Pipeline route
+
+- **WHEN** the user navigates to `/pipeline`
+- **THEN** the pipeline page is rendered inside the shared application shell
+
+#### Scenario: Integration route
+
+- **WHEN** the user navigates to `/integration`
+- **THEN** the integration page is rendered inside the shared application shell
+
+### Requirement: Settings page uses /settings path
+
+The system SHALL route the settings page at `/settings`.
+
+#### Scenario: Settings route
+
+- **WHEN** the user navigates to `/settings`
+- **THEN** the settings page is rendered inside the shared application shell
+- **AND** the page is accessible regardless of whether a project is open
+
+## MODIFIED Requirements
 
 ### Requirement: Non-welcome pages share a route-level app shell
 
@@ -42,27 +67,4 @@ The system SHALL prevent access to project-scoped application routes when no cur
 #### Scenario: Settings route is accessible without project
 
 - **WHEN** the user navigates to `/settings` without a current project
-- **THEN** the Settings page is accessible（全局设置不依赖项目上下文）
-
-### Requirement: Integration page is a project-scoped application route
-
-The system SHALL treat `/integration` as a project-scoped application route protected by the same access constraints as other application pages.
-
-#### Scenario: Integration route requires project
-
-- **WHEN** the user navigates directly to `/integration` without a current project
-- **THEN** the application renders the WelcomeView in the main content region
-
-### Requirement: Settings route 与 Activity Bar 高亮
-
-Activity Bar SHALL 包含齿轮图标入口，点击后路由跳转至 `/settings`。当当前路由为 `/settings` 时，Activity Bar 中齿轮图标 SHALL 显示高亮激活状态。
-
-#### Scenario: 点击 Activity Bar 齿轮图标
-
-- **WHEN** 用户点击 Activity Bar 中的齿轮图标
-- **THEN** 路由跳转至 `/settings`，齿轮图标高亮
-
-#### Scenario: 离开 Settings 页面
-
-- **WHEN** 用户导航至其他页面
-- **THEN** 齿轮图标高亮状态取消
+- **THEN** the Settings page is accessible

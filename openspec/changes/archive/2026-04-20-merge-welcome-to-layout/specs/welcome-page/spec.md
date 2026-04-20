@@ -1,10 +1,4 @@
-# welcome-page Specification
-
-## Purpose
-
-定义应用启动时无项目状态下的欢迎内容展示，包括品牌标识、操作按钮和最近项目列表。
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Welcome page displays when no project is open
 

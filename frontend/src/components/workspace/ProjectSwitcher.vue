@@ -10,8 +10,8 @@ async function switchProject(projectId: string): Promise<void> {
   await router.push("/workspace");
 }
 
-async function createNewProject(): Promise<void> {
-  await router.push("/welcome");
+function createNewProject(): void {
+  projectStore.clearCurrentProject();
 }
 
 function openProjectSettings(): void {

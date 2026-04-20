@@ -37,7 +37,7 @@ function formatTime(date: Date): string {
 </script>
 
 <template>
-  <div class="h-screen w-full flex items-center justify-center bg-default">
+  <div class="flex-1 flex items-center justify-center bg-default overflow-y-auto">
     <div class="flex flex-col items-center max-w-xl w-full px-6 py-8">
       <!-- Brand Identity -->
       <div class="text-center mb-10">

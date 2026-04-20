@@ -1,10 +1,4 @@
-# project-switcher Specification
-
-## Purpose
-
-TBD - created by archiving change workspace-page. Update Purpose after archive.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Project switcher displays current project and agent
 
