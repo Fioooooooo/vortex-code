@@ -62,7 +62,7 @@ function handleArchive(sessionId: string): void {
         @click="handleNewSession"
       >
         <UIcon name="i-lucide-plus" class="w-4 h-4" />
-        New Session
+        新建会话
       </UButton>
     </div>
 
@@ -112,17 +112,17 @@ function handleArchive(sessionId: string): void {
           <UDropdownMenu
             :items="[
               {
-                label: 'Rename',
+                label: '重命名',
                 icon: 'i-lucide-pencil',
                 onSelect: () => handleRename(session),
               },
               {
-                label: 'Archive',
+                label: '归档',
                 icon: 'i-lucide-archive',
                 onSelect: () => handleArchive(session.id),
               },
               {
-                label: 'Delete',
+                label: '删除',
                 icon: 'i-lucide-trash-2',
                 color: 'error',
                 onSelect: () => handleDelete(session.id),

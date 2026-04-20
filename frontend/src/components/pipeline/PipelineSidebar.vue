@@ -6,33 +6,30 @@ import TemplateList from "./TemplateList.vue";
 const pipelineStore = usePipelineStore();
 
 const tabs = [
-  { id: "runs" as const, label: "Runs", icon: "i-lucide-play" },
-  { id: "templates" as const, label: "Templates", icon: "i-lucide-layers" },
+  { id: "runs" as const, label: "运行", icon: "i-lucide-play" },
+  { id: "templates" as const, label: "模板", icon: "i-lucide-layers" },
 ];
 </script>
 
 <template>
-  <div class="w-65 flex flex-col border-r border-default bg-default shrink-0">
+  <div class="w-65 h-full flex flex-col border-r border-default bg-default shrink-0">
     <!-- Tab Switcher -->
-    <div class="flex border-b border-default">
-      <button
-        v-for="tab in tabs"
-        :key="tab.id"
-        class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-medium transition-colors"
-        :class="
-          pipelineStore.sidebarTab === tab.id
-            ? 'text-primary border-b-2 border-primary bg-primary/5'
-            : 'text-muted hover:text-highlighted hover:bg-muted/50'
-        "
-        @click="pipelineStore.setSidebarTab(tab.id)"
-      >
-        <UIcon :name="tab.icon" class="w-3.5 h-3.5" />
-        {{ tab.label }}
-      </button>
-    </div>
+    <UTabs
+      :items="tabs"
+      variant="link"
+      :content="false"
+      :ui="{
+        trigger: 'flex-1',
+        leadingIcon: 'size-3.5',
+        label: 'text-sm',
+      }"
+      @update:model-value="
+        (payload: string | number) => pipelineStore.setSidebarTab(tabs[payload as number].id)
+      "
+    />
 
     <!-- Content -->
-    <div class="flex-1 overflow-hidden">
+    <div class="flex-1 overflow-hidden flex flex-col">
       <RunList v-if="pipelineStore.sidebarTab === 'runs'" />
       <TemplateList v-else />
     </div>

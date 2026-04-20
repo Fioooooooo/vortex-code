@@ -8,6 +8,7 @@
     "frontend/*.d.ts"
   ],
   "compilerOptions": {
+    "rootDir": "frontend",
     "composite": true,
     "noImplicitAny": true,
     "moduleResolution": "Bundler",

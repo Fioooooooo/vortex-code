@@ -37,9 +37,14 @@ function getStageDotClass(status: string): string {
   <div class="flex flex-col h-full">
     <!-- New Run Button -->
     <div class="p-3 border-b border-default">
-      <UButton block size="sm" color="primary" @click="pipelineStore.openNewRunModal()">
-        <UIcon name="i-lucide-plus" class="w-4 h-4 mr-1.5" />
-        New Run
+      <UButton
+        color="primary"
+        variant="outline"
+        class="w-full justify-center gap-2"
+        @click="pipelineStore.openNewRunModal()"
+      >
+        <UIcon name="i-lucide-plus" class="w-4 h-4" />
+        新建运行
       </UButton>
     </div>
 

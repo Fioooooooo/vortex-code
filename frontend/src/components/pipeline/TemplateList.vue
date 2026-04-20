@@ -32,14 +32,13 @@ function handleSetDefault(templateId: string, e: Event): void {
     <!-- New Template Button -->
     <div class="p-3 border-b border-default">
       <UButton
-        block
-        size="sm"
         color="primary"
-        variant="soft"
+        variant="outline"
+        class="w-full justify-center gap-2"
         @click="pipelineStore.createNewTemplateEditor()"
       >
-        <UIcon name="i-lucide-plus" class="w-4 h-4 mr-1.5" />
-        New Template
+        <UIcon name="i-lucide-plus" class="w-4 h-4" />
+        新建模板
       </UButton>
     </div>
 
