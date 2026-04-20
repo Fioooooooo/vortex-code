@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { useWorkspaceStore } from "@renderer/stores/workspace";
+import { useChatStore } from "@renderer/stores/chat";
 import type { Attachment } from "@renderer/types/workspace";
 
-const workspaceStore = useWorkspaceStore();
+const chatStore = useChatStore();
 
 const inputText = ref("");
 const attachments = ref<Attachment[]>([]);
@@ -20,7 +20,7 @@ function handleSend(): void {
   const text = inputText.value.trim();
   if (!text) return;
 
-  workspaceStore.sendMessage(text);
+  chatStore.sendMessage(text);
   inputText.value = "";
   attachments.value = [];
 }
@@ -50,7 +50,7 @@ function removeAttachment(id: string): void {
 }
 
 function toggleMode(): void {
-  workspaceStore.setMode(workspaceStore.mode === "auto" ? "manual" : "auto");
+  chatStore.setMode(chatStore.mode === "auto" ? "manual" : "auto");
 }
 </script>
 
@@ -60,12 +60,12 @@ function toggleMode(): void {
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-2">
         <UIcon name="i-lucide-bot" class="w-3.5 h-3.5 text-muted" />
-        <span class="text-xs text-muted">{{ workspaceStore.currentAgent.name }}</span>
+        <span class="text-xs text-muted">{{ chatStore.currentAgent.name }}</span>
       </div>
       <div class="flex items-center gap-2">
         <span class="text-xs text-muted">Auto</span>
         <USwitch
-          :model-value="workspaceStore.mode === 'auto'"
+          :model-value="chatStore.mode === 'auto'"
           size="xs"
           @update:model-value="toggleMode"
         />

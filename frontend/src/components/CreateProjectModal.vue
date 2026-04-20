@@ -44,7 +44,7 @@ async function handleSubmit(): Promise<void> {
     await projectStore.createProject({ ...form.value });
     welcomeStore.toggleCreateProjectModal(false);
     resetForm();
-    await router.push("/workspace");
+    await router.push("/chat");
   } finally {
     isSubmitting.value = false;
   }

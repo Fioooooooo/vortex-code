@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, nextTick, watch } from "vue";
-import { useWorkspaceStore } from "@renderer/stores/workspace";
+import { useChatStore } from "@renderer/stores/chat";
 import type {
   UserMessage,
   ThinkingMessage,
@@ -17,10 +17,10 @@ import MessageConfirm from "./MessageConfirm.vue";
 import MessageText from "./MessageText.vue";
 import InputBar from "./InputBar.vue";
 
-const workspaceStore = useWorkspaceStore();
+const chatStore = useChatStore();
 const messagesContainer = ref<HTMLElement | null>(null);
 
-const messages = computed(() => workspaceStore.activeSession?.messages ?? []);
+const messages = computed(() => chatStore.activeSession?.messages ?? []);
 
 function scrollToBottom(): void {
   nextTick(() => {
@@ -49,7 +49,7 @@ watch(
         class="h-full flex flex-col items-center justify-center text-muted"
       >
         <UIcon name="i-lucide-bot" class="w-12 h-12 mb-3 opacity-30" />
-        <p class="text-sm">Start a conversation with {{ workspaceStore.currentAgent.name }}</p>
+        <p class="text-sm">Start a conversation with {{ chatStore.currentAgent.name }}</p>
       </div>
 
       <!-- Message List -->

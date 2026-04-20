@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { useWorkspaceStore } from "@renderer/stores/workspace";
+import { useChatStore } from "@renderer/stores/chat";
 import type { FileNode } from "@renderer/types/workspace";
 
-const workspaceStore = useWorkspaceStore();
+const chatStore = useChatStore();
 
 const expandedDirs = ref<Set<string>>(new Set(["root", "components", "auth", "utils", "styles"]));
 
@@ -51,11 +51,11 @@ function handleFileClick(node: FileNode): void {
     return;
   }
   // Check if this file has changes in current session
-  const hasChanges = workspaceStore.changedFilePaths.includes(node.path);
+  const hasChanges = chatStore.changedFilePaths.includes(node.path);
   if (hasChanges) {
-    workspaceStore.openDiffPanel(node.path);
+    chatStore.openDiffPanel(node.path);
   } else {
-    workspaceStore.openDiffPanel(node.path);
+    chatStore.openDiffPanel(node.path);
   }
 }
 </script>
@@ -64,7 +64,7 @@ function handleFileClick(node: FileNode): void {
   <div class="flex-1 overflow-y-auto p-2">
     <!-- Recursive File Tree -->
     <ul class="space-y-0.5">
-      <template v-for="node in workspaceStore.fileTree" :key="node.id">
+      <template v-for="node in chatStore.fileTree" :key="node.id">
         <li>
           <!-- Directory -->
           <div

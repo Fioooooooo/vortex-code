@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import { useWorkspaceStore } from "@renderer/stores/workspace";
+import { useChatStore } from "@renderer/stores/chat";
 import type { ConfirmMessage } from "@renderer/types/workspace";
 
 const props = defineProps<{
   message: ConfirmMessage;
 }>();
 
-const workspaceStore = useWorkspaceStore();
+const chatStore = useChatStore();
 
 function handleAllow(): void {
-  workspaceStore.resolveConfirm(props.message.id, true);
+  chatStore.resolveConfirm(props.message.id, true);
 }
 
 function handleDeny(): void {
-  workspaceStore.resolveConfirm(props.message.id, false);
+  chatStore.resolveConfirm(props.message.id, false);
 }
 </script>
 

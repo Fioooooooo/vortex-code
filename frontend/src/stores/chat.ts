@@ -269,7 +269,7 @@ function generateMockSessions(): Session[] {
   return [session1, session2, session3];
 }
 
-export const useWorkspaceStore = defineStore("workspace", () => {
+export const useChatStore = defineStore("chat", () => {
   // Agent
   const currentAgent = ref<AgentInfo>({
     type: "claude-code",

@@ -8,7 +8,7 @@ const route = useRoute();
 const router = useRouter();
 const projectStore = useProjectStore();
 
-const protectedRoutes = ["/workspace", "/pipeline", "/integration"];
+const protectedRoutes = ["/chat", "/pipeline", "/integration"];
 
 watchEffect(() => {
   const isProtectedRoute = protectedRoutes.some((path) => route.path.startsWith(path));
@@ -20,7 +20,7 @@ watchEffect(() => {
 
 onMounted(() => {
   if (projectStore.hasCurrentProject && route.path === "/") {
-    void router.replace("/workspace");
+    void router.replace("/chat");
   }
 });
 </script>

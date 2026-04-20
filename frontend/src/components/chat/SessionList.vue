@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { useWorkspaceStore } from "@renderer/stores/workspace";
+import { useChatStore } from "@renderer/stores/chat";
 import type { Session } from "@renderer/types/workspace";
 
-const workspaceStore = useWorkspaceStore();
+const chatStore = useChatStore();
 
-const sessions = computed(() => workspaceStore.sessions);
+const sessions = computed(() => chatStore.sessions);
 
 function formatTime(date: Date): string {
   const now = new Date();
@@ -26,28 +26,28 @@ function formatTime(date: Date): string {
 }
 
 function handleNewSession(): void {
-  workspaceStore.createSession();
+  chatStore.createSession();
 }
 
 function handleSelectSession(sessionId: string): void {
-  workspaceStore.selectSession(sessionId);
+  chatStore.selectSession(sessionId);
 }
 
 function handleRename(session: Session): void {
   const newTitle = prompt("Rename session:", session.title);
   if (newTitle && newTitle.trim()) {
-    workspaceStore.renameSession(session.id, newTitle.trim());
+    chatStore.renameSession(session.id, newTitle.trim());
   }
 }
 
 function handleDelete(sessionId: string): void {
   if (confirm("Are you sure you want to delete this session?")) {
-    workspaceStore.deleteSession(sessionId);
+    chatStore.deleteSession(sessionId);
   }
 }
 
 function handleArchive(sessionId: string): void {
-  workspaceStore.archiveSession(sessionId);
+  chatStore.archiveSession(sessionId);
 }
 </script>
 
@@ -80,9 +80,7 @@ function handleArchive(sessionId: string): void {
         v-for="session in sessions"
         :key="session.id"
         class="group relative flex items-start gap-2.5 px-3 py-2.5 cursor-pointer transition-colors border-b border-default/50 last:border-b-0"
-        :class="
-          workspaceStore.activeSessionId === session.id ? 'bg-primary/5' : 'hover:bg-muted/50'
-        "
+        :class="chatStore.activeSessionId === session.id ? 'bg-primary/5' : 'hover:bg-muted/50'"
         @click="handleSelectSession(session.id)"
       >
         <!-- Status Dot -->

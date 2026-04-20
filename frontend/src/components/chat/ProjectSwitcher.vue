@@ -7,7 +7,7 @@ const projectStore = useProjectStore();
 
 async function switchProject(projectId: string): Promise<void> {
   projectStore.switchProject(projectId);
-  await router.push("/workspace");
+  await router.push("/chat");
 }
 
 function createNewProject(): void {

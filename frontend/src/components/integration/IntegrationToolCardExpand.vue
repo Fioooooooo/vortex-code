@@ -238,7 +238,8 @@ function saveProjectOverrides(): void {
                 :model-value="((paramForm[field.key] as string[]) ?? []).includes(opt.value)"
                 size="xs"
                 @update:model-value="
-                  (checked: boolean) => {
+                  (checked: boolean | 'indeterminate') => {
+                    if (checked === 'indeterminate') return;
                     const current = (paramForm[field.key] as string[]) ?? [];
                     if (checked) {
                       paramForm[field.key] = [...current, opt.value];

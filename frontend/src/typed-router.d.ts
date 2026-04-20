@@ -34,6 +34,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/chat': RouteRecordInfo<
+      '/chat',
+      '/chat',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/integration': RouteRecordInfo<
       '/integration',
       '/integration',
@@ -51,13 +58,6 @@ declare module 'vue-router/auto-routes' {
     '/settings': RouteRecordInfo<
       '/settings',
       '/settings',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
-    '/workspace': RouteRecordInfo<
-      '/workspace',
-      '/workspace',
       Record<never, never>,
       Record<never, never>,
       | never
@@ -81,6 +81,12 @@ declare module 'vue-router/auto-routes' {
       views:
         | never
     }
+    'src/pages/chat.vue': {
+      routes:
+        | '/chat'
+      views:
+        | never
+    }
     'src/pages/integration.vue': {
       routes:
         | '/integration'
@@ -96,12 +102,6 @@ declare module 'vue-router/auto-routes' {
     'src/pages/settings.vue': {
       routes:
         | '/settings'
-      views:
-        | never
-    }
-    'src/pages/workspace.vue': {
-      routes:
-        | '/workspace'
       views:
         | never
     }

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { useWorkspaceStore } from "@renderer/stores/workspace";
+import { useChatStore } from "@renderer/stores/chat";
 import SessionList from "./SessionList.vue";
 import FileTree from "./FileTree.vue";
 
-const workspaceStore = useWorkspaceStore();
+const chatStore = useChatStore();
 
 const tabs = [
   { id: "sessions" as const, label: "Sessions", icon: "i-lucide-message-square" },
@@ -20,11 +20,11 @@ const tabs = [
         :key="tab.id"
         class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-medium transition-colors"
         :class="
-          workspaceStore.sidebarTab === tab.id
+          chatStore.sidebarTab === tab.id
             ? 'text-primary border-b-2 border-primary bg-primary/5'
             : 'text-muted hover:text-highlighted hover:bg-muted/50'
         "
-        @click="workspaceStore.setSidebarTab(tab.id)"
+        @click="chatStore.setSidebarTab(tab.id)"
       >
         <UIcon :name="tab.icon" class="w-3.5 h-3.5" />
         {{ tab.label }}
@@ -33,7 +33,7 @@ const tabs = [
 
     <!-- Content -->
     <div class="flex-1 overflow-hidden">
-      <SessionList v-if="workspaceStore.sidebarTab === 'sessions'" />
+      <SessionList v-if="chatStore.sidebarTab === 'sessions'" />
       <FileTree v-else />
     </div>
   </div>

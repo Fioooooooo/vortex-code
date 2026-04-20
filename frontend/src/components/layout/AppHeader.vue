@@ -2,7 +2,7 @@
 import { computed } from "vue";
 import { useRouter } from "vue-router";
 import { useProjectStore } from "@renderer/stores/project";
-import { useWorkspaceStore } from "@renderer/stores/workspace";
+import { useChatStore } from "@renderer/stores/chat";
 import { useWelcomeStore } from "@renderer/stores/welcome";
 import { useColorMode } from "@vueuse/core";
 import CreateProjectModal from "@renderer/components/CreateProjectModal.vue";
@@ -10,7 +10,7 @@ import type { RecentProject } from "@renderer/types/project";
 
 const router = useRouter();
 const projectStore = useProjectStore();
-const workspaceStore = useWorkspaceStore();
+const chatStore = useChatStore();
 const welcomeStore = useWelcomeStore();
 const colorMode = useColorMode();
 
@@ -19,7 +19,7 @@ const dropdownItems = computed(() => {
     label: project.name,
     onSelect: () => {
       projectStore.openRecentProject(project);
-      void router.push("/workspace");
+      void router.push("/chat");
     },
   }));
 
@@ -68,7 +68,7 @@ function toggleTheme(): void {
             {{ projectStore.currentProject?.name ?? "未选择项目" }}
           </span>
           <UBadge size="xs" variant="subtle" color="primary" class="text-[10px]">
-            {{ workspaceStore.currentAgent.name }}
+            {{ chatStore.currentAgent.name }}
           </UBadge>
           <UIcon name="i-lucide-chevron-down" class="w-4 h-4 text-muted" />
         </div>

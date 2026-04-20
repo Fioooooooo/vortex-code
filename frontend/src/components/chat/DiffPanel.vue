@@ -1,25 +1,25 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { useWorkspaceStore } from "@renderer/stores/workspace";
+import { useChatStore } from "@renderer/stores/chat";
 
-const workspaceStore = useWorkspaceStore();
+const chatStore = useChatStore();
 
-const isOpen = computed(() => workspaceStore.diffPanelOpen);
-const filePath = computed(() => workspaceStore.diffPanelFilePath);
-const viewMode = computed(() => workspaceStore.diffViewMode);
-const currentChange = computed(() => workspaceStore.currentFileChange);
-const changedPaths = computed(() => workspaceStore.changedFilePaths);
+const isOpen = computed(() => chatStore.diffPanelOpen);
+const filePath = computed(() => chatStore.diffPanelFilePath);
+const viewMode = computed(() => chatStore.diffViewMode);
+const currentChange = computed(() => chatStore.currentFileChange);
+const changedPaths = computed(() => chatStore.changedFilePaths);
 
 function handleClose(): void {
-  workspaceStore.closeDiffPanel();
+  chatStore.closeDiffPanel();
 }
 
 function handleToggleViewMode(): void {
-  workspaceStore.setDiffViewMode(viewMode.value === "side-by-side" ? "inline" : "side-by-side");
+  chatStore.setDiffViewMode(viewMode.value === "side-by-side" ? "inline" : "side-by-side");
 }
 
 function handleSelectFile(path: string): void {
-  workspaceStore.openDiffPanel(path);
+  chatStore.openDiffPanel(path);
 }
 
 function getLineClass(type: string): string {
@@ -39,13 +39,13 @@ function getLineClass(type: string): string {
 <template>
   <div
     class="relative shrink-0 transition-all duration-300 ease-in-out h-full"
-    :class="isOpen ? 'w-[400px]' : 'w-0'"
+    :class="isOpen ? 'w-100' : 'w-0'"
   >
     <!-- Collapsed Handle -->
     <div
       v-if="!isOpen"
       class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full w-4 h-16 flex items-center justify-center cursor-pointer hover:bg-muted/50 rounded-l-md border border-default border-r-0 transition-colors z-10"
-      @click="workspaceStore.toggleDiffPanel()"
+      @click="chatStore.toggleDiffPanel()"
     >
       <UIcon name="i-lucide-chevron-left" class="w-3 h-3 text-muted" />
     </div>
@@ -66,7 +66,7 @@ function getLineClass(type: string): string {
             }))
           "
         >
-          <UButton variant="ghost" color="neutral" size="xs" class="gap-1 max-w-[200px]">
+          <UButton variant="ghost" color="neutral" size="xs" class="gap-1 max-w-50">
             <code class="text-xs font-mono truncate">{{ filePath }}</code>
             <UIcon name="i-lucide-chevron-down" class="w-3 h-3 shrink-0" />
           </UButton>

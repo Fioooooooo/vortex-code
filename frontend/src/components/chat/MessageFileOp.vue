@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { useWorkspaceStore } from "@renderer/stores/workspace";
+import { useChatStore } from "@renderer/stores/chat";
 import type { FileOpMessage } from "@renderer/types/workspace";
 
 defineProps<{
   message: FileOpMessage;
 }>();
 
-const workspaceStore = useWorkspaceStore();
+const chatStore = useChatStore();
 
 function handleClick(filePath: string): void {
-  workspaceStore.openDiffPanel(filePath);
+  chatStore.openDiffPanel(filePath);
 }
 
 function getOpIcon(changeType: string): string {

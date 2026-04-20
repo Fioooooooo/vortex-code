@@ -15,7 +15,7 @@ const recentProjects = computed(() => projectStore.recentProjects);
 
 async function handleOpenFolder(): Promise<void> {
   await projectStore.openFolder();
-  await router.push("/workspace");
+  await router.push("/chat");
 }
 
 function handleCreateProject(): void {
@@ -24,7 +24,7 @@ function handleCreateProject(): void {
 
 async function handleOpenRecent(project: RecentProject): Promise<void> {
   projectStore.openRecentProject(project);
-  await router.push("/workspace");
+  await router.push("/chat");
 }
 
 function handleRemove(projectId: string): void {
