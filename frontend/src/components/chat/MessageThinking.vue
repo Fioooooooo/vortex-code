@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import type { ThinkingMessage } from "@renderer/types/workspace";
+import type { ThinkingMessage } from "@renderer/types/chat";
 
 defineProps<{
   message: ThinkingMessage;

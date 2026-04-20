@@ -9,7 +9,7 @@ import type {
   ReviewComment,
   DeployLog,
 } from "@renderer/types/pipeline";
-import type { Message } from "@renderer/types/workspace";
+import type { Message } from "@renderer/types/chat";
 
 const BUILTIN_TEMPLATES: PipelineTemplate[] = [
   {

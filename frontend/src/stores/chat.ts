@@ -12,7 +12,7 @@ import type {
   SidebarTab,
   DiffViewMode,
   FileChangeType,
-} from "@renderer/types/workspace";
+} from "@renderer/types/chat";
 
 function generateMockFileTree(): FileNode[] {
   return [

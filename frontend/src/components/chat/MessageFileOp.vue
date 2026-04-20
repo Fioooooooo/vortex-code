@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useChatStore } from "@renderer/stores/chat";
-import type { FileOpMessage } from "@renderer/types/workspace";
+import type { FileOpMessage } from "@renderer/types/chat";
 
 defineProps<{
   message: FileOpMessage;

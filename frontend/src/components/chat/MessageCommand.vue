@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import type { CommandMessage } from "@renderer/types/workspace";
+import type { CommandMessage } from "@renderer/types/chat";
 
 defineProps<{
   message: CommandMessage;

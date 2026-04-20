@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useChatStore } from "@renderer/stores/chat";
-import type { Session } from "@renderer/types/workspace";
+import type { Session } from "@renderer/types/chat";
 
 const chatStore = useChatStore();
 

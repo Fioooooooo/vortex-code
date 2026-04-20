@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useChatStore } from "@renderer/stores/chat";
-import type { ConfirmMessage } from "@renderer/types/workspace";
+import type { ConfirmMessage } from "@renderer/types/chat";
 
 const props = defineProps<{
   message: ConfirmMessage;

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { TextMessage } from "@renderer/types/workspace";
+import type { TextMessage } from "@renderer/types/chat";
 
 defineProps<{
   message: TextMessage;

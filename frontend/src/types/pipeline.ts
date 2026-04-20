@@ -1,4 +1,4 @@
-import type { FileChange, Message } from "./workspace";
+import type { FileChange, Message } from "./chat";
 
 export type StageType = "discuss" | "code" | "test" | "review" | "deploy" | "custom";
 
