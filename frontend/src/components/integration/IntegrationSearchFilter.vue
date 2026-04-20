@@ -41,6 +41,12 @@ function onFilterChange(value: string): void {
       </template>
     </UInput>
 
-    <USelect :model-value="filter" :items="filterOptions" size="sm" class="w-44" @update:model-value="onFilterChange" />
+    <USelect
+      :model-value="filter"
+      :items="filterOptions"
+      size="sm"
+      class="w-44"
+      @update:model-value="onFilterChange"
+    />
   </div>
 </template>

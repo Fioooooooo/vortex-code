@@ -84,14 +84,20 @@ function resetForm(): void {
         </UFormField>
 
         <UFormField v-if="isGitSelected" label="Git Repository URL" required>
-          <UInput v-model="form.gitUrl" placeholder="https://github.com/user/repo.git" :disabled="isSubmitting" />
+          <UInput
+            v-model="form.gitUrl"
+            placeholder="https://github.com/user/repo.git"
+            :disabled="isSubmitting"
+          />
         </UFormField>
       </div>
     </template>
 
     <template #footer>
       <div class="flex justify-end gap-2">
-        <UButton variant="ghost" color="neutral" :disabled="isSubmitting" @click="handleClose"> Cancel </UButton>
+        <UButton variant="ghost" color="neutral" :disabled="isSubmitting" @click="handleClose">
+          Cancel
+        </UButton>
         <UButton color="primary" :loading="isSubmitting" :disabled="!isValid" @click="handleSubmit">
           Create Project
         </UButton>

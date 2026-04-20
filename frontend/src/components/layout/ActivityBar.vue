@@ -18,7 +18,9 @@ const props = defineProps<{
   activeItem: string;
 }>();
 
-const bottomItems: NavItem[] = [{ id: "setting", icon: "i-lucide-settings", label: "Settings", to: "/setting" }];
+const bottomItems: NavItem[] = [
+  { id: "setting", icon: "i-lucide-settings", label: "Settings", to: "/setting" },
+];
 </script>
 
 <template>

@@ -2,7 +2,13 @@
 import { ref, computed, watch } from "vue";
 import { useColorMode } from "@vueuse/core";
 import { useSettingsStore } from "@renderer/stores/settings";
-import type { ThemeMode, AgentMode, NotificationMethod, TokenStatsPeriod, BudgetUnit } from "@renderer/types/settings";
+import type {
+  ThemeMode,
+  AgentMode,
+  NotificationMethod,
+  TokenStatsPeriod,
+  BudgetUnit,
+} from "@renderer/types/settings";
 
 const store = useSettingsStore();
 const colorMode = useColorMode();
@@ -138,7 +144,9 @@ function toggleNotification(val: NotificationMethod): void {
           <div class="flex items-center justify-between mb-6">
             <div>
               <h2 class="text-lg font-semibold text-highlighted">Agents</h2>
-              <p class="text-sm text-muted mt-0.5">Supported CLI agents and their local installation status.</p>
+              <p class="text-sm text-muted mt-0.5">
+                Supported CLI agents and their local installation status.
+              </p>
             </div>
             <UButton
               variant="outline"
@@ -157,7 +165,9 @@ function toggleNotification(val: NotificationMethod): void {
               <div class="flex items-center justify-between p-4">
                 <!-- Left: icon + name + description -->
                 <div class="flex items-center gap-3">
-                  <div class="w-9 h-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                  <div
+                    class="w-9 h-9 rounded-lg bg-muted flex items-center justify-center shrink-0"
+                  >
                     <UIcon name="i-lucide-terminal" class="w-5 h-5 text-muted" />
                   </div>
                   <div>
@@ -200,7 +210,9 @@ function toggleNotification(val: NotificationMethod): void {
 
           <!-- Appearance group -->
           <section class="mb-8">
-            <h3 class="text-xs font-semibold text-muted uppercase tracking-wider mb-3">Appearance</h3>
+            <h3 class="text-xs font-semibold text-muted uppercase tracking-wider mb-3">
+              Appearance
+            </h3>
             <UCard>
               <div class="divide-y divide-default">
                 <!-- Theme mode -->
@@ -251,15 +263,21 @@ function toggleNotification(val: NotificationMethod): void {
                 <div class="flex items-center justify-between py-4 px-4">
                   <div>
                     <p class="text-sm font-medium text-highlighted">Default Agent Mode</p>
-                    <p class="text-xs text-muted">Default mode for new sessions. Can be overridden per session.</p>
+                    <p class="text-xs text-muted">
+                      Default mode for new sessions. Can be overridden per session.
+                    </p>
                   </div>
                   <div class="flex gap-1 bg-muted/40 rounded-lg p-1">
                     <UButton
                       v-for="opt in agentModeOptions"
                       :key="opt.value"
                       size="xs"
-                      :variant="store.preferences.defaultAgentMode === opt.value ? 'solid' : 'ghost'"
-                      :color="store.preferences.defaultAgentMode === opt.value ? 'primary' : 'neutral'"
+                      :variant="
+                        store.preferences.defaultAgentMode === opt.value ? 'solid' : 'ghost'
+                      "
+                      :color="
+                        store.preferences.defaultAgentMode === opt.value ? 'primary' : 'neutral'
+                      "
                       @click="store.updatePreference('defaultAgentMode', opt.value)"
                       >{{ opt.label }}</UButton
                     >
@@ -319,8 +337,12 @@ function toggleNotification(val: NotificationMethod): void {
                       v-for="opt in periodOptions"
                       :key="opt.value"
                       size="xs"
-                      :variant="store.preferences.tokenStatsPeriod === opt.value ? 'solid' : 'ghost'"
-                      :color="store.preferences.tokenStatsPeriod === opt.value ? 'primary' : 'neutral'"
+                      :variant="
+                        store.preferences.tokenStatsPeriod === opt.value ? 'solid' : 'ghost'
+                      "
+                      :color="
+                        store.preferences.tokenStatsPeriod === opt.value ? 'primary' : 'neutral'
+                      "
                       @click="store.updatePreference('tokenStatsPeriod', opt.value)"
                       >{{ opt.label }}</UButton
                     >
@@ -331,7 +353,9 @@ function toggleNotification(val: NotificationMethod): void {
                 <div class="flex items-center justify-between py-4 px-4">
                   <div>
                     <p class="text-sm font-medium text-highlighted">Budget Alert</p>
-                    <p class="text-xs text-muted">Show a warning when usage exceeds this threshold.</p>
+                    <p class="text-xs text-muted">
+                      Show a warning when usage exceeds this threshold.
+                    </p>
                   </div>
                   <div class="flex items-center gap-2">
                     <UInput
@@ -354,7 +378,10 @@ function toggleNotification(val: NotificationMethod): void {
                       size="sm"
                       class="w-24"
                       @update:model-value="
-                        store.updatePreference('budgetAlert', { ...store.preferences.budgetAlert, unit: $event })
+                        store.updatePreference('budgetAlert', {
+                          ...store.preferences.budgetAlert,
+                          unit: $event,
+                        })
                       "
                     />
                   </div>
@@ -364,7 +391,9 @@ function toggleNotification(val: NotificationMethod): void {
                 <div class="flex items-center justify-between py-4 px-4">
                   <div>
                     <p class="text-sm font-medium text-highlighted">Clear All History</p>
-                    <p class="text-xs text-muted">Permanently delete all session history and usage data.</p>
+                    <p class="text-xs text-muted">
+                      Permanently delete all session history and usage data.
+                    </p>
                   </div>
                   <UButton variant="outline" color="error" size="sm" @click="showClearModal = true">
                     <UIcon name="i-lucide-trash-2" class="w-4 h-4 mr-1.5" />
@@ -390,14 +419,16 @@ function toggleNotification(val: NotificationMethod): void {
           <div>
             <h3 class="text-base font-semibold text-highlighted">Clear All History?</h3>
             <p class="text-sm text-muted mt-1">
-              This will permanently delete all session history, token usage statistics, and related data. This action
-              cannot be undone.
+              This will permanently delete all session history, token usage statistics, and related
+              data. This action cannot be undone.
             </p>
           </div>
         </div>
         <div class="flex justify-end gap-2 pt-2">
           <UButton variant="ghost" color="neutral" @click="showClearModal = false">Cancel</UButton>
-          <UButton color="error" :loading="isClearing" @click="confirmClearHistory"> Clear All History </UButton>
+          <UButton color="error" :loading="isClearing" @click="confirmClearHistory">
+            Clear All History
+          </UButton>
         </div>
       </div>
     </template>

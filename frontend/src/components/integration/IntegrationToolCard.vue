@@ -42,7 +42,9 @@ function onEnableToggle(): void {
     class="border rounded-lg bg-card transition-all duration-200"
     :class="[
       tool.comingSoon ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-primary/40',
-      isExpanded && !tool.comingSoon ? 'border-primary/60 ring-1 ring-primary/20' : 'border-default',
+      isExpanded && !tool.comingSoon
+        ? 'border-primary/60 ring-1 ring-primary/20'
+        : 'border-default',
     ]"
     @click="onToggleExpand"
   >
@@ -91,7 +93,12 @@ function onEnableToggle(): void {
         </div>
         <div v-else class="flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <USwitch :model-value="isEnabled" size="xs" @click.stop @update:model-value="onEnableToggle" />
+            <USwitch
+              :model-value="isEnabled"
+              size="xs"
+              @click.stop
+              @update:model-value="onEnableToggle"
+            />
             <span class="text-xs text-muted">{{ currentProjectName }}</span>
           </div>
         </div>
@@ -99,7 +106,11 @@ function onEnableToggle(): void {
     </div>
 
     <!-- Expanded Config Panel -->
-    <div v-if="isExpanded && !tool.comingSoon" class="border-t border-default bg-muted/20" @click.stop>
+    <div
+      v-if="isExpanded && !tool.comingSoon"
+      class="border-t border-default bg-muted/20"
+      @click.stop
+    >
       <IntegrationToolCardExpand :tool="tool" />
     </div>
   </div>

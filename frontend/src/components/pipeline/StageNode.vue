@@ -26,8 +26,18 @@ const statusConfig = {
     borderClass: "border-primary",
     bgClass: "bg-primary/10",
   },
-  failed: { icon: "i-lucide-x", colorClass: "text-error", borderClass: "border-error", bgClass: "bg-error/10" },
-  skipped: { icon: "i-lucide-minus", colorClass: "text-muted", borderClass: "border-muted", bgClass: "bg-muted/20" },
+  failed: {
+    icon: "i-lucide-x",
+    colorClass: "text-error",
+    borderClass: "border-error",
+    bgClass: "bg-error/10",
+  },
+  skipped: {
+    icon: "i-lucide-minus",
+    colorClass: "text-muted",
+    borderClass: "border-muted",
+    bgClass: "bg-muted/20",
+  },
   "waiting-approval": {
     icon: "i-lucide-pause",
     colorClass: "text-warning",
@@ -50,7 +60,11 @@ const config = statusConfig[props.stage.status];
     <!-- Node -->
     <button
       class="flex flex-col items-center gap-1.5 p-2 rounded-lg border-2 transition-all cursor-pointer min-w-[80px]"
-      :class="[config.borderClass, config.bgClass, isActive ? 'ring-2 ring-primary/30' : 'hover:opacity-80']"
+      :class="[
+        config.borderClass,
+        config.bgClass,
+        isActive ? 'ring-2 ring-primary/30' : 'hover:opacity-80',
+      ]"
       @click="emit('click', stage.id)"
     >
       <UIcon

@@ -100,7 +100,10 @@ function handleFileClick(node: FileNode): void {
           </div>
 
           <!-- Children -->
-          <ul v-if="node.type === 'directory' && node.children && isExpanded(node.id)" class="ml-4 space-y-0.5">
+          <ul
+            v-if="node.type === 'directory' && node.children && isExpanded(node.id)"
+            class="ml-4 space-y-0.5"
+          >
             <li v-for="child in node.children" :key="child.id">
               <!-- Directory Child -->
               <div
@@ -136,7 +139,10 @@ function handleFileClick(node: FileNode): void {
               </div>
 
               <!-- Nested Children (2 levels deep max for mock) -->
-              <ul v-if="child.type === 'directory' && child.children && isExpanded(child.id)" class="ml-4 space-y-0.5">
+              <ul
+                v-if="child.type === 'directory' && child.children && isExpanded(child.id)"
+                class="ml-4 space-y-0.5"
+              >
                 <li
                   v-for="grandchild in child.children"
                   :key="grandchild.id"

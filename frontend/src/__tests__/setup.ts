@@ -31,7 +31,8 @@ config.global.stubs = {
   },
   UBadge: true,
   UInput: {
-    template: '<input :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />',
+    template:
+      '<input :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />',
     props: ["modelValue", "placeholder"],
   },
   USelect: true,

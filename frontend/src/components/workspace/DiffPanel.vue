@@ -37,7 +37,10 @@ function getLineClass(type: string): string {
 </script>
 
 <template>
-  <div class="relative shrink-0 transition-all duration-300 ease-in-out" :class="isOpen ? 'w-[400px]' : 'w-0'">
+  <div
+    class="relative shrink-0 transition-all duration-300 ease-in-out"
+    :class="isOpen ? 'w-[400px]' : 'w-0'"
+  >
     <!-- Collapsed Handle -->
     <div
       v-if="!isOpen"
@@ -69,7 +72,13 @@ function getLineClass(type: string): string {
         <code v-else class="text-xs font-mono truncate flex-1">{{ filePath }}</code>
 
         <!-- View Mode Toggle -->
-        <UButton variant="ghost" color="neutral" size="xs" class="shrink-0" @click="handleToggleViewMode">
+        <UButton
+          variant="ghost"
+          color="neutral"
+          size="xs"
+          class="shrink-0"
+          @click="handleToggleViewMode"
+        >
           <UIcon
             :name="viewMode === 'side-by-side' ? 'i-lucide-columns-2' : 'i-lucide-align-justify'"
             class="w-3.5 h-3.5"
@@ -84,14 +93,18 @@ function getLineClass(type: string): string {
 
       <!-- Diff Content -->
       <div class="flex-1 overflow-auto">
-        <div v-if="!currentChange" class="p-4 text-sm text-muted text-center">No changes available</div>
+        <div v-if="!currentChange" class="p-4 text-sm text-muted text-center">
+          No changes available
+        </div>
 
         <!-- Side-by-side -->
         <div v-else-if="viewMode === 'side-by-side'" class="min-w-full">
           <div class="flex">
             <!-- Old -->
             <div class="flex-1 border-r border-default">
-              <div class="sticky top-0 bg-muted/50 px-3 py-1 text-xs font-medium text-muted border-b border-default">
+              <div
+                class="sticky top-0 bg-muted/50 px-3 py-1 text-xs font-medium text-muted border-b border-default"
+              >
                 Before
               </div>
               <div
@@ -114,7 +127,9 @@ function getLineClass(type: string): string {
             </div>
             <!-- New -->
             <div class="flex-1">
-              <div class="sticky top-0 bg-muted/50 px-3 py-1 text-xs font-medium text-muted border-b border-default">
+              <div
+                class="sticky top-0 bg-muted/50 px-3 py-1 text-xs font-medium text-muted border-b border-default"
+              >
                 After
               </div>
               <div

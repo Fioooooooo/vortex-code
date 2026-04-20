@@ -305,7 +305,9 @@ export const useWorkspaceStore = defineStore("workspace", () => {
   // Computed
   const currentFileChange = computed<FileChange | null>(() => {
     if (!diffPanelFilePath.value || !activeSession.value) return null;
-    return activeSession.value.fileChanges.find((fc) => fc.filePath === diffPanelFilePath.value) ?? null;
+    return (
+      activeSession.value.fileChanges.find((fc) => fc.filePath === diffPanelFilePath.value) ?? null
+    );
   });
 
   const changedFilePaths = computed(() => {

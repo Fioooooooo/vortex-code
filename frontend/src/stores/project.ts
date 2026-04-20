@@ -1,6 +1,11 @@
 import { computed, ref } from "vue";
 import { defineStore } from "pinia";
-import type { CreateProjectForm, ProjectInfo, ProjectSummary, RecentProject } from "@renderer/types/project";
+import type {
+  CreateProjectForm,
+  ProjectInfo,
+  ProjectSummary,
+  RecentProject,
+} from "@renderer/types/project";
 
 function generateMockRecentProjects(): RecentProject[] {
   const now = new Date();
@@ -88,7 +93,10 @@ export const useProjectStore = defineStore("project", () => {
       existingProject.name = project.name;
       existingProject.path = project.path;
       existingProject.lastOpenedAt = project.lastOpenedAt;
-      recentProjects.value = [existingProject, ...recentProjects.value.filter((item) => item.id !== project.id)];
+      recentProjects.value = [
+        existingProject,
+        ...recentProjects.value.filter((item) => item.id !== project.id),
+      ];
       return;
     }
 

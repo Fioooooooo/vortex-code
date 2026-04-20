@@ -73,7 +73,9 @@ function formatTime(date: Date): string {
 
       <!-- Recent Projects -->
       <div class="w-full">
-        <h2 class="text-sm font-semibold text-muted uppercase tracking-wider mb-3">Recent Projects</h2>
+        <h2 class="text-sm font-semibold text-muted uppercase tracking-wider mb-3">
+          Recent Projects
+        </h2>
 
         <!-- Empty State -->
         <div v-if="recentProjects.length === 0" class="text-center text-muted py-8">

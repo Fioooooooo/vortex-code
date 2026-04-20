@@ -32,7 +32,10 @@ function renderMarkdown(content: string): string {
     .replace(/^# (.*$)/gim, "<h1>$1</h1>")
     .replace(/\*\*(.*)\*\*/gim, "<strong>$1</strong>")
     .replace(/\*(.*)\*/gim, "<em>$1</em>")
-    .replace(/`([^`]+)`/gim, '<code class="px-1 py-0.5 rounded bg-muted text-xs font-mono">$1</code>')
+    .replace(
+      /`([^`]+)`/gim,
+      '<code class="px-1 py-0.5 rounded bg-muted text-xs font-mono">$1</code>'
+    )
     .replace(/^- (.*$)/gim, "<li>$1</li>")
     .replace(/\n/gim, "<br>");
 }

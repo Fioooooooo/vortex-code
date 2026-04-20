@@ -43,14 +43,22 @@ const changeTypeColor: Record<string, string> = {
         Execution
       </h4>
       <div class="space-y-2">
-        <div v-for="msg in messages" :key="msg.id" class="rounded-md border border-default bg-muted/20 p-3 text-sm">
+        <div
+          v-for="msg in messages"
+          :key="msg.id"
+          class="rounded-md border border-default bg-muted/20 p-3 text-sm"
+        >
           <template v-if="msg.type === 'file-op'">
             <div class="flex items-center gap-2 text-muted text-xs mb-1">
               <UIcon name="i-lucide-file-code" class="w-3.5 h-3.5" />
               File Operations
             </div>
             <div class="space-y-1">
-              <div v-for="op in msg.operations" :key="op.filePath" class="flex items-center gap-2 text-sm">
+              <div
+                v-for="op in msg.operations"
+                :key="op.filePath"
+                class="flex items-center gap-2 text-sm"
+              >
                 <UIcon
                   :name="changeTypeIcon[op.changeType] ?? 'i-lucide-file'"
                   class="w-3.5 h-3.5"
@@ -66,7 +74,9 @@ const changeTypeColor: Record<string, string> = {
               <UIcon name="i-lucide-terminal" class="w-3.5 h-3.5" />
               Command
             </div>
-            <code class="block bg-default rounded px-2 py-1 text-xs text-default">{{ msg.command }}</code>
+            <code class="block bg-default rounded px-2 py-1 text-xs text-default">{{
+              msg.command
+            }}</code>
             <p class="text-xs mt-1" :class="msg.success ? 'text-success' : 'text-error'">
               {{ msg.output }}
             </p>
@@ -101,7 +111,11 @@ const changeTypeColor: Record<string, string> = {
             @click="toggleFile(change.filePath)"
           >
             <UIcon
-              :name="expandedFiles.has(change.filePath) ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'"
+              :name="
+                expandedFiles.has(change.filePath)
+                  ? 'i-lucide-chevron-down'
+                  : 'i-lucide-chevron-right'
+              "
               class="w-3.5 h-3.5 text-muted"
             />
             <UIcon
@@ -114,7 +128,10 @@ const changeTypeColor: Record<string, string> = {
           </button>
 
           <!-- Inline Diff Preview -->
-          <div v-if="expandedFiles.has(change.filePath)" class="bg-default px-3 py-2 text-xs font-mono space-y-0.5">
+          <div
+            v-if="expandedFiles.has(change.filePath)"
+            class="bg-default px-3 py-2 text-xs font-mono space-y-0.5"
+          >
             <div
               v-for="(line, idx) in change.diffLines"
               :key="idx"

@@ -31,7 +31,13 @@ function handleSetDefault(templateId: string, e: Event): void {
   <div class="flex flex-col h-full">
     <!-- New Template Button -->
     <div class="p-3 border-b border-default">
-      <UButton block size="sm" color="primary" variant="soft" @click="pipelineStore.createNewTemplateEditor()">
+      <UButton
+        block
+        size="sm"
+        color="primary"
+        variant="soft"
+        @click="pipelineStore.createNewTemplateEditor()"
+      >
         <UIcon name="i-lucide-plus" class="w-4 h-4 mr-1.5" />
         New Template
       </UButton>
@@ -48,7 +54,9 @@ function handleSetDefault(templateId: string, e: Event): void {
         :key="template.id"
         class="group cursor-pointer mx-2 mb-1 rounded-md border border-default bg-muted/20 transition-colors relative"
         :class="
-          pipelineStore.selectedTemplateId === template.id ? 'ring-1 ring-primary bg-primary/5' : 'hover:bg-muted/40'
+          pipelineStore.selectedTemplateId === template.id
+            ? 'ring-1 ring-primary bg-primary/5'
+            : 'hover:bg-muted/40'
         "
         @click="pipelineStore.selectTemplate(template.id)"
         @mouseenter="hoveredTemplateId = template.id"
@@ -61,7 +69,10 @@ function handleSetDefault(templateId: string, e: Event): void {
               <p class="text-xs text-muted truncate">{{ getStageSummary(template) }}</p>
             </div>
             <!-- Hover Actions -->
-            <div v-if="hoveredTemplateId === template.id" class="flex items-center gap-0.5 ml-2 shrink-0">
+            <div
+              v-if="hoveredTemplateId === template.id"
+              class="flex items-center gap-0.5 ml-2 shrink-0"
+            >
               <UTooltip text="Duplicate">
                 <UButton
                   variant="ghost"
@@ -90,7 +101,9 @@ function handleSetDefault(templateId: string, e: Event): void {
         :key="template.id"
         class="group cursor-pointer mx-2 mb-1 rounded-md border border-default bg-muted/20 transition-colors relative"
         :class="
-          pipelineStore.selectedTemplateId === template.id ? 'ring-1 ring-primary bg-primary/5' : 'hover:bg-muted/40'
+          pipelineStore.selectedTemplateId === template.id
+            ? 'ring-1 ring-primary bg-primary/5'
+            : 'hover:bg-muted/40'
         "
         @click="pipelineStore.selectTemplate(template.id)"
         @mouseenter="hoveredTemplateId = template.id"
@@ -103,7 +116,10 @@ function handleSetDefault(templateId: string, e: Event): void {
               <p class="text-xs text-muted truncate">{{ getStageSummary(template) }}</p>
             </div>
             <!-- Hover Actions -->
-            <div v-if="hoveredTemplateId === template.id" class="flex items-center gap-0.5 ml-2 shrink-0">
+            <div
+              v-if="hoveredTemplateId === template.id"
+              class="flex items-center gap-0.5 ml-2 shrink-0"
+            >
               <UTooltip text="Duplicate">
                 <UButton
                   variant="ghost"

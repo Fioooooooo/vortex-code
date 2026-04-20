@@ -64,7 +64,11 @@ function toggleMode(): void {
       </div>
       <div class="flex items-center gap-2">
         <span class="text-xs text-muted">Auto</span>
-        <USwitch :model-value="workspaceStore.mode === 'auto'" size="xs" @update:model-value="toggleMode" />
+        <USwitch
+          :model-value="workspaceStore.mode === 'auto'"
+          size="xs"
+          @update:model-value="toggleMode"
+        />
       </div>
     </div>
 
@@ -75,7 +79,10 @@ function toggleMode(): void {
         :key="att.id"
         class="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted/50 text-xs"
       >
-        <UIcon :name="att.type === 'image' ? 'i-lucide-image' : 'i-lucide-paperclip'" class="w-3.5 h-3.5 text-muted" />
+        <UIcon
+          :name="att.type === 'image' ? 'i-lucide-image' : 'i-lucide-paperclip'"
+          class="w-3.5 h-3.5 text-muted"
+        />
         <span class="text-muted truncate max-w-[100px]">{{ att.name }}</span>
         <UButton
           variant="ghost"
@@ -91,7 +98,13 @@ function toggleMode(): void {
 
     <!-- Input Row -->
     <div class="flex items-end gap-2">
-      <UButton variant="ghost" color="neutral" size="sm" class="shrink-0 text-muted" @click="handleAttachClick">
+      <UButton
+        variant="ghost"
+        color="neutral"
+        size="sm"
+        class="shrink-0 text-muted"
+        @click="handleAttachClick"
+      >
         <UIcon name="i-lucide-paperclip" class="w-4 h-4" />
       </UButton>
 
@@ -108,7 +121,13 @@ function toggleMode(): void {
         "
       />
 
-      <UButton color="primary" size="sm" class="shrink-0" :disabled="!inputText.trim()" @click="handleSend">
+      <UButton
+        color="primary"
+        size="sm"
+        class="shrink-0"
+        :disabled="!inputText.trim()"
+        @click="handleSend"
+      >
         <UIcon name="i-lucide-send" class="w-4 h-4" />
       </UButton>
     </div>

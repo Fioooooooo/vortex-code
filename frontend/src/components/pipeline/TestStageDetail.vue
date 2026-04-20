@@ -23,8 +23,14 @@ const testResult = computed(() => props.stage.output?.testResult);
           <p class="text-2xl font-bold text-success">{{ testResult.passed }}</p>
           <p class="text-xs text-muted">Passed</p>
         </div>
-        <div class="text-center p-3 rounded-md" :class="testResult.failed > 0 ? 'bg-error/10' : 'bg-muted/20'">
-          <p class="text-2xl font-bold" :class="testResult.failed > 0 ? 'text-error' : 'text-muted'">
+        <div
+          class="text-center p-3 rounded-md"
+          :class="testResult.failed > 0 ? 'bg-error/10' : 'bg-muted/20'"
+        >
+          <p
+            class="text-2xl font-bold"
+            :class="testResult.failed > 0 ? 'text-error' : 'text-muted'"
+          >
             {{ testResult.failed }}
           </p>
           <p class="text-xs text-muted">Failed</p>
@@ -59,7 +65,10 @@ const testResult = computed(() => props.stage.output?.testResult);
     </div>
 
     <!-- Repair Attempts -->
-    <div v-if="testResult && testResult.repairAttempts && testResult.repairAttempts.length > 0" class="space-y-2">
+    <div
+      v-if="testResult && testResult.repairAttempts && testResult.repairAttempts.length > 0"
+      class="space-y-2"
+    >
       <h4 class="text-sm font-semibold text-default flex items-center gap-2">
         <UIcon name="i-lucide-wrench" class="w-4 h-4 text-warning" />
         Auto-Repair Attempts
@@ -75,7 +84,9 @@ const testResult = computed(() => props.stage.output?.testResult);
             class="w-4 h-4"
             :class="attempt.success ? 'text-success' : 'text-error'"
           />
-          <span class="text-default">Attempt #{{ attempt.attemptNumber }}: {{ attempt.description }}</span>
+          <span class="text-default"
+            >Attempt #{{ attempt.attemptNumber }}: {{ attempt.description }}</span
+          >
         </div>
       </div>
     </div>

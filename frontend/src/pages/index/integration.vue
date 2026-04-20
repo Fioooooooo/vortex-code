@@ -42,7 +42,11 @@ function onToggleExpand(toolId: string): void {
       </div>
 
       <!-- Search & Filter -->
-      <IntegrationSearchFilter v-model="searchQuery" v-model:filter="filterOption" :has-project="hasProject" />
+      <IntegrationSearchFilter
+        v-model="searchQuery"
+        v-model:filter="filterOption"
+        :has-project="hasProject"
+      />
 
       <!-- Category Sections -->
       <div class="space-y-10">

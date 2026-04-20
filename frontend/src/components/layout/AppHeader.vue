@@ -48,11 +48,20 @@ function toggleTheme(): void {
 </script>
 
 <template>
-  <header class="h-12 flex items-center justify-between px-4 border-b border-default bg-default shrink-0">
+  <header
+    class="h-12 flex items-center justify-between px-4 border-b border-default bg-default shrink-0"
+  >
     <!-- Left: Project Switcher -->
     <div class="flex items-center gap-2">
-      <UButton variant="ghost" color="neutral" class="gap-2 font-semibold" @click="$emit('toggleProjectSwitcher')">
-        <span class="truncate max-w-[200px]">{{ projectStore.currentProject?.name ?? "No Project" }}</span>
+      <UButton
+        variant="ghost"
+        color="neutral"
+        class="gap-2 font-semibold"
+        @click="$emit('toggleProjectSwitcher')"
+      >
+        <span class="truncate max-w-50">{{
+          projectStore.currentProject?.name ?? "No Project"
+        }}</span>
         <UBadge size="xs" variant="subtle" color="primary" class="text-[10px]">
           {{ workspaceStore.currentAgent.name }}
         </UBadge>
@@ -66,23 +75,31 @@ function toggleTheme(): void {
       <UPopover mode="hover">
         <UButton variant="ghost" color="neutral" size="xs" class="gap-1.5 text-muted">
           <UIcon name="i-lucide-coins" class="w-3.5 h-3.5" />
-          <span class="text-xs tabular-nums">{{ workspaceStore.tokenUsage.total.toLocaleString() }}</span>
+          <span class="text-xs tabular-nums">
+            {{ workspaceStore.tokenUsage.total.toLocaleString() }}
+          </span>
         </UButton>
         <template #content>
-          <div class="p-3 space-y-2 min-w-[180px]">
+          <div class="p-3 space-y-2 min-w-45">
             <p class="text-sm font-medium">Token Usage</p>
             <div class="space-y-1 text-xs text-muted">
               <div class="flex justify-between">
                 <span>Input</span>
-                <span class="tabular-nums">{{ workspaceStore.tokenUsage.input.toLocaleString() }}</span>
+                <span class="tabular-nums">{{
+                  workspaceStore.tokenUsage.input.toLocaleString()
+                }}</span>
               </div>
               <div class="flex justify-between">
                 <span>Output</span>
-                <span class="tabular-nums">{{ workspaceStore.tokenUsage.output.toLocaleString() }}</span>
+                <span class="tabular-nums">{{
+                  workspaceStore.tokenUsage.output.toLocaleString()
+                }}</span>
               </div>
               <div class="flex justify-between font-medium text-highlighted">
                 <span>Total</span>
-                <span class="tabular-nums">{{ workspaceStore.tokenUsage.total.toLocaleString() }}</span>
+                <span class="tabular-nums">{{
+                  workspaceStore.tokenUsage.total.toLocaleString()
+                }}</span>
               </div>
               <div class="border-t border-default pt-1 flex justify-between text-success">
                 <span>Est. Cost</span>

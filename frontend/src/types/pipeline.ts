@@ -2,7 +2,13 @@ import type { FileChange, Message } from "./workspace";
 
 export type StageType = "discuss" | "code" | "test" | "review" | "deploy" | "custom";
 
-export type StageStatus = "pending" | "running" | "passed" | "failed" | "skipped" | "waiting-approval";
+export type StageStatus =
+  | "pending"
+  | "running"
+  | "passed"
+  | "failed"
+  | "skipped"
+  | "waiting-approval";
 
 export type GateConditionType =
   | "test-pass-rate"

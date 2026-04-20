@@ -49,7 +49,10 @@ const typeIconMap: Record<StageType, string> = {
     <!-- Collapsed Row -->
     <div class="flex items-center gap-2 px-3 py-2.5">
       <!-- Drag Handle -->
-      <button class="cursor-grab active:cursor-grabbing text-muted hover:text-default p-0.5" @mousedown.stop>
+      <button
+        class="cursor-grab active:cursor-grabbing text-muted hover:text-default p-0.5"
+        @mousedown.stop
+      >
         <UIcon name="i-lucide-grip-vertical" class="w-4 h-4" />
       </button>
 
@@ -88,7 +91,10 @@ const typeIconMap: Record<StageType, string> = {
         class="w-6 h-6 p-0 justify-center"
         @click="emit('toggle-expand', index)"
       >
-        <UIcon :name="isExpanded ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'" class="w-3.5 h-3.5" />
+        <UIcon
+          :name="isExpanded ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"
+          class="w-3.5 h-3.5"
+        />
       </UButton>
 
       <!-- Delete -->

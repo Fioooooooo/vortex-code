@@ -111,7 +111,9 @@ function handleCancel(): void {
     <div class="shrink-0 px-4 py-3 border-b border-default bg-muted/20 space-y-3">
       <div class="flex items-center justify-between">
         <h2 class="text-lg font-semibold text-default">
-          {{ isNewTemplate ? "New Template" : isBuiltIn ? `${template.name} (Copy)` : "Edit Template" }}
+          {{
+            isNewTemplate ? "New Template" : isBuiltIn ? `${template.name} (Copy)` : "Edit Template"
+          }}
         </h2>
       </div>
 
@@ -158,7 +160,9 @@ function handleCancel(): void {
     </div>
 
     <!-- Save / Cancel -->
-    <div class="shrink-0 flex items-center justify-end gap-2 px-4 py-3 border-t border-default bg-muted/20">
+    <div
+      class="shrink-0 flex items-center justify-end gap-2 px-4 py-3 border-t border-default bg-muted/20"
+    >
       <UButton variant="ghost" color="neutral" @click="handleCancel">Cancel</UButton>
       <UButton color="primary" @click="handleSave">
         {{ isBuiltIn ? "Save as Custom" : "Save" }}

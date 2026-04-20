@@ -135,7 +135,13 @@ function saveProjectOverrides(): void {
         </div>
 
         <div class="flex items-center gap-2">
-          <UButton size="sm" variant="soft" color="neutral" :loading="isTesting" @click="handleTestConnection">
+          <UButton
+            size="sm"
+            variant="soft"
+            color="neutral"
+            :loading="isTesting"
+            @click="handleTestConnection"
+          >
             <UIcon name="i-lucide-flask-conical" class="w-4 h-4" />
             Test Connection
           </UButton>
@@ -143,7 +149,13 @@ function saveProjectOverrides(): void {
             <UIcon name="i-lucide-plug" class="w-4 h-4" />
             Connect
           </UButton>
-          <UBadge v-if="testSuccess" size="xs" variant="soft" color="success" class="flex items-center gap-1">
+          <UBadge
+            v-if="testSuccess"
+            size="xs"
+            variant="soft"
+            color="success"
+            class="flex items-center gap-1"
+          >
             <UIcon name="i-lucide-check" class="w-3 h-3" />
             Success
           </UBadge>
@@ -160,7 +172,9 @@ function saveProjectOverrides(): void {
 
       <!-- Connected State -->
       <div v-if="isConnected" class="space-y-3">
-        <div class="flex items-center justify-between p-3 bg-success/10 border border-success/20 rounded-md">
+        <div
+          class="flex items-center justify-between p-3 bg-success/10 border border-success/20 rounded-md"
+        >
           <div class="flex items-center gap-2">
             <UIcon name="i-lucide-check-circle" class="w-4 h-4 text-success" />
             <span class="text-sm text-highlighted">
@@ -176,7 +190,10 @@ function saveProjectOverrides(): void {
     </div>
 
     <!-- Section 2: Tool Parameters (only when connected) -->
-    <div v-if="isConnected && tool.parameterFields.length > 0" class="space-y-3 pt-4 border-t border-default">
+    <div
+      v-if="isConnected && tool.parameterFields.length > 0"
+      class="space-y-3 pt-4 border-t border-default"
+    >
       <h4 class="text-sm font-semibold text-highlighted flex items-center gap-2">
         <UIcon name="i-lucide-sliders-horizontal" class="w-4 h-4 text-secondary" />
         Tool Parameters
@@ -260,7 +277,10 @@ function saveProjectOverrides(): void {
     </div>
 
     <!-- Section 3: Project Configuration (only when enabled) -->
-    <div v-if="isEnabled && tool.projectConfigFields.length > 0" class="space-y-3 pt-4 border-t border-default">
+    <div
+      v-if="isEnabled && tool.projectConfigFields.length > 0"
+      class="space-y-3 pt-4 border-t border-default"
+    >
       <h4 class="text-sm font-semibold text-highlighted flex items-center gap-2">
         <UIcon name="i-lucide-settings-2" class="w-4 h-4 text-info" />
         Configuration for {{ currentProjectName }}

@@ -24,7 +24,9 @@ export const usePipelineStore = defineStore("pipeline", () => {
   runs.value = generateMockRuns(templates.value);
 
   // Computed
-  const selectedRun = computed<PipelineRun | null>(() => runs.value.find((r) => r.id === selectedRunId.value) ?? null);
+  const selectedRun = computed<PipelineRun | null>(
+    () => runs.value.find((r) => r.id === selectedRunId.value) ?? null
+  );
 
   const selectedTemplate = computed<PipelineTemplate | null>(
     () => templates.value.find((t) => t.id === selectedTemplateId.value) ?? null
@@ -39,7 +41,10 @@ export const usePipelineStore = defineStore("pipeline", () => {
   const completedRuns = computed(() => runs.value.filter((r) => r.status !== "running"));
 
   const sortedRuns = computed(() => {
-    return [...runningRuns.value, ...completedRuns.value.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())];
+    return [
+      ...runningRuns.value,
+      ...completedRuns.value.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime()),
+    ];
   });
 
   // Actions
@@ -54,7 +59,9 @@ export const usePipelineStore = defineStore("pipeline", () => {
     selectedRunId.value = null;
     if (templateId) {
       const template = templates.value.find((t) => t.id === templateId);
-      editingTemplate.value = template ? { ...template, stages: template.stages.map((s) => ({ ...s })) } : null;
+      editingTemplate.value = template
+        ? { ...template, stages: template.stages.map((s) => ({ ...s })) }
+        : null;
     } else {
       editingTemplate.value = null;
     }
@@ -80,7 +87,8 @@ export const usePipelineStore = defineStore("pipeline", () => {
     const run: PipelineRun = {
       id: `run-${Date.now()}`,
       projectId: "project-1",
-      title: form.triggerDescription.slice(0, 30) + (form.triggerDescription.length > 30 ? "..." : ""),
+      title:
+        form.triggerDescription.slice(0, 30) + (form.triggerDescription.length > 30 ? "..." : ""),
       templateId: form.templateId,
       templateName,
       triggerDescription: form.triggerDescription,
@@ -183,7 +191,10 @@ export const usePipelineStore = defineStore("pipeline", () => {
       isDefault: false,
       createdAt: new Date(),
       updatedAt: new Date(),
-      stages: template.stages.map((s) => ({ ...s, id: `stage-${Date.now()}-${Math.random().toString(36).slice(2)}` })),
+      stages: template.stages.map((s) => ({
+        ...s,
+        id: `stage-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      })),
     };
     templates.value.push(newTemplate);
   }
@@ -215,7 +226,9 @@ export const usePipelineStore = defineStore("pipeline", () => {
   function cancelTemplateEdit(): void {
     if (selectedTemplateId.value) {
       const template = templates.value.find((t) => t.id === selectedTemplateId.value);
-      editingTemplate.value = template ? { ...template, stages: template.stages.map((s) => ({ ...s })) } : null;
+      editingTemplate.value = template
+        ? { ...template, stages: template.stages.map((s) => ({ ...s })) }
+        : null;
     } else {
       editingTemplate.value = null;
     }
@@ -296,7 +309,9 @@ export const usePipelineStore = defineStore("pipeline", () => {
   function advanceRunStage(run: PipelineRun): void {
     const nextIndex = run.stages.findIndex((s) => s.status === "pending" || s.status === "running");
     if (nextIndex === -1) {
-      run.status = run.stages.every((s) => s.status === "passed" || s.status === "skipped") ? "completed" : "failed";
+      run.status = run.stages.every((s) => s.status === "passed" || s.status === "skipped")
+        ? "completed"
+        : "failed";
       run.currentStageIndex = run.stages.length - 1;
     } else {
       run.currentStageIndex = nextIndex;
@@ -323,13 +338,16 @@ export const usePipelineStore = defineStore("pipeline", () => {
 
       // Randomly complete stage (5% chance per tick)
       if (Math.random() < 0.05) {
-        const shouldWaitApproval = currentStage.type === "discuss" || currentStage.type === "review";
+        const shouldWaitApproval =
+          currentStage.type === "discuss" || currentStage.type === "review";
         if (shouldWaitApproval && Math.random() < 0.5) {
           currentStage.status = "waiting-approval";
         } else {
           currentStage.status = Math.random() < 0.9 ? "passed" : "failed";
           currentStage.endedAt = new Date();
-          currentStage.durationMs = currentStage.startedAt ? Date.now() - currentStage.startedAt.getTime() : 0;
+          currentStage.durationMs = currentStage.startedAt
+            ? Date.now() - currentStage.startedAt.getTime()
+            : 0;
 
           if (currentStage.status === "failed") {
             const config = templates.value

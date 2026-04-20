@@ -41,7 +41,13 @@ function openProjectSettings(): void {
 
     <template #footer>
       <div class="space-y-1">
-        <UButton variant="ghost" color="neutral" size="sm" class="w-full justify-start gap-2" @click="createNewProject">
+        <UButton
+          variant="ghost"
+          color="neutral"
+          size="sm"
+          class="w-full justify-start gap-2"
+          @click="createNewProject"
+        >
           <UIcon name="i-lucide-plus" class="w-4 h-4" />
           <span>New Project</span>
         </UButton>

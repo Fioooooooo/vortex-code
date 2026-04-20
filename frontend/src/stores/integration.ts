@@ -39,7 +39,9 @@ export const useIntegrationStore = defineStore("integration", () => {
     // Search filter
     if (searchQuery.value.trim()) {
       const q = searchQuery.value.toLowerCase();
-      result = result.filter((t) => t.name.toLowerCase().includes(q) || t.description.toLowerCase().includes(q));
+      result = result.filter(
+        (t) => t.name.toLowerCase().includes(q) || t.description.toLowerCase().includes(q)
+      );
     }
 
     // Status filter
@@ -63,7 +65,9 @@ export const useIntegrationStore = defineStore("integration", () => {
     return map;
   });
 
-  const connectedTools = computed(() => allTools.value.filter((t) => getConnectionStatus(t.id) === "connected"));
+  const connectedTools = computed(() =>
+    allTools.value.filter((t) => getConnectionStatus(t.id) === "connected")
+  );
 
   const enabledTools = computed(() => allTools.value.filter((t) => isToolEnabledInProject(t.id)));
 
@@ -119,7 +123,10 @@ export const useIntegrationStore = defineStore("integration", () => {
     expandedToolId.value = expandedToolId.value === toolId ? null : toolId;
   }
 
-  async function connectTool(toolId: string, credentials: Record<string, string>): Promise<boolean> {
+  async function connectTool(
+    toolId: string,
+    credentials: Record<string, string>
+  ): Promise<boolean> {
     const tool = allTools.value.find((t) => t.id === toolId);
     if (!tool || tool.comingSoon) return false;
 
@@ -154,7 +161,10 @@ export const useIntegrationStore = defineStore("integration", () => {
     return true;
   }
 
-  async function testConnection(toolId: string, credentials: Record<string, string>): Promise<boolean> {
+  async function testConnection(
+    toolId: string,
+    credentials: Record<string, string>
+  ): Promise<boolean> {
     // Use credentials in mock validation
     void credentials;
     testingConnectionId.value = toolId;
@@ -207,7 +217,9 @@ export const useIntegrationStore = defineStore("integration", () => {
     const projectId = projectStore.currentProject?.id;
     if (!projectId) return;
 
-    const existing = projectToolConfigs.value.find((c) => c.projectId === projectId && c.toolId === toolId);
+    const existing = projectToolConfigs.value.find(
+      (c) => c.projectId === projectId && c.toolId === toolId
+    );
     if (existing) {
       existing.enabled = true;
     } else {
@@ -224,7 +236,9 @@ export const useIntegrationStore = defineStore("integration", () => {
     const projectId = projectStore.currentProject?.id;
     if (!projectId) return;
 
-    const existing = projectToolConfigs.value.find((c) => c.projectId === projectId && c.toolId === toolId);
+    const existing = projectToolConfigs.value.find(
+      (c) => c.projectId === projectId && c.toolId === toolId
+    );
     if (existing) {
       existing.enabled = false;
     }
@@ -243,7 +257,9 @@ export const useIntegrationStore = defineStore("integration", () => {
     const projectId = projectStore.currentProject?.id;
     if (!projectId) return;
 
-    const existing = projectToolConfigs.value.find((c) => c.projectId === projectId && c.toolId === toolId);
+    const existing = projectToolConfigs.value.find(
+      (c) => c.projectId === projectId && c.toolId === toolId
+    );
     if (existing) {
       existing.overrides = { ...existing.overrides, ...overrides };
     } else {

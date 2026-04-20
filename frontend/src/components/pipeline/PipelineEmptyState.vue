@@ -44,7 +44,8 @@ const hasTemplates = pipelineStore.templates.length > 0;
       </div>
 
       <p v-if="hasTemplates" class="text-xs text-muted">
-        You have {{ pipelineStore.templates.length }} templates ready. Start a run to automate your workflow.
+        You have {{ pipelineStore.templates.length }} templates ready. Start a run to automate your
+        workflow.
       </p>
     </div>
   </div>

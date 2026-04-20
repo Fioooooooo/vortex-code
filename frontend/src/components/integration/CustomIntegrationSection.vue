@@ -23,7 +23,10 @@ function saveCustomIntegration(): void {
       class="flex items-center gap-2 text-sm text-muted hover:text-highlighted transition-colors"
       @click="toggleExpanded"
     >
-      <UIcon :name="expanded ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'" class="w-4 h-4" />
+      <UIcon
+        :name="expanded ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'"
+        class="w-4 h-4"
+      />
       <span>Advanced — Custom Integration</span>
     </button>
 
@@ -36,12 +39,19 @@ function saveCustomIntegration(): void {
 
       <div class="space-y-1.5">
         <label class="text-sm font-medium text-highlighted">Custom Skill Config (JSON)</label>
-        <UTextarea v-model="skillConfig" placeholder='{ "name": "my-skill", "endpoint": "..." }' size="sm" :rows="4" />
+        <UTextarea
+          v-model="skillConfig"
+          placeholder='{ "name": "my-skill", "endpoint": "..." }'
+          size="sm"
+          :rows="4"
+        />
         <p class="text-xs text-muted">自定义 Skill 的 JSON 配置</p>
       </div>
 
       <div class="flex justify-end">
-        <UButton size="sm" variant="soft" @click="saveCustomIntegration"> Save Configuration </UButton>
+        <UButton size="sm" variant="soft" @click="saveCustomIntegration">
+          Save Configuration
+        </UButton>
       </div>
     </div>
   </div>

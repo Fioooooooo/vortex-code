@@ -60,7 +60,10 @@ export const useSettingsStore = defineStore("settings", () => {
     isRefreshing.value = false;
   }
 
-  function updatePreference<K extends keyof PreferencesConfig>(key: K, value: PreferencesConfig[K]): void {
+  function updatePreference<K extends keyof PreferencesConfig>(
+    key: K,
+    value: PreferencesConfig[K]
+  ): void {
     preferences.value[key] = value;
     // In production: persist to electron-store or localStorage
   }

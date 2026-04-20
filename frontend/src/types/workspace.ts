@@ -80,7 +80,13 @@ export interface TextMessage extends BaseMessage {
   content: string;
 }
 
-export type Message = UserMessage | ThinkingMessage | FileOpMessage | CommandMessage | ConfirmMessage | TextMessage;
+export type Message =
+  | UserMessage
+  | ThinkingMessage
+  | FileOpMessage
+  | CommandMessage
+  | ConfirmMessage
+  | TextMessage;
 export type MessageType = Message["type"];
 
 export interface Session {

@@ -31,7 +31,9 @@ import { computed } from "vue";
         <div
           class="max-w-[80%] rounded-lg px-3 py-2 text-sm"
           :class="
-            msg.type === 'user' ? 'bg-primary text-primary-inverse' : 'bg-muted border border-default text-default'
+            msg.type === 'user'
+              ? 'bg-primary text-primary-inverse'
+              : 'bg-muted border border-default text-default'
           "
         >
           <template v-if="msg.type === 'thinking'">

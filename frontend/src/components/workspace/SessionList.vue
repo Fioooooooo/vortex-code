@@ -55,14 +55,22 @@ function handleArchive(sessionId: string): void {
   <div class="flex flex-col h-full">
     <!-- New Session Button -->
     <div class="p-3 border-b border-default">
-      <UButton color="primary" variant="outline" class="w-full justify-center gap-2" @click="handleNewSession">
+      <UButton
+        color="primary"
+        variant="outline"
+        class="w-full justify-center gap-2"
+        @click="handleNewSession"
+      >
         <UIcon name="i-lucide-plus" class="w-4 h-4" />
         New Session
       </UButton>
     </div>
 
     <!-- Empty State -->
-    <div v-if="sessions.length === 0" class="flex-1 flex items-center justify-center px-6 text-center">
+    <div
+      v-if="sessions.length === 0"
+      class="flex-1 flex items-center justify-center px-6 text-center"
+    >
       <p class="text-sm text-muted">Start a new session to begin working with your agent.</p>
     </div>
 
@@ -72,14 +80,20 @@ function handleArchive(sessionId: string): void {
         v-for="session in sessions"
         :key="session.id"
         class="group relative flex items-start gap-2.5 px-3 py-2.5 cursor-pointer transition-colors border-b border-default/50 last:border-b-0"
-        :class="workspaceStore.activeSessionId === session.id ? 'bg-primary/5' : 'hover:bg-muted/50'"
+        :class="
+          workspaceStore.activeSessionId === session.id ? 'bg-primary/5' : 'hover:bg-muted/50'
+        "
         @click="handleSelectSession(session.id)"
       >
         <!-- Status Dot -->
         <div class="mt-1.5 shrink-0">
           <span
             class="w-2 h-2 rounded-full block"
-            :class="session.status === 'running' ? 'bg-success animate-pulse' : 'bg-neutral-300 dark:bg-neutral-600'"
+            :class="
+              session.status === 'running'
+                ? 'bg-success animate-pulse'
+                : 'bg-neutral-300 dark:bg-neutral-600'
+            "
           />
         </div>
 

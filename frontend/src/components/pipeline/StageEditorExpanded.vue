@@ -31,7 +31,10 @@ const mcpSkillOptions = [
   { value: "deploy", label: "Deploy" },
 ];
 
-function updateField<K extends keyof PipelineStageConfig>(field: K, value: PipelineStageConfig[K]): void {
+function updateField<K extends keyof PipelineStageConfig>(
+  field: K,
+  value: PipelineStageConfig[K]
+): void {
   emit("update", { ...props.stage, [field]: value });
 }
 
@@ -117,7 +120,11 @@ function toggleMcpSkill(skill: string): void {
         No gate conditions. Stage will proceed automatically.
       </div>
 
-      <div v-for="(gate, idx) in stage.gateConditions" :key="gate.id" class="flex items-center gap-2">
+      <div
+        v-for="(gate, idx) in stage.gateConditions"
+        :key="gate.id"
+        class="flex items-center gap-2"
+      >
         <USelect
           :model-value="gate.type"
           :items="gateConditionTypeOptions"
@@ -191,7 +198,9 @@ function toggleMcpSkill(skill: string): void {
           @click="toggleMcpSkill(skill.value)"
         >
           <UIcon
-            :name="stage.mcpSkills.includes(skill.value) ? 'i-lucide-check-square' : 'i-lucide-square'"
+            :name="
+              stage.mcpSkills.includes(skill.value) ? 'i-lucide-check-square' : 'i-lucide-square'
+            "
             class="w-3.5 h-3.5"
           />
           {{ skill.label }}

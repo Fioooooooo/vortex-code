@@ -33,7 +33,12 @@ const deployLog = computed(() => props.stage.output?.deployLog);
 
     <!-- Result Badge -->
     <div v-if="deployLog" class="flex items-center gap-2">
-      <UBadge :color="deployLog.result === 'success' ? 'success' : 'error'" size="sm" variant="soft" class="text-sm">
+      <UBadge
+        :color="deployLog.result === 'success' ? 'success' : 'error'"
+        size="sm"
+        variant="soft"
+        class="text-sm"
+      >
         <UIcon
           :name="deployLog.result === 'success' ? 'i-lucide-check-circle' : 'i-lucide-x-circle'"
           class="w-4 h-4 mr-1"
@@ -48,7 +53,9 @@ const deployLog = computed(() => props.stage.output?.deployLog);
         <UIcon name="i-lucide-scroll-text" class="w-4 h-4" />
         Deployment Logs
       </h4>
-      <div class="rounded-md border border-default bg-default p-3 font-mono text-xs space-y-1 max-h-64 overflow-y-auto">
+      <div
+        class="rounded-md border border-default bg-default p-3 font-mono text-xs space-y-1 max-h-64 overflow-y-auto"
+      >
         <p v-for="(log, idx) in deployLog.logs" :key="idx" class="text-muted">
           {{ log }}
         </p>

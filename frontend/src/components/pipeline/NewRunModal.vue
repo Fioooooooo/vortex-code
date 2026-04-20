@@ -35,7 +35,13 @@ function handleClose(): void {
       <div class="p-5 space-y-4">
         <div class="flex items-center justify-between">
           <h3 class="text-lg font-semibold text-default">New Pipeline Run</h3>
-          <UButton variant="ghost" size="sm" color="neutral" class="w-8 h-8 p-0 justify-center" @click="handleClose">
+          <UButton
+            variant="ghost"
+            size="sm"
+            color="neutral"
+            class="w-8 h-8 p-0 justify-center"
+            @click="handleClose"
+          >
             <UIcon name="i-lucide-x" class="w-4 h-4" />
           </UButton>
         </div>
@@ -59,13 +65,18 @@ function handleClose(): void {
                   class="w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center"
                   :class="selectedTemplateId === template.id ? 'border-primary' : 'border-muted'"
                 >
-                  <div v-if="selectedTemplateId === template.id" class="w-2 h-2 rounded-full bg-primary" />
+                  <div
+                    v-if="selectedTemplateId === template.id"
+                    class="w-2 h-2 rounded-full bg-primary"
+                  />
                 </div>
                 <div class="flex-1 min-w-0">
                   <p class="text-sm font-medium text-default">{{ template.name }}</p>
                   <p class="text-xs text-muted">{{ template.stages.length }} stages</p>
                 </div>
-                <UBadge v-if="template.isDefault" size="xs" color="primary" variant="soft">Default</UBadge>
+                <UBadge v-if="template.isDefault" size="xs" color="primary" variant="soft"
+                  >Default</UBadge
+                >
               </div>
             </div>
           </div>

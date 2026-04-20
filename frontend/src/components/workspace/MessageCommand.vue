@@ -15,10 +15,16 @@ const expanded = ref(false);
       class="w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5"
       :class="message.success ? 'bg-success' : 'bg-error'"
     >
-      <UIcon :name="message.success ? 'i-lucide-terminal' : 'i-lucide-alert-triangle'" class="w-4 h-4 text-white" />
+      <UIcon
+        :name="message.success ? 'i-lucide-terminal' : 'i-lucide-alert-triangle'"
+        class="w-4 h-4 text-white"
+      />
     </div>
     <div class="flex-1 min-w-0">
-      <div class="rounded-lg border overflow-hidden" :class="message.success ? 'border-success/30' : 'border-error/30'">
+      <div
+        class="rounded-lg border overflow-hidden"
+        :class="message.success ? 'border-success/30' : 'border-error/30'"
+      >
         <!-- Command -->
         <div
           class="px-3 py-2 flex items-center gap-2 cursor-pointer"

@@ -21,7 +21,10 @@ defineProps<{
           :key="att.id"
           class="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted/30 text-xs text-muted"
         >
-          <UIcon :name="att.type === 'image' ? 'i-lucide-image' : 'i-lucide-paperclip'" class="w-3.5 h-3.5" />
+          <UIcon
+            :name="att.type === 'image' ? 'i-lucide-image' : 'i-lucide-paperclip'"
+            class="w-3.5 h-3.5"
+          />
           <span class="truncate max-w-[120px]">{{ att.name }}</span>
         </div>
       </div>

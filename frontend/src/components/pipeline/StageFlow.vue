@@ -37,7 +37,10 @@ function getConnectorStatus(
         @approve="emit('approve', $event)"
         @reject="emit('reject', $event)"
       />
-      <StageConnector v-if="index < stages.length - 1" :status="getConnectorStatus(stage, stages[index + 1])" />
+      <StageConnector
+        v-if="index < stages.length - 1"
+        :status="getConnectorStatus(stage, stages[index + 1])"
+      />
     </template>
   </div>
 </template>

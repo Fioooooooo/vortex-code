@@ -28,7 +28,9 @@ const BUILTIN_TEMPLATES: PipelineTemplate[] = [
         promptTemplate:
           "Analyze the following requirement and break it down into actionable tasks.\n\nProject: {{project_name}}\nPrevious context: {{previous_stage_output}}\n\nRequirement: {{trigger_description}}",
         agentId: null,
-        gateConditions: [{ id: "gate-1", type: "manual-approval", params: {}, description: "需要人工确认方案" }],
+        gateConditions: [
+          { id: "gate-1", type: "manual-approval", params: {}, description: "需要人工确认方案" },
+        ],
         failureStrategy: "pause",
         mcpSkills: [],
       },
@@ -52,8 +54,18 @@ const BUILTIN_TEMPLATES: PipelineTemplate[] = [
           "Write and run unit tests for the changes made in the previous stage.\n\nProject: {{project_name}}",
         agentId: null,
         gateConditions: [
-          { id: "gate-2", type: "test-pass-rate", params: { minRate: 100 }, description: "测试通过率 = 100%" },
-          { id: "gate-3", type: "coverage-threshold", params: { minCoverage: 80 }, description: "覆盖率 >= 80%" },
+          {
+            id: "gate-2",
+            type: "test-pass-rate",
+            params: { minRate: 100 },
+            description: "测试通过率 = 100%",
+          },
+          {
+            id: "gate-3",
+            type: "coverage-threshold",
+            params: { minCoverage: 80 },
+            description: "覆盖率 >= 80%",
+          },
         ],
         failureStrategy: "retry",
         failureStrategyMaxRetries: 3,
@@ -67,7 +79,12 @@ const BUILTIN_TEMPLATES: PipelineTemplate[] = [
           "Review the code changes for quality, bugs, performance and security issues.\n\nProject: {{project_name}}",
         agentId: null,
         gateConditions: [
-          { id: "gate-4", type: "no-critical-review", params: {}, description: "无 critical 级别审查意见" },
+          {
+            id: "gate-4",
+            type: "no-critical-review",
+            params: {},
+            description: "无 critical 级别审查意见",
+          },
         ],
         failureStrategy: "pause",
         mcpSkills: [],
@@ -76,7 +93,8 @@ const BUILTIN_TEMPLATES: PipelineTemplate[] = [
         id: "stage-deploy",
         type: "deploy",
         name: "部署",
-        promptTemplate: "Deploy the approved changes to the staging environment.\n\nProject: {{project_name}}",
+        promptTemplate:
+          "Deploy the approved changes to the staging environment.\n\nProject: {{project_name}}",
         agentId: null,
         gateConditions: [],
         failureStrategy: "abort",
@@ -97,7 +115,8 @@ const BUILTIN_TEMPLATES: PipelineTemplate[] = [
         id: "stage-code-quick",
         type: "code",
         name: "代码编写",
-        promptTemplate: "Fix the described issue for project {{project_name}}.\n\nIssue: {{trigger_description}}",
+        promptTemplate:
+          "Fix the described issue for project {{project_name}}.\n\nIssue: {{trigger_description}}",
         agentId: null,
         gateConditions: [],
         failureStrategy: "retry",
@@ -111,7 +130,12 @@ const BUILTIN_TEMPLATES: PipelineTemplate[] = [
         promptTemplate: "Run tests to verify the fix.\n\nProject: {{project_name}}",
         agentId: null,
         gateConditions: [
-          { id: "gate-q1", type: "test-pass-rate", params: { minRate: 100 }, description: "测试通过率 = 100%" },
+          {
+            id: "gate-q1",
+            type: "test-pass-rate",
+            params: { minRate: 100 },
+            description: "测试通过率 = 100%",
+          },
         ],
         failureStrategy: "retry",
         failureStrategyMaxRetries: 2,
@@ -144,7 +168,9 @@ const BUILTIN_TEMPLATES: PipelineTemplate[] = [
         name: "代码审查",
         promptTemplate: "Review the pending changes for project {{project_name}}.",
         agentId: null,
-        gateConditions: [{ id: "gate-r1", type: "manual-approval", params: {}, description: "需要人工审批" }],
+        gateConditions: [
+          { id: "gate-r1", type: "manual-approval", params: {}, description: "需要人工审批" },
+        ],
         failureStrategy: "pause",
         mcpSkills: [],
       },
@@ -282,8 +308,10 @@ function createMockStageRunFromConfig(
     status = "running";
   }
 
-  const startedAt = index <= 2 ? new Date(Date.now() - 1000 * 60 * (totalStages - index) * 5) : null;
-  const endedAt = index < 2 ? new Date(Date.now() - 1000 * 60 * (totalStages - index - 1) * 5) : null;
+  const startedAt =
+    index <= 2 ? new Date(Date.now() - 1000 * 60 * (totalStages - index) * 5) : null;
+  const endedAt =
+    index < 2 ? new Date(Date.now() - 1000 * 60 * (totalStages - index - 1) * 5) : null;
   const durationMs = startedAt && endedAt ? endedAt.getTime() - startedAt.getTime() : 0;
 
   let output: PipelineStageRun["output"] = null;
@@ -299,8 +327,18 @@ function createMockStageRunFromConfig(
       type: "code",
       messages: createMockMessages().map((m) => ({ ...m, id: `code-${m.id}` })),
       fileChanges: [
-        { filePath: "src/components/AvatarUploader.vue", changeType: "added", summary: "+86 lines", diffLines: [] },
-        { filePath: "src/utils/upload.ts", changeType: "added", summary: "+42 lines", diffLines: [] },
+        {
+          filePath: "src/components/AvatarUploader.vue",
+          changeType: "added",
+          summary: "+86 lines",
+          diffLines: [],
+        },
+        {
+          filePath: "src/utils/upload.ts",
+          changeType: "added",
+          summary: "+42 lines",
+          diffLines: [],
+        },
       ],
     };
   } else if (config.type === "test" && status === "running") {
@@ -338,7 +376,9 @@ export function generateMockRuns(templates: PipelineTemplate[]): PipelineRun[] {
     templateName: fullCycle.name,
     triggerDescription: "实现用户头像上传功能",
     status: "running",
-    stages: fullCycle.stages.map((s, i) => createMockStageRunFromConfig(s, i, fullCycle.stages.length)),
+    stages: fullCycle.stages.map((s, i) =>
+      createMockStageRunFromConfig(s, i, fullCycle.stages.length)
+    ),
     currentStageIndex: 2,
     createdAt: new Date(now.getTime() - 1000 * 60 * 30),
     updatedAt: new Date(now.getTime() - 1000 * 60 * 5),
@@ -478,7 +518,10 @@ export function generateMockTemplates(): PipelineTemplate[] {
   return [...BUILTIN_TEMPLATES, ...generateMockCustomTemplates()];
 }
 
-export function createDefaultStage(type: StageType = "discuss", index: number = 0): PipelineStageConfig {
+export function createDefaultStage(
+  type: StageType = "discuss",
+  index: number = 0
+): PipelineStageConfig {
   const typeNames: Record<StageType, string> = {
     discuss: "需求讨论",
     code: "代码编写",

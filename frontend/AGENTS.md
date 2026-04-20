@@ -92,4 +92,4 @@ frontend/
 
 详细测试策略（组件 stub、mock 约定、覆盖率配置等）见：
 
-**[src/**tests**/AGENTS.md](src/__tests__/AGENTS.md)**
+**[src/**tests**/AGENTS.md](src/**tests**/AGENTS.md)**

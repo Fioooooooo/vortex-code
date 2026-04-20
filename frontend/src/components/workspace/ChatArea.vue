@@ -44,7 +44,10 @@ watch(
     <!-- Messages -->
     <div ref="messagesContainer" class="flex-1 overflow-y-auto px-4 py-4 space-y-4">
       <!-- Empty State -->
-      <div v-if="messages.length === 0" class="h-full flex flex-col items-center justify-center text-muted">
+      <div
+        v-if="messages.length === 0"
+        class="h-full flex flex-col items-center justify-center text-muted"
+      >
         <UIcon name="i-lucide-bot" class="w-12 h-12 mb-3 opacity-30" />
         <p class="text-sm">Start a conversation with {{ workspaceStore.currentAgent.name }}</p>
       </div>

@@ -56,7 +56,10 @@ function getStageDotClass(status: string): string {
           <!-- Title Row -->
           <div class="flex items-center gap-2">
             <!-- Running Indicator -->
-            <div v-if="run.status === 'running'" class="w-2 h-2 rounded-full bg-primary animate-pulse shrink-0" />
+            <div
+              v-if="run.status === 'running'"
+              class="w-2 h-2 rounded-full bg-primary animate-pulse shrink-0"
+            />
             <div v-else class="w-2 h-2 shrink-0" />
 
             <div class="flex-1 min-w-0">
@@ -72,7 +75,10 @@ function getStageDotClass(status: string): string {
           <!-- Stage Progress Dots -->
           <div class="flex items-center gap-1 mt-1.5 ml-4">
             <template v-for="(stage, idx) in run.stages" :key="stage.id">
-              <div class="w-2 h-2 rounded-full transition-colors" :class="getStageDotClass(stage.status)" />
+              <div
+                class="w-2 h-2 rounded-full transition-colors"
+                :class="getStageDotClass(stage.status)"
+              />
               <div v-if="idx < run.stages.length - 1" class="w-2 h-px bg-default" />
             </template>
           </div>

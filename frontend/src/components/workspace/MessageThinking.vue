@@ -26,7 +26,10 @@ const expanded = ref(false);
         <UIcon name="i-lucide-loader" class="w-3.5 h-3.5 text-secondary animate-spin shrink-0" />
         <span class="text-sm text-muted italic">{{ message.summary }}</span>
       </div>
-      <div v-if="expanded" class="mt-1 px-3 py-2 rounded-lg bg-secondary/5 text-sm text-muted whitespace-pre-wrap">
+      <div
+        v-if="expanded"
+        class="mt-1 px-3 py-2 rounded-lg bg-secondary/5 text-sm text-muted whitespace-pre-wrap"
+      >
         {{ message.content }}
       </div>
     </div>
