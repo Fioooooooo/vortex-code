@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import ChatArea from "@renderer/components/chat/ChatArea.vue";
+import ChatContainer from "@renderer/components/chat/ChatContainer.vue";
 import DiffPanel from "@renderer/components/chat/DiffPanel.vue";
 import Sidebar from "@renderer/components/chat/Sidebar.vue";
 import { useChatStore } from "@renderer/stores/chat";
@@ -14,7 +14,7 @@ const chatStore = useChatStore();
     </div>
 
     <main class="flex-1 flex flex-col min-w-0 bg-default">
-      <ChatArea />
+      <ChatContainer />
     </main>
 
     <div v-if="chatStore.diffPanelOpen" class="h-full shrink-0">

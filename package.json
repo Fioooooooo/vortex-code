@@ -24,11 +24,15 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@ai-sdk/vue": "^3.0.168",
+    "@comark/vue": "^0.2.1",
     "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
     "@vueuse/core": "^14.2.1",
+    "ai": "^6.0.168",
     "electron-updater": "^6.3.9",
-    "pinia": "^3.0.4"
+    "pinia": "^3.0.4",
+    "shiki": "^4.0.2"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config-prettier": "3.0.0",

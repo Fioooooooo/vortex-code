@@ -51,6 +51,14 @@ export default defineConfig(({ command }) => ({
             filepath: "frontend/.eslintrc-auto-import.json",
           },
         },
+        prose: true,
+        ui: {
+          colors: {
+            primary: "green",
+            secondary: "blue",
+            neutral: "slate",
+          },
+        },
       }),
     ],
   },

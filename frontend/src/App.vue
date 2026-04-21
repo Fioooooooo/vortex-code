@@ -5,17 +5,19 @@ import AppLayout from "@renderer/layouts/AppLayout.vue";
 </script>
 
 <template>
-  <UApp>
-    <AppLayout>
-      <template #header>
-        <AppHeader />
-      </template>
+  <Suspense>
+    <UApp :toaster="{ position: 'top-right' }">
+      <AppLayout>
+        <template #header>
+          <AppHeader />
+        </template>
 
-      <template #side>
-        <ActivityBar />
-      </template>
+        <template #side>
+          <ActivityBar />
+        </template>
 
-      <RouterView />
-    </AppLayout>
-  </UApp>
+        <RouterView />
+      </AppLayout>
+    </UApp>
+  </Suspense>
 </template>
