@@ -8,7 +8,7 @@ import type {
   NotificationMethod,
   TokenStatsPeriod,
   BudgetUnit,
-} from "@renderer/types/settings";
+} from "@shared/types/settings";
 
 const store = useSettingsStore();
 const colorMode = useColorMode();

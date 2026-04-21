@@ -1,6 +1,6 @@
 import { ref } from "vue";
 import { defineStore } from "pinia";
-import type { AgentInfo, PreferencesConfig } from "@renderer/types/settings";
+import type { AgentInfo, PreferencesConfig } from "@shared/types/settings";
 
 // Mock data for agent status
 const mockAgents: AgentInfo[] = [

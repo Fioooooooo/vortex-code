@@ -4,7 +4,7 @@ import type {
   ToolConnection,
   ToolConfig,
   ProjectToolConfig,
-} from "@renderer/types/integration";
+} from "@shared/types/integration";
 
 export const categories: IntegrationCategory[] = [
   {

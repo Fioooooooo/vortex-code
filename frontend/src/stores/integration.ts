@@ -8,7 +8,7 @@ import type {
   ProjectToolConfig,
   FilterOption,
   ConnectionStatus,
-} from "@renderer/types/integration";
+} from "@shared/types/integration";
 import {
   categories,
   tools,

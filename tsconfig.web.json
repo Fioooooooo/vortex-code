@@ -5,16 +5,18 @@
     "frontend/src/*.d.ts",
     "frontend/src/**/*",
     "frontend/src/**/*.vue",
-    "frontend/*.d.ts"
+    "frontend/*.d.ts",
+    "shared/**/*"
   ],
   "compilerOptions": {
-    "rootDir": "frontend",
     "composite": true,
+    "rootDir": ".",
     "noImplicitAny": true,
     "moduleResolution": "Bundler",
     "types": ["vitest/globals"],
     "paths": {
       "@renderer/*": ["./frontend/src/*"],
+      "@shared/*": ["./shared/*"],
       "#build/ui/*": ["./frontend/node_modules/.nuxt-ui/ui/*"]
     }
   },

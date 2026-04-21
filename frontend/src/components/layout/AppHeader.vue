@@ -6,7 +6,7 @@ import { useChatStore } from "@renderer/stores/chat";
 import { useWelcomeStore } from "@renderer/stores/welcome";
 import { useColorMode } from "@vueuse/core";
 import CreateProjectModal from "@renderer/components/CreateProjectModal.vue";
-import type { RecentProject } from "@renderer/types/project";
+import type { RecentProject } from "@shared/types/project";
 
 const router = useRouter();
 const projectStore = useProjectStore();

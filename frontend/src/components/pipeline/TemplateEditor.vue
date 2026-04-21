@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { usePipelineStore } from "@renderer/stores/pipeline";
-import type { PipelineStageConfig } from "@renderer/types/pipeline";
+import type { PipelineStageConfig } from "@shared/types/pipeline";
 import { createDefaultStage } from "@renderer/stores/pipeline.mock";
 import StageEditorRow from "./StageEditorRow.vue";
 import StageEditorExpanded from "./StageEditorExpanded.vue";

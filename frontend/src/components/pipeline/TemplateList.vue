@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { usePipelineStore } from "@renderer/stores/pipeline";
-import type { PipelineTemplate } from "@renderer/types/pipeline";
+import type { PipelineTemplate } from "@shared/types/pipeline";
 
 const pipelineStore = usePipelineStore();
 const hoveredTemplateId = ref<string | null>(null);

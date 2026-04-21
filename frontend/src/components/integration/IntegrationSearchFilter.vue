@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { FilterOption } from "@renderer/types/integration";
+import type { FilterOption } from "@shared/types/integration";
 
 const props = defineProps<{
   modelValue: string;

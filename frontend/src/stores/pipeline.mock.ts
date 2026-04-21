@@ -8,8 +8,8 @@ import type {
   TestResult,
   ReviewComment,
   DeployLog,
-} from "@renderer/types/pipeline";
-import type { Message } from "@renderer/types/chat";
+} from "@shared/types/pipeline";
+import type { Message } from "@shared/types/chat";
 
 const BUILTIN_TEMPLATES: PipelineTemplate[] = [
   {

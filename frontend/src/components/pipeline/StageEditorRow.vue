@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { PipelineStageConfig, StageType } from "@renderer/types/pipeline";
+import type { PipelineStageConfig, StageType } from "@shared/types/pipeline";
 
 defineProps<{
   stage: PipelineStageConfig;

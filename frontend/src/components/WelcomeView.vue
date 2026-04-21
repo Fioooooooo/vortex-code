@@ -4,7 +4,7 @@ import { useRouter } from "vue-router";
 import { useProjectStore } from "@renderer/stores/project";
 import { useWelcomeStore } from "@renderer/stores/welcome";
 import { useTimeAgo } from "@vueuse/core";
-import type { RecentProject } from "@renderer/types/project";
+import type { RecentProject } from "@shared/types/project";
 import CreateProjectModal from "@renderer/components/CreateProjectModal.vue";
 
 const router = useRouter();

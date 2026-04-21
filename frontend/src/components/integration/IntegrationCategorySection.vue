@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { IntegrationCategory, IntegrationTool } from "@renderer/types/integration";
+import type { IntegrationCategory, IntegrationTool } from "@shared/types/integration";
 import IntegrationToolCard from "./IntegrationToolCard.vue";
 
 defineProps<{

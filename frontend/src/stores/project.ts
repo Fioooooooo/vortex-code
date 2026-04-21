@@ -5,7 +5,7 @@ import type {
   ProjectInfo,
   ProjectSummary,
   RecentProject,
-} from "@renderer/types/project";
+} from "@shared/types/project";
 
 function generateMockRecentProjects(): RecentProject[] {
   const now = new Date();

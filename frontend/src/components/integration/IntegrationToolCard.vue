@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import type { IntegrationTool } from "@renderer/types/integration";
+import type { IntegrationTool } from "@shared/types/integration";
 import { useIntegrationStore } from "@renderer/stores/integration";
 import { useProjectStore } from "@renderer/stores/project";
 import IntegrationToolCardExpand from "./IntegrationToolCardExpand.vue";

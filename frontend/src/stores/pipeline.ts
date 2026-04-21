@@ -7,7 +7,7 @@ import type {
   PipelineSidebarTab,
   CreateRunForm,
   CreateTemplateForm,
-} from "@renderer/types/pipeline";
+} from "@shared/types/pipeline";
 import { generateMockTemplates, generateMockRuns, createDefaultStage } from "./pipeline.mock";
 
 export const usePipelineStore = defineStore("pipeline", () => {

@@ -6,6 +6,11 @@ import ui from "@nuxt/ui/vite";
 
 export default defineConfig(({ command }) => ({
   main: {
+    resolve: {
+      alias: {
+        "@shared": resolve(__dirname, "shared"),
+      },
+    },
     build: {
       rollupOptions: {
         input: {
@@ -15,6 +20,11 @@ export default defineConfig(({ command }) => ({
     },
   },
   preload: {
+    resolve: {
+      alias: {
+        "@shared": resolve(__dirname, "shared"),
+      },
+    },
     build: {
       rollupOptions: {
         input: {
@@ -35,6 +45,7 @@ export default defineConfig(({ command }) => ({
     resolve: {
       alias: {
         "@renderer": resolve(__dirname, "frontend/src"),
+        "@shared": resolve(__dirname, "shared"),
       },
     },
     plugins: [

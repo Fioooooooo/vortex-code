@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import type { AgentType } from "@renderer/types/chat";
+import type { AgentType } from "@shared/types/chat";
 
 type AgentOption = {
   value: AgentType;

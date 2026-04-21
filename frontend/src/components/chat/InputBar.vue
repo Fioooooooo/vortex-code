@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useChatStore } from "@renderer/stores/chat";
-import type { Attachment } from "@renderer/types/chat";
+import type { Attachment } from "@shared/types/chat";
 
 const chatStore = useChatStore();
 

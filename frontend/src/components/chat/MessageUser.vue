@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { UserMessage } from "@renderer/types/chat";
+import type { UserMessage } from "@shared/types/chat";
 
 defineProps<{
   message: UserMessage;

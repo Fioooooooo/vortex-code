@@ -3,7 +3,7 @@ import { ref } from "vue";
 import type { UIMessage, ChatStatus } from "ai";
 import { isReasoningUIPart, isTextUIPart, isToolUIPart, getToolName } from "ai";
 import { isPartStreaming, isToolStreaming } from "@nuxt/ui/utils/ai";
-import type { AgentType } from "@renderer/types/chat";
+import type { AgentType } from "@shared/types/chat";
 import ChatComark from "./ChatComark";
 import AgentSelect from "./AgentSelect.vue";
 

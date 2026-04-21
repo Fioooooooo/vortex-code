@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import type { PipelineStageRun } from "@renderer/types/pipeline";
+import type { PipelineStageRun } from "@shared/types/pipeline";
 
 const props = defineProps<{
   stage: PipelineStageRun;

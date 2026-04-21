@@ -1,4 +1,4 @@
-import type { RecentProject } from "./project";
+import type { RecentProject } from "@shared/types/project";
 
 export interface WelcomeState {
   showCreateProjectModal: boolean;

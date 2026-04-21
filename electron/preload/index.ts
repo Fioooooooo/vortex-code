@@ -1,12 +1,21 @@
 import { contextBridge } from "electron";
 import { electronAPI } from "@electron-toolkit/preload";
+import { chatApi } from "./api/chat";
+import { projectApi } from "./api/project";
+import { pipelineApi } from "./api/pipeline";
+import { integrationApi } from "./api/integration";
+import { settingsApi } from "./api/settings";
+import { windowApi } from "./api/window";
 
-// Custom APIs for renderer
-const api = {};
+const api = {
+  chat: chatApi,
+  project: projectApi,
+  pipeline: pipelineApi,
+  integration: integrationApi,
+  settings: settingsApi,
+  window: windowApi,
+};
 
-// Use `contextBridge` APIs to expose Electron APIs to
-// renderer only if context isolation is enabled, otherwise
-// just add to the DOM global.
 if (process.contextIsolated) {
   try {
     contextBridge.exposeInMainWorld("electron", electronAPI);

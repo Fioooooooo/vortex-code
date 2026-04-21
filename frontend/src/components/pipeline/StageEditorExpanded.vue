@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { PipelineStageConfig, GateCondition, FailureStrategy } from "@renderer/types/pipeline";
+import type { PipelineStageConfig, GateCondition, FailureStrategy } from "@shared/types/pipeline";
 
 const props = defineProps<{
   stage: PipelineStageConfig;

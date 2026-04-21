@@ -3,7 +3,7 @@ import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useProjectStore } from "@renderer/stores/project";
 import { useWelcomeStore } from "@renderer/stores/welcome";
-import type { CreateProjectForm } from "@renderer/types/project";
+import type { CreateProjectForm } from "@shared/types/project";
 
 const router = useRouter();
 const projectStore = useProjectStore();

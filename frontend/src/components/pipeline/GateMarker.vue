@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { GateCondition } from "@renderer/types/pipeline";
+import type { GateCondition } from "@shared/types/pipeline";
 
 defineProps<{
   gate: GateCondition | undefined;

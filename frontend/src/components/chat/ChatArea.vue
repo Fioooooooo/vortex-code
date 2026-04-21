@@ -8,7 +8,7 @@ import type {
   CommandMessage,
   ConfirmMessage,
   TextMessage,
-} from "@renderer/types/chat";
+} from "@shared/types/chat";
 import MessageUser from "./MessageUser.vue";
 import MessageThinking from "./MessageThinking.vue";
 import MessageFileOp from "./MessageFileOp.vue";
