@@ -1,0 +1,206 @@
+# 数据模型
+
+所有共享类型定义在 `shared/types/`，主进程和渲染进程均可导入，路径别名 `@shared/types/*`。
+
+## IPC 通用类型（`ipc.ts`）
+
+```ts
+// 所有 handle channel 的统一响应格式
+type IpcResponse<T> = { ok: true; data: T } | { ok: false; error: IpcErrorInfo };
+
+// 流式消息（通过 MessagePort 传输）
+type StreamMessage<T> =
+  | { type: "chunk"; data: T }
+  | { type: "done"; data: { totalTokens: number } }
+  | { type: "error"; data: IpcErrorInfo };
+
+interface StreamChunkData {
+  content: string;
+  tokenCount: number;
+}
+
+// 事件推送消息（ipcRenderer.on 订阅）
+interface EventMessage<T> {
+  type: string;
+  payload: T;
+}
+```
+
+## Chat（`chat.ts`）
+
+**核心实体：**
+
+```ts
+interface Session {
+  id: string;
+  projectId: string;
+  title: string;
+  status: "running" | "ended";
+  turnCount: number;
+  createdAt: Date;
+  updatedAt: Date;
+  messages: Message[];
+  fileChanges: FileChange[];
+}
+```
+
+**消息类型（判别联合）：**
+
+| type       | 额外字段                                        | 说明           |
+| ---------- | ----------------------------------------------- | -------------- |
+| `user`     | `content`, `attachments?`                       | 用户输入       |
+| `thinking` | `summary`, `content`                            | Agent 思考过程 |
+| `text`     | `content`                                       | Agent 文本回复 |
+| `file-op`  | `operations: FileChange[]`                      | 文件变更操作   |
+| `command`  | `command`, `output`, `success`                  | 执行命令       |
+| `confirm`  | `description`, `action`, `resolved`, `allowed?` | 需要用户确认   |
+
+**文件变更：**
+
+```ts
+interface FileChange {
+  filePath: string;
+  changeType: "added" | "modified" | "deleted";
+  summary: string; // 如 "+42 lines"
+  diffLines: DiffLine[];
+}
+
+interface DiffLine {
+  type: "added" | "removed" | "context";
+  content: string;
+  oldLineNumber?: number;
+  newLineNumber?: number;
+}
+```
+
+**其他类型：**
+
+- `AgentType`: `"claude-code" | "codex"`
+- `AgentStatus`: `"idle" | "thinking" | "executing" | "awaiting-confirmation"`
+- `ModeType`: `"auto" | "manual"`
+- `SidebarTab`: `"sessions" | "files"`
+- `DiffViewMode`: `"side-by-side" | "inline"`
+
+## Project（`project.ts`）
+
+```ts
+interface ProjectInfo {
+  id;
+  name;
+  path;
+  lastOpenedAt;
+}
+interface ProjectSummary extends ProjectInfo {
+  agent: ProjectAgent;
+}
+interface ProjectAgent {
+  id;
+  name;
+  type: "claude-code" | "codex";
+}
+type ProjectTemplate = "empty" | "git";
+interface CreateProjectForm {
+  name;
+  path;
+  template;
+  gitUrl?;
+}
+```
+
+## Pipeline（`pipeline.ts`）
+
+**核心实体：**
+
+```ts
+interface PipelineTemplate {
+  id;
+  name;
+  description;
+  source: "built-in" | "custom";
+  stages: PipelineStageConfig[];
+  isDefault: boolean;
+  createdAt;
+  updatedAt;
+}
+
+interface PipelineRun {
+  id;
+  projectId;
+  title;
+  templateId;
+  templateName;
+  triggerDescription;
+  status: "running" | "completed" | "failed" | "aborted";
+  stages: PipelineStageRun[];
+  currentStageIndex: number;
+  createdAt;
+  updatedAt;
+}
+```
+
+**Stage 类型：** `"discuss" | "code" | "test" | "review" | "deploy" | "custom"`
+
+**Stage 状态：** `"pending" | "running" | "passed" | "failed" | "skipped" | "waiting-approval"`
+
+**Gate 条件类型：** `"test-pass-rate" | "coverage-threshold" | "no-critical-review" | "manual-approval" | "custom-script"`
+
+**失败策略：** `"retry" | "pause" | "skip" | "abort"`
+
+## Integration（`integration.ts`）
+
+```ts
+interface IntegrationTool {
+  id;
+  name;
+  description;
+  categoryId: IntegrationCategoryId;
+  connectionType: "api-token" | "oauth";
+  connectionFields: ConnectionField[];
+  parameterFields: ToolParameterField[];
+  projectConfigFields: ToolParameterField[];
+  logoIcon;
+  logoColor;
+  comingSoon: boolean;
+}
+
+interface ToolConnection {
+  toolId;
+  status: "not-connected" | "connected" | "connecting";
+  accountName?;
+  connectedAt?;
+  credentials?;
+}
+
+interface CustomIntegration {
+  id;
+  name;
+  mcpServerUrl;
+  skillConfig;
+  createdAt;
+}
+```
+
+**集成分类：** `"project-management" | "source-control" | "ci-cd" | "deployment" | "communication" | "observability"`
+
+## Settings（`settings.ts`）
+
+```ts
+interface PreferencesConfig {
+  theme: "light" | "dark" | "system";
+  language: string;
+  defaultAgentMode: "auto" | "manual";
+  notificationMethods: ("system" | "sound" | "in-app")[];
+  autoSaveSession: boolean;
+  tokenStatsPeriod: "daily" | "weekly" | "monthly";
+  budgetAlert: { value: number; unit: "tokens" | "usd" };
+}
+
+interface AgentInfo {
+  id;
+  name;
+  description;
+  installed;
+  version?;
+  docsUrl;
+}
+```

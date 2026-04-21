@@ -25,47 +25,46 @@
 ```
 vortex-code/
 ├── electron/           # Electron 进程代码
-│   ├── main/           # 主进程
-│   │   └── index.ts    # 窗口创建、生命周期、IPC 监听
-│   └── preload/        # 预加载脚本
-│       ├── index.ts    # contextBridge 暴露 API
-│       └── index.d.ts  # 类型声明
-├── frontend/           # 渲染进程前端代码（详见 frontend/AGENTS.md）
-│   └── src/
+│   ├── main/           # 主进程，处理 窗口创建、生命周期、IPC 监听
+│   └── preload/        # 预加载脚本，包含 contextBridge 暴露 API、接口类型声明
+├── frontend/           # 前端，vite + vue3
 ├── build/              # 构建资源（图标、entitlements）
 ├── resources/          # 应用资源
 ├── vitest.config.mts   # Vitest 配置（ESM，.mts 后缀）
 ├── electron.vite.config.ts
 ├── electron-builder.yml
-└── tsconfig.web.json   # 前端 tsconfig（extends @electron-toolkit/tsconfig）
+├── tsconfig.web.json   # 前端 tsconfig（extends @electron-toolkit/tsconfig）
+└── tsconfig.node.json  # 后端 tsconfig（extends @electron-toolkit/tsconfig）
 ```
 
-## Electron 进程规范
+## 常用命令
 
-### 主进程 (`electron/main/`)
+```bash
+pnpm dev              # 启动开发服务器
+pnpm build            # 类型检查 + 完整构建
+pnpm typecheck        # 类型检查（Node + Web）
+pnpm lint             # ESLint 检查
+pnpm format           # Prettier 格式化
+pnpm test             # 运行所有测试（单次）
+pnpm test:watch       # 测试监听模式
+pnpm test:coverage    # 生成覆盖率报告
+```
 
-- 入口 `index.ts` 负责窗口创建、应用生命周期管理、IPC 监听
-- 使用 `@electron-toolkit/utils` 提供的工具函数（`electronApp`、`optimizer`、`is`）
-- 窗口配置：开发环境通过 `ELECTRON_RENDERER_URL` 加载远程 URL，生产环境加载本地 HTML
+## 文档归类
 
-### 预加载脚本 (`electron/preload/`)
+如需更多详细信息，Agent 可以主动查看下方的各类详细文档。
 
-- 使用 `contextBridge.exposeInMainWorld` 安全暴露 API
-- 默认暴露 `window.electron`（`@electron-toolkit/preload` 提供）和 `window.api`（自定义）
-- 类型声明在 `index.d.ts` 中维护，渲染进程通过该类型获得 `window.electron` 的类型提示
+- **架构文档** - [Architecture](./docs/Architecture.md)
+- **数据模型** - [DataModel](./docs/DataModel.md)
+- **IPC 通信** - [IPC](./docs/IPC.md)
+- **测试规范** - [Testing](./docs/Testing.md)
+- **编码规范** - [CodeStyle](./docs/CodeStyle.md)
 
-## IPC 通信规范
+## 功能需求规范（OpenSpec）
 
-- 渲染进程通过 `window.electron.ipcRenderer` 调用主进程
-- 主进程通过 `ipcMain.on` / `ipcMain.handle` 监听
-- 所有自定义 API 通过 `preload/index.ts` 的 `contextBridge.exposeInMainWorld` 暴露
-- 新增 IPC channel 时同步更新 `preload/index.d.ts` 中的类型声明
+`openspec/specs/` 是功能需求的权威来源，按功能模块分目录，每个目录下有一个 `spec.md`，包含 Requirements 和 Scenarios。
 
-## 前端规范
-
-前端渲染进程的详细编码约定、Vue 组件规范、路由规范、测试规范等，见：
-
-**[frontend/AGENTS.md](frontend/AGENTS.md)**
+实现或修改某功能时，先在 `openspec/specs/` 中找到对应模块的 `spec.md` 阅读，spec 中的 SHALL 是强制要求。`changes/archive/` 是已归档的历史变更，仅供了解演进背景，不作为当前实现依据。
 
 ## AI 助手工作准则
 
