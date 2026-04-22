@@ -10,7 +10,7 @@ export function registerProjectHandlers(): void {
     })
   );
 
-  ipcMain.handle(ProjectChannels.getById, ({ id }: { id: string }) =>
+  ipcMain.handle(ProjectChannels.getById, (_event, { id }: { id: string }) =>
     wrapHandler(async () => {
       // TODO: implement project retrieval
       void id;
@@ -20,7 +20,7 @@ export function registerProjectHandlers(): void {
 
   ipcMain.handle(
     ProjectChannels.create,
-    (input: { name: string; path: string; template: string; gitUrl?: string }) =>
+    (_event, input: { name: string; path: string; template: string; gitUrl?: string }) =>
       wrapHandler(async () => {
         // TODO: implement project creation
         void input;
@@ -30,7 +30,7 @@ export function registerProjectHandlers(): void {
 
   ipcMain.handle(
     ProjectChannels.update,
-    ({ id, patch }: { id: string; patch: Record<string, unknown> }) =>
+    (_event, { id, patch }: { id: string; patch: Record<string, unknown> }) =>
       wrapHandler(async () => {
         // TODO: implement project update
         void id;
@@ -39,14 +39,14 @@ export function registerProjectHandlers(): void {
       })
   );
 
-  ipcMain.handle(ProjectChannels.remove, ({ id }: { id: string }) =>
+  ipcMain.handle(ProjectChannels.remove, (_event, { id }: { id: string }) =>
     wrapHandler(async () => {
       // TODO: implement project removal
       void id;
     })
   );
 
-  ipcMain.handle(ProjectChannels.setActive, ({ id }: { id: string }) =>
+  ipcMain.handle(ProjectChannels.setActive, (_event, { id }: { id: string }) =>
     wrapHandler(async () => {
       // TODO: set active project
       void id;

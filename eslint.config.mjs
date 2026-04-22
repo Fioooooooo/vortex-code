@@ -15,7 +15,7 @@ try {
 }
 
 export default defineConfig(
-  { ignores: ["**/node_modules", "**/dist", "**/out"] },
+  { ignores: ["**/node_modules", "**/dist", "**/out", "**/data"] },
   tseslint.configs.recommended,
   eslintPluginVue.configs["flat/recommended"],
   {

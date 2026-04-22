@@ -4,3 +4,6 @@ pnpm-lock.yaml
 LICENSE.md
 
 typed-router.d.ts
+
+# 开发环境数据目录
+data/

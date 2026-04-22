@@ -1,8 +1,9 @@
 import { app, shell, BrowserWindow } from "electron";
 import { join } from "path";
-import { electronApp, optimizer, is } from "@electron-toolkit/utils";
+import { electronApp, optimizer, is, platform } from "@electron-toolkit/utils";
 import icon from "../../resources/icon.png?asset";
 import { registerAllHandlers } from "./ipc";
+import { getDataPath } from "./utils/paths";
 
 function createWindow(): void {
   // Create the browser window.
@@ -11,8 +12,8 @@ function createWindow(): void {
     height: 670,
     show: false,
     autoHideMenuBar: true,
-    ...(process.platform === "linux" ? { icon } : {}),
-    ...(process.platform === "darwin"
+    ...(platform.isLinux ? { icon } : {}),
+    ...(platform.isMacOS
       ? {
           titleBarStyle: "hidden" as const,
           trafficLightPosition: { x: 12, y: 10 },
@@ -47,7 +48,7 @@ function createWindow(): void {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
   // Set app user model id for windows
-  electronApp.setAppUserModelId("com.electron");
+  electronApp.setAppUserModelId("com.fyllocode.app");
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
@@ -56,12 +57,15 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window);
   });
 
+  // 设置数据存储路径
+  if (is.dev) {
+    app.setPath("userData", getDataPath());
+  }
+
   // Register all IPC handlers
   registerAllHandlers();
 
   createWindow();
-
-  console.log(app.getPath("userData"));
 
   app.on("activate", function () {
     // On macOS it's common to re-create a window in the app when the

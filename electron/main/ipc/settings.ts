@@ -10,7 +10,7 @@ export function registerSettingsHandlers(): void {
     })
   );
 
-  ipcMain.handle(SettingsChannels.update, (patch: Record<string, unknown>) =>
+  ipcMain.handle(SettingsChannels.update, (_event, patch: Record<string, unknown>) =>
     wrapHandler(async () => {
       // TODO: persist preferences
       void patch;

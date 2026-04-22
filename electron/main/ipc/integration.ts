@@ -9,7 +9,7 @@ export function registerIntegrationHandlers(): void {
     })
   );
 
-  ipcMain.handle(IntegrationChannels.getConnection, ({ toolId }: { toolId: string }) =>
+  ipcMain.handle(IntegrationChannels.getConnection, (_event, { toolId }: { toolId: string }) =>
     wrapHandler(async () => {
       void toolId;
       return null;
@@ -18,34 +18,39 @@ export function registerIntegrationHandlers(): void {
 
   ipcMain.handle(
     IntegrationChannels.connect,
-    (input: { toolId: string; credentials: Record<string, string> }) =>
+    (_event, input: { toolId: string; credentials: Record<string, string> }) =>
       wrapHandler(async () => {
         void input;
         return null;
       })
   );
 
-  ipcMain.handle(IntegrationChannels.disconnect, ({ toolId }: { toolId: string }) =>
+  ipcMain.handle(IntegrationChannels.disconnect, (_event, { toolId }: { toolId: string }) =>
     wrapHandler(async () => {
       void toolId;
     })
   );
 
-  ipcMain.handle(IntegrationChannels.listProjectConfigs, ({ projectId }: { projectId: string }) =>
-    wrapHandler(async () => {
-      void projectId;
-      return [];
-    })
+  ipcMain.handle(
+    IntegrationChannels.listProjectConfigs,
+    (_event, { projectId }: { projectId: string }) =>
+      wrapHandler(async () => {
+        void projectId;
+        return [];
+      })
   );
 
   ipcMain.handle(
     IntegrationChannels.setProjectConfig,
-    (input: {
-      projectId: string;
-      toolId: string;
-      enabled: boolean;
-      overrides: Record<string, unknown>;
-    }) =>
+    (
+      _event,
+      input: {
+        projectId: string;
+        toolId: string;
+        enabled: boolean;
+        overrides: Record<string, unknown>;
+      }
+    ) =>
       wrapHandler(async () => {
         void input;
         return null;
@@ -60,14 +65,14 @@ export function registerIntegrationHandlers(): void {
 
   ipcMain.handle(
     IntegrationChannels.createCustom,
-    (input: { name: string; mcpServerUrl: string; skillConfig: string }) =>
+    (_event, input: { name: string; mcpServerUrl: string; skillConfig: string }) =>
       wrapHandler(async () => {
         void input;
         return null;
       })
   );
 
-  ipcMain.handle(IntegrationChannels.removeCustom, ({ id }: { id: string }) =>
+  ipcMain.handle(IntegrationChannels.removeCustom, (_event, { id }: { id: string }) =>
     wrapHandler(async () => {
       void id;
     })
