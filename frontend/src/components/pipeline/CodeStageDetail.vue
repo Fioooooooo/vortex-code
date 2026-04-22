@@ -48,47 +48,19 @@ const changeTypeColor: Record<string, string> = {
           :key="msg.id"
           class="rounded-md border border-default bg-muted/20 p-3 text-sm"
         >
-          <template v-if="msg.type === 'file-op'">
-            <div class="flex items-center gap-2 text-muted text-xs mb-1">
-              <UIcon name="i-lucide-file-code" class="w-3.5 h-3.5" />
-              File Operations
-            </div>
-            <div class="space-y-1">
-              <div
-                v-for="op in msg.operations"
-                :key="op.filePath"
-                class="flex items-center gap-2 text-sm"
-              >
-                <UIcon
-                  :name="changeTypeIcon[op.changeType] ?? 'i-lucide-file'"
-                  class="w-3.5 h-3.5"
-                  :class="changeTypeColor[op.changeType] ?? 'text-default'"
-                />
-                <span class="text-default">{{ op.filePath }}</span>
-                <span class="text-xs text-muted">{{ op.summary }}</span>
+          <template v-for="(part, idx) in msg.parts" :key="idx">
+            <template v-if="part.type === 'tool-invocation'">
+              <div class="flex items-center gap-2 text-muted text-xs mb-1">
+                <UIcon name="i-lucide-terminal" class="w-3.5 h-3.5" />
+                Tool call
               </div>
-            </div>
-          </template>
-          <template v-else-if="msg.type === 'command'">
-            <div class="flex items-center gap-2 text-muted text-xs mb-1">
-              <UIcon name="i-lucide-terminal" class="w-3.5 h-3.5" />
-              Command
-            </div>
-            <code class="block bg-default rounded px-2 py-1 text-xs text-default">{{
-              msg.command
-            }}</code>
-            <p class="text-xs mt-1" :class="msg.success ? 'text-success' : 'text-error'">
-              {{ msg.output }}
-            </p>
-          </template>
-          <template v-else-if="msg.type === 'user' || msg.type === 'text'">
-            <p class="text-default whitespace-pre-wrap">{{ msg.content }}</p>
-          </template>
-          <template v-else-if="msg.type === 'confirm'">
-            <p class="text-xs text-muted">{{ msg.description }}</p>
-          </template>
-          <template v-else>
-            <p class="text-xs text-muted">{{ msg.type }}</p>
+            </template>
+            <template v-else-if="part.type === 'reasoning'">
+              <pre class="whitespace-pre-wrap text-xs text-muted">{{ part.text }}</pre>
+            </template>
+            <template v-else-if="part.type === 'text'">
+              <p class="text-default whitespace-pre-wrap">{{ part.text }}</p>
+            </template>
           </template>
         </div>
       </div>

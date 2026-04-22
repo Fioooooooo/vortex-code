@@ -192,26 +192,31 @@ function createMockMessages(): Message[] {
   return [
     {
       id: "msg-1",
-      sessionId: "discuss-session",
-      type: "user",
-      content: "实现用户头像上传功能，支持 JPG/PNG 格式，最大 5MB",
-      createdAt: new Date(Date.now() - 1000 * 60 * 10),
+      role: "user",
+      parts: [{ type: "text", text: "实现用户头像上传功能，支持 JPG/PNG 格式，最大 5MB" }],
+      metadata: { sessionId: "discuss-session", createdAt: new Date(Date.now() - 1000 * 60 * 10) },
     },
     {
       id: "msg-2",
-      sessionId: "discuss-session",
-      type: "thinking",
-      summary: "分析需求中...",
-      content: "1. 需要支持文件上传\n2. 需要图片格式验证\n3. 需要大小限制\n4. 需要存储方案",
-      createdAt: new Date(Date.now() - 1000 * 60 * 9),
+      role: "assistant",
+      parts: [
+        {
+          type: "reasoning",
+          text: "1. 需要支持文件上传\n2. 需要图片格式验证\n3. 需要大小限制\n4. 需要存储方案",
+        },
+      ],
+      metadata: { sessionId: "discuss-session", createdAt: new Date(Date.now() - 1000 * 60 * 9) },
     },
     {
       id: "msg-3",
-      sessionId: "discuss-session",
-      type: "text",
-      content:
-        "已分析完成。建议方案：\n\n- 前端使用 input type=file 组件\n- 后端使用 multer 处理上传\n- 存储到本地文件系统\n- 生成缩略图\n\n是否确认此方案？",
-      createdAt: new Date(Date.now() - 1000 * 60 * 8),
+      role: "assistant",
+      parts: [
+        {
+          type: "text",
+          text: "已分析完成。建议方案：\n\n- 前端使用 input type=file 组件\n- 后端使用 multer 处理上传\n- 存储到本地文件系统\n- 生成缩略图\n\n是否确认此方案？",
+        },
+      ],
+      metadata: { sessionId: "discuss-session", createdAt: new Date(Date.now() - 1000 * 60 * 8) },
     },
   ];
 }

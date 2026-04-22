@@ -140,65 +140,31 @@ function generateMockMessages(sessionId: string): Message[] {
   return [
     {
       id: `msg-${sessionId}-1`,
-      sessionId,
-      type: "user",
-      content: "帮我实现用户登录模块，需要支持 JWT token 和本地存储",
-      createdAt: new Date(now.getTime() - 1000 * 60 * 10),
+      role: "user",
+      parts: [{ type: "text", text: "帮我实现用户登录模块，需要支持 JWT token 和本地存储" }],
+      metadata: { sessionId, createdAt: new Date(now.getTime() - 1000 * 60 * 10) },
     },
     {
       id: `msg-${sessionId}-2`,
-      sessionId,
-      type: "thinking",
-      summary: "Analyzing project structure...",
-      content:
-        "1. 检查现有项目结构\n2. 识别 Vue 3 + Pinia 技术栈\n3. 确定需要在 stores/ 目录下创建 auth store\n4. 计划创建 login composable\n5. 需要添加本地存储持久化逻辑",
-      createdAt: new Date(now.getTime() - 1000 * 60 * 9),
+      role: "assistant",
+      parts: [
+        {
+          type: "reasoning",
+          text: "1. 检查现有项目结构\n2. 识别 Vue 3 + Pinia 技术栈\n3. 确定需要在 stores/ 目录下创建 auth store\n4. 计划创建 login composable\n5. 需要添加本地存储持久化逻辑",
+        },
+      ],
+      metadata: { sessionId, createdAt: new Date(now.getTime() - 1000 * 60 * 9) },
     },
     {
       id: `msg-${sessionId}-3`,
-      sessionId,
-      type: "file-op",
-      operations: [
+      role: "assistant",
+      parts: [
         {
-          filePath: "src/stores/auth.ts",
-          changeType: "added",
-          summary: "+42 lines",
-          diffLines: generateMockDiffLines(),
-        },
-        {
-          filePath: "src/composables/useAuth.ts",
-          changeType: "added",
-          summary: "+28 lines",
-          diffLines: generateMockDiffLines(),
+          type: "text",
+          text: "我已经为你实现了用户登录模块：\n\n- 创建了 `src/stores/auth.ts` Pinia store\n- 创建了 `src/composables/useAuth.ts` composable\n- 支持 JWT token 管理\n- 添加了 localStorage 持久化\n\n你可以通过 `useAuth()` 获取登录状态和方法。",
         },
       ],
-      createdAt: new Date(now.getTime() - 1000 * 60 * 8),
-    },
-    {
-      id: `msg-${sessionId}-4`,
-      sessionId,
-      type: "command",
-      command: "npm install jsonwebtoken",
-      output: "added 12 packages in 2.3s",
-      success: true,
-      createdAt: new Date(now.getTime() - 1000 * 60 * 7),
-    },
-    {
-      id: `msg-${sessionId}-5`,
-      sessionId,
-      type: "text",
-      content:
-        "我已经为你实现了用户登录模块：\n\n- 创建了 `src/stores/auth.ts` Pinia store\n- 创建了 `src/composables/useAuth.ts` composable\n- 支持 JWT token 管理\n- 添加了 localStorage 持久化\n\n你可以通过 `useAuth()` 获取登录状态和方法。",
-      createdAt: new Date(now.getTime() - 1000 * 60 * 6),
-    },
-    {
-      id: `msg-${sessionId}-6`,
-      sessionId,
-      type: "confirm",
-      description: "需要运行测试来验证登录模块的正确性",
-      action: "run tests",
-      resolved: false,
-      createdAt: new Date(now.getTime() - 1000 * 60 * 5),
+      metadata: { sessionId, createdAt: new Date(now.getTime() - 1000 * 60 * 6) },
     },
   ];
 }
@@ -370,10 +336,9 @@ export const useChatStore = defineStore("chat", () => {
     const session = activeSession.value;
     const userMsg: Message = {
       id: `msg-${Date.now()}-user`,
-      sessionId: session.id,
-      type: "user",
-      content,
-      createdAt: new Date(),
+      role: "user",
+      parts: [{ type: "text", text: content }],
+      metadata: { sessionId: session.id, createdAt: new Date() },
     };
     session.messages.push(userMsg);
     session.turnCount++;
@@ -385,24 +350,18 @@ export const useChatStore = defineStore("chat", () => {
       if (!activeSession.value) return;
       const thinkingMsg: Message = {
         id: `msg-${Date.now()}-thinking`,
-        sessionId: session.id,
-        type: "thinking",
-        summary: "Processing your request...",
-        content: "1. Analyzing the request\n2. Searching codebase\n3. Planning implementation",
-        createdAt: new Date(),
+        role: "assistant",
+        parts: [
+          {
+            type: "reasoning",
+            text: "1. Analyzing the request\n2. Searching codebase\n3. Planning implementation",
+          },
+        ],
+        metadata: { sessionId: session.id, createdAt: new Date() },
       };
       activeSession.value.messages.push(thinkingMsg);
       agentStatus.value = "idle";
     }, 1500);
-  }
-
-  function resolveConfirm(messageId: string, allowed: boolean): void {
-    if (!activeSession.value) return;
-    const msg = activeSession.value.messages.find((m) => m.id === messageId);
-    if (msg && msg.type === "confirm") {
-      msg.resolved = true;
-      msg.allowed = allowed;
-    }
   }
 
   // Diff panel actions
@@ -460,7 +419,6 @@ export const useChatStore = defineStore("chat", () => {
     deleteSession,
     archiveSession,
     sendMessage,
-    resolveConfirm,
     openDiffPanel,
     closeDiffPanel,
     setDiffViewMode,

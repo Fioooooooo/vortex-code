@@ -19,10 +19,10 @@ import { computed } from "vue";
         v-for="msg in messages"
         :key="msg.id"
         class="flex gap-3"
-        :class="msg.type === 'user' ? 'justify-end' : 'justify-start'"
+        :class="msg.role === 'user' ? 'justify-end' : 'justify-start'"
       >
         <div
-          v-if="msg.type !== 'user'"
+          v-if="msg.role !== 'user'"
           class="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0"
         >
           <UIcon name="i-lucide-bot" class="w-4 h-4 text-primary" />
@@ -31,29 +31,23 @@ import { computed } from "vue";
         <div
           class="max-w-[80%] rounded-lg px-3 py-2 text-sm"
           :class="
-            msg.type === 'user'
+            msg.role === 'user'
               ? 'bg-primary text-primary-inverse'
               : 'bg-muted border border-default text-default'
           "
         >
-          <template v-if="msg.type === 'thinking'">
-            <p class="font-medium text-xs text-muted mb-1">{{ msg.summary }}</p>
-            <pre class="whitespace-pre-wrap text-xs">{{ msg.content }}</pre>
-          </template>
-          <template v-else-if="msg.type === 'user' || msg.type === 'text'">
-            <p class="whitespace-pre-wrap">{{ msg.content }}</p>
-          </template>
-          <template v-else-if="msg.type === 'confirm'">
-            <p class="text-xs text-muted">{{ msg.description }}</p>
-            <p class="text-sm mt-1">{{ msg.action }}</p>
-          </template>
-          <template v-else>
-            <p class="text-xs text-muted">{{ msg.type }}</p>
+          <template v-for="(part, idx) in msg.parts" :key="idx">
+            <template v-if="part.type === 'reasoning'">
+              <pre class="whitespace-pre-wrap text-xs">{{ part.text }}</pre>
+            </template>
+            <template v-else-if="part.type === 'text'">
+              <p class="whitespace-pre-wrap">{{ part.text }}</p>
+            </template>
           </template>
         </div>
 
         <div
-          v-if="msg.type === 'user'"
+          v-if="msg.role === 'user'"
           class="w-7 h-7 rounded-full bg-secondary/10 flex items-center justify-center shrink-0"
         >
           <UIcon name="i-lucide-user" class="w-4 h-4 text-secondary" />

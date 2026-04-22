@@ -1,3 +1,5 @@
+import type { UIMessage } from "ai";
+
 export type AgentType = "claude-code" | "codex";
 export type AgentStatus = "idle" | "thinking" | "executing" | "awaiting-confirmation";
 export type FileChangeType = "added" | "modified" | "deleted";
@@ -5,13 +7,6 @@ export type DiffLineType = "added" | "removed" | "context";
 export type ModeType = "auto" | "manual";
 export type SidebarTab = "sessions" | "files";
 export type DiffViewMode = "side-by-side" | "inline";
-
-export interface Attachment {
-  id: string;
-  type: "image" | "file";
-  name: string;
-  url?: string;
-}
 
 export interface DiffLine {
   type: DiffLineType;
@@ -36,58 +31,12 @@ export interface FileNode {
   changeType?: FileChangeType;
 }
 
-export interface BaseMessage {
-  id: string;
+export interface MessageMeta {
   sessionId: string;
-  type: MessageType;
   createdAt: Date;
 }
 
-export interface UserMessage extends BaseMessage {
-  type: "user";
-  content: string;
-  attachments?: Attachment[];
-}
-
-export interface ThinkingMessage extends BaseMessage {
-  type: "thinking";
-  summary: string;
-  content: string;
-}
-
-export interface FileOpMessage extends BaseMessage {
-  type: "file-op";
-  operations: FileChange[];
-}
-
-export interface CommandMessage extends BaseMessage {
-  type: "command";
-  command: string;
-  output: string;
-  success: boolean;
-}
-
-export interface ConfirmMessage extends BaseMessage {
-  type: "confirm";
-  description: string;
-  action: string;
-  resolved: boolean;
-  allowed?: boolean;
-}
-
-export interface TextMessage extends BaseMessage {
-  type: "text";
-  content: string;
-}
-
-export type Message =
-  | UserMessage
-  | ThinkingMessage
-  | FileOpMessage
-  | CommandMessage
-  | ConfirmMessage
-  | TextMessage;
-export type MessageType = Message["type"];
+export type Message = UIMessage<MessageMeta>;
 
 export interface Session {
   id: string;
