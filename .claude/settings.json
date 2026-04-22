@@ -20,6 +20,7 @@
       "Bash(git diff:*)",
       "Bash(git tag:*)",
       "Bash(openspec:*)",
+      "Bash(pnpm typecheck:*)",
       "Skill(git:commit)",
       "Skill(openspec:*)"
     ],

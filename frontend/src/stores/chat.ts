@@ -6,7 +6,7 @@ import type {
   FileNode,
   FileChange,
   AgentInfo,
-  AgentStatus,
+  ChatStatus,
   TokenUsage,
   ModeType,
   SidebarTab,
@@ -241,7 +241,7 @@ export const useChatStore = defineStore("chat", () => {
     type: "claude-code",
     name: "Claude Code",
   });
-  const agentStatus = ref<AgentStatus>("thinking");
+  const agentStatus = ref<ChatStatus>("ready");
   const mode = ref<ModeType>("manual");
   const tokenUsage = ref<TokenUsage>({
     input: 12450,
@@ -334,6 +334,7 @@ export const useChatStore = defineStore("chat", () => {
   function sendMessage(content: string): void {
     if (!activeSession.value) return;
     const session = activeSession.value;
+
     const userMsg: Message = {
       id: `msg-${Date.now()}-user`,
       role: "user",
@@ -344,24 +345,67 @@ export const useChatStore = defineStore("chat", () => {
     session.turnCount++;
     session.updatedAt = new Date();
 
-    // Simulate agent response
-    agentStatus.value = "thinking";
-    setTimeout(() => {
-      if (!activeSession.value) return;
-      const thinkingMsg: Message = {
-        id: `msg-${Date.now()}-thinking`,
-        role: "assistant",
-        parts: [
-          {
-            type: "reasoning",
-            text: "1. Analyzing the request\n2. Searching codebase\n3. Planning implementation",
-          },
-        ],
-        metadata: { sessionId: session.id, createdAt: new Date() },
-      };
-      activeSession.value.messages.push(thinkingMsg);
-      agentStatus.value = "idle";
-    }, 1500);
+    // Insert placeholder assistant message
+    const placeholderId = `msg-${Date.now()}-assistant`;
+    const placeholder: Message = {
+      id: placeholderId,
+      role: "assistant",
+      parts: [{ type: "text", text: "" }],
+      metadata: { sessionId: session.id, createdAt: new Date() },
+    };
+    session.messages.push(placeholder);
+    agentStatus.value = "submitted";
+
+    window.api.chat.streamMessage(session.id, session.projectId, content, {
+      onChunk(data) {
+        // First chunk: transition submitted → streaming
+        if (agentStatus.value === "submitted") {
+          agentStatus.value = "streaming";
+        }
+
+        const idx = session.messages.findIndex((m) => m.id === placeholderId);
+
+        if (data.kind === "text_delta") {
+          // Append text to placeholder
+          const msg = idx !== -1 ? session.messages[idx] : null;
+          if (msg) {
+            const textPart = msg.parts.find((p) => p.type === "text");
+            if (textPart && textPart.type === "text") {
+              textPart.text += data.text;
+            }
+          }
+        } else if (data.kind === "message_upsert") {
+          // Replace placeholder with authoritative message
+          if (idx !== -1) {
+            session.messages.splice(idx, 1, data.message);
+          } else {
+            session.messages.push(data.message);
+          }
+        } else if (data.kind === "message_patch") {
+          // Back-fill tool-invocation result
+          const msgIdx = session.messages.findIndex((m) => m.id === data.id);
+          if (msgIdx !== -1) {
+            session.messages[msgIdx] = { ...session.messages[msgIdx], parts: data.parts };
+          }
+        }
+      },
+      onDone(done) {
+        agentStatus.value = "ready";
+        tokenUsage.value = {
+          ...tokenUsage.value,
+          output: tokenUsage.value.output + done.totalTokens,
+          total: tokenUsage.value.total + done.totalTokens,
+        };
+        session.updatedAt = new Date();
+      },
+      onError(err) {
+        agentStatus.value = "error";
+        // Remove placeholder on error
+        const errIdx = session.messages.findIndex((m) => m.id === placeholderId);
+        if (errIdx !== -1) session.messages.splice(errIdx, 1);
+        console.error("Stream error:", err.code, err.message);
+      },
+    });
   }
 
   // Diff panel actions
@@ -393,11 +437,6 @@ export const useChatStore = defineStore("chat", () => {
     mode.value = newMode;
   }
 
-  // Agent actions
-  function setAgentStatus(status: AgentStatus): void {
-    agentStatus.value = status;
-  }
-
   return {
     currentAgent,
     agentStatus,
@@ -425,6 +464,5 @@ export const useChatStore = defineStore("chat", () => {
     toggleDiffPanel,
     setSidebarTab,
     setMode,
-    setAgentStatus,
   };
 });

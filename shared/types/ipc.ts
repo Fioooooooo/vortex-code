@@ -16,6 +16,12 @@ export interface StreamChunkData {
   tokenCount: number;
 }
 
+export type MessageChunkData =
+  | { kind: "text_delta"; text: string }
+  | { kind: "message_upsert"; message: import("@shared/types/chat").Message }
+  | { kind: "message_patch"; id: string; parts: import("@shared/types/chat").Message["parts"] }
+  | { kind: "status"; agentStatus: import("ai").ChatStatus };
+
 // Event push message type for ipcRenderer.on subscriptions
 export interface EventMessage<T = unknown> {
   type: string;

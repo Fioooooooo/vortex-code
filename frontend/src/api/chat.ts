@@ -1,8 +1,8 @@
-import type { IpcResponse, StreamChunkData } from "@shared/types/ipc";
+import type { IpcResponse, MessageChunkData } from "@shared/types/ipc";
 import type { Session, Message } from "@shared/types/chat";
 
 export interface StreamCallbacks {
-  onChunk: (data: StreamChunkData) => void;
+  onChunk: (data: MessageChunkData) => void;
   onDone: (data: { totalTokens: number }) => void;
   onError: (error: { code: string; message: string }) => void;
 }
@@ -36,7 +36,12 @@ export const chatApi = {
     return window.api.chat.sendMessage(input);
   },
 
-  streamMessage(sessionId: string, prompt: string, callbacks: StreamCallbacks): () => void {
-    return window.api.chat.streamMessage(sessionId, prompt, callbacks);
+  streamMessage(
+    sessionId: string,
+    projectId: string,
+    prompt: string,
+    callbacks: StreamCallbacks
+  ): () => void {
+    return window.api.chat.streamMessage(sessionId, projectId, prompt, callbacks);
   },
 };

@@ -1,7 +1,7 @@
-import type { UIMessage } from "ai";
+import type { UIMessage, ChatStatus } from "ai";
 
+export type { ChatStatus };
 export type AgentType = "claude-code" | "codex";
-export type AgentStatus = "idle" | "thinking" | "executing" | "awaiting-confirmation";
 export type FileChangeType = "added" | "modified" | "deleted";
 export type DiffLineType = "added" | "removed" | "context";
 export type ModeType = "auto" | "manual";
