@@ -12,8 +12,8 @@ function generateMockRecentProjects(): RecentProject[] {
   return [
     {
       id: "project-1",
-      name: "vortex-code-frontend",
-      path: "~/projects/vortex-code-frontend",
+      name: "FylloCode-frontend",
+      path: "~/projects/FylloCode-frontend",
       lastOpenedAt: new Date(now.getTime() - 2 * 60 * 60 * 1000),
     },
     {
@@ -41,8 +41,8 @@ function generateMockProjectSummaries(): ProjectSummary[] {
   return [
     {
       id: "project-1",
-      name: "vortex-code-frontend",
-      path: "~/projects/vortex-code-frontend",
+      name: "FylloCode-frontend",
+      path: "~/projects/FylloCode-frontend",
       lastOpenedAt: new Date(),
       agent: { id: "agent-1", name: "Claude Code", type: "claude-code" },
     },

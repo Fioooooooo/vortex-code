@@ -1,6 +1,6 @@
 ## Context
 
-Vortex Code 是一个 Nuxt 4 + Electron 桌面应用，已有 app-shell 路由、Activity Bar、Workspace、Pipeline、Integrations 等页面。当前缺少全局设置入口。技术栈：Nuxt 4、@nuxt/ui v4、Pinia、lucide-vue-next、TypeScript。
+FylloCode 是一个 Nuxt 4 + Electron 桌面应用，已有 app-shell 路由、Activity Bar、Workspace、Pipeline、Integrations 等页面。当前缺少全局设置入口。技术栈：Nuxt 4、@nuxt/ui v4、Pinia、lucide-vue-next、TypeScript。
 
 ## Goals / Non-Goals
 

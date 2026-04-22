@@ -2,7 +2,7 @@
 
 ## 项目概述
 
-**Vortex Code** — 基于 Electron + Vue 3 + TypeScript 的桌面应用。使用 electron-vite 构建，@nuxt/ui v4 作为 UI 组件库，vue-router/auto 实现文件系统路由。
+**FylloCode** — 基于 Electron + Vue 3 + TypeScript 的桌面应用。使用 electron-vite 构建，@nuxt/ui v4 作为 UI 组件库，vue-router/auto 实现文件系统路由。
 
 ## 技术栈
 
@@ -21,7 +21,7 @@
 ## 目录结构
 
 ```
-vortex-code/
+FylloCode/
 ├── electron/           # Electron 进程代码
 │   ├── main/           # 主进程，处理 窗口创建、生命周期、IPC 监听
 │   └── preload/        # 预加载脚本，包含 contextBridge 暴露 API、接口类型声明

@@ -44,7 +44,7 @@ function formatTime(date: Date): string {
         <div class="w-16 h-16 mx-auto mb-4 rounded-xl bg-primary flex items-center justify-center">
           <UIcon name="i-lucide-code-2" class="w-8 h-8 text-white" />
         </div>
-        <h1 class="text-3xl font-bold text-highlighted">Vortex Code</h1>
+        <h1 class="text-3xl font-bold text-highlighted">FylloCode</h1>
         <p class="text-muted mt-1">Autonomous Coding Pipeline</p>
       </div>
 

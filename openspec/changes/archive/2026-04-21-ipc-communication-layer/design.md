@@ -1,6 +1,6 @@
 ## Context
 
-Vortex-Code 是一个 Electron + Vue 3 桌面应用（electron-vite 构建），定位为 AI 编程助手。前端已完成 5 个页面（Welcome、Chat、Pipeline、Integration、Settings）的 UI 和 Pinia store，类型定义覆盖了 chat、pipeline、integration、settings、project 五个业务域。但主进程与渲染进程之间几乎没有通信——preload 暴露的 `window.api` 是空对象，main 仅有一个测试用 `ping` handler。所有数据均为 store 内的 mock 数据。
+FylloCode 是一个 Electron + Vue 3 桌面应用（electron-vite 构建），定位为 AI 编程助手。前端已完成 5 个页面（Welcome、Chat、Pipeline、Integration、Settings）的 UI 和 Pinia store，类型定义覆盖了 chat、pipeline、integration、settings、project 五个业务域。但主进程与渲染进程之间几乎没有通信——preload 暴露的 `window.api` 是空对象，main 仅有一个测试用 `ping` handler。所有数据均为 store 内的 mock 数据。
 
 技术栈约束：
 

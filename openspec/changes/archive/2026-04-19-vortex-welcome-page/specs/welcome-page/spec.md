@@ -12,12 +12,12 @@ The system SHALL display the Welcome page in full-screen when no project is curr
 
 ### Requirement: Welcome page shows brand identity
 
-The system SHALL display the Vortex Code logo, product name, and tagline centered at the top of the Welcome page.
+The system SHALL display the FylloCode logo, product name, and tagline centered at the top of the Welcome page.
 
 #### Scenario: Brand identity is visible
 
 - **WHEN** the Welcome page is displayed
-- **THEN** the logo, "Vortex Code" text, and tagline "Autonomous Coding Pipeline" are visible
+- **THEN** the logo, "FylloCode" text, and tagline "Autonomous Coding Pipeline" are visible
 - **AND** they are horizontally centered
 
 ### Requirement: Welcome page provides action buttons

@@ -8,7 +8,7 @@ TBD - created by archiving change settings-page. Update Purpose after archive.
 
 ### Requirement: Agent 卡片列表展示
 
-Agents tab SHALL 以纵向卡片列表展示 vortex-code 支持的所有 CLI agent：Claude Code、Codex、Gemini CLI、OpenCode。每张卡片 SHALL 包含：左侧 agent 图标与名称、名称下方一行描述文字；右侧安装状态标识。卡片不可展开，无配置项，无 Add Agent 操作。
+Agents tab SHALL 以纵向卡片列表展示 FylloCode 支持的所有 CLI agent：Claude Code、Codex、Gemini CLI、OpenCode。每张卡片 SHALL 包含：左侧 agent 图标与名称、名称下方一行描述文字；右侧安装状态标识。卡片不可展开，无配置项，无 Add Agent 操作。
 
 #### Scenario: 已安装 agent 展示
 

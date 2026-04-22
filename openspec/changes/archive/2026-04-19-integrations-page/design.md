@@ -1,6 +1,6 @@
 ## Context
 
-Vortex Code 的前端基于 Vue 3 + Pinia + Nuxt UI + vue-router (file-based routing) 构建。当前 `/integration` 路由已存在但仅展示占位文案。Activity Bar 中存在 Extension 导航项指向 `/extension`（该路由不存在）。
+FylloCode 的前端基于 Vue 3 + Pinia + Nuxt UI + vue-router (file-based routing) 构建。当前 `/integration` 路由已存在但仅展示占位文案。Activity Bar 中存在 Extension 导航项指向 `/extension`（该路由不存在）。
 
 项目已有成熟的 store / types 分层模式：
 

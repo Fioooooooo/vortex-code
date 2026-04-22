@@ -1,6 +1,6 @@
 ## Context
 
-Vortex Code 是一个基于 Vue 3 + Nuxt 的 IDE 前端应用。当前启动后直接进入空白 Workspace，没有引导用户打开或创建项目的入口。本项目需要实现一个启动页，在没有项目打开时全屏展示，提供品牌标识、操作入口和最近项目历史。
+FylloCode 是一个基于 Vue 3 + Nuxt 的 IDE 前端应用。当前启动后直接进入空白 Workspace，没有引导用户打开或创建项目的入口。本项目需要实现一个启动页，在没有项目打开时全屏展示，提供品牌标识、操作入口和最近项目历史。
 
 技术栈约束：Vue 3 Composition API、Nuxt 4、Pinia、@nuxt/ui v4、TypeScript。所有与系统交互（如文件选择）暂时通过 store action 中的 mock 实现，未来可接入 Electron IPC。
 

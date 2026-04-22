@@ -1,6 +1,6 @@
 ## Context
 
-Vortex Code 是一个基于 Nuxt 4 + Nuxt UI v4 构建的桌面端应用前端项目。目前已完成 welcome 页面（项目创建、最近项目列表）和基础项目搭建（Pinia、Vitest、@nuxt/ui）。用户从 welcome 页面进入某个项目后，需要一个功能完整的 Workspace 页面作为与 AI agent 交互的主界面。
+FylloCode 是一个基于 Nuxt 4 + Nuxt UI v4 构建的桌面端应用前端项目。目前已完成 welcome 页面（项目创建、最近项目列表）和基础项目搭建（Pinia、Vitest、@nuxt/ui）。用户从 welcome 页面进入某个项目后，需要一个功能完整的 Workspace 页面作为与 AI agent 交互的主界面。
 
 当前状态：
 

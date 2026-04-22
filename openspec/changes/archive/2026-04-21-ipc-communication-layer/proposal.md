@@ -1,6 +1,6 @@
 ## Why
 
-Vortex-Code 的前端目前使用 Pinia store 中的 mock 数据驱动 UI，主进程仅有一个测试用的 `ping` handler，preload 暴露的 `window.api` 是空对象。要让应用真正运行起来（AI 聊天、项目管理、Pipeline 执行、集成工具连接、设置持久化），必须建立一套完整的 IPC 通信层。现在前端 UI 和类型定义已经基本成型，是搭建通信基础设施的最佳时机。
+FylloCode 的前端目前使用 Pinia store 中的 mock 数据驱动 UI，主进程仅有一个测试用的 `ping` handler，preload 暴露的 `window.api` 是空对象。要让应用真正运行起来（AI 聊天、项目管理、Pipeline 执行、集成工具连接、设置持久化），必须建立一套完整的 IPC 通信层。现在前端 UI 和类型定义已经基本成型，是搭建通信基础设施的最佳时机。
 
 ## What Changes
 
