@@ -59,12 +59,32 @@ pnpm test:coverage    # 生成覆盖率报告
 - **IPC 通信** - [IPC](./docs/IPC.md)
 - **测试规范** - [Testing](./docs/Testing.md)
 - **编码规范** - [CodeStyle](./docs/CodeStyle.md)
+- **OpenSpec 使用规范** - [OpenSpec](./docs/OpenSpec.md)
+
+若 Agent 准备开展分析、设计、实现、重构、测试或其他 action，应先主动查阅与任务相关的现有文档，再决定下一步。
 
 ## 功能需求规范（OpenSpec）
 
 `openspec/specs/` 是功能需求的权威来源，按功能模块分目录，每个目录下有一个 `spec.md`，包含 Requirements 和 Scenarios。
 
 实现或修改某功能时，先在 `openspec/specs/` 中找到对应模块的 `spec.md` 阅读，spec 中的 SHALL 是强制要求。`changes/archive/` 是已归档的历史变更，仅供了解演进背景，不作为当前实现依据。
+
+### 何时使用 OpenSpec
+
+所有 Agent 默认遵循以下简版规则，无需额外确认：
+
+- **涉及已有功能改动时，先读 spec**：只要改动触及已有页面、交互流程、状态流转、IPC、共享类型或既有 bug，先阅读对应 `openspec/specs/<capability>/spec.md`。
+- **涉及功能定义变化时，必须先加载 `openspec-propose` skill**：新增功能；修改用户可见行为、交互语义、默认值、空态/异常态；修改数据结构、存储格式、IPC 契约、共享类型、公共接口；修改跨模块职责边界；这类改动必须先加载 `openspec-propose` skill，并按该 skill 的流程创建 change，再进入实现。
+- **涉及运行时基础设施或横切工程约束时，也必须先加载 `openspec-propose` skill**：新增或修改 logging、error handling、配置加载、持久化路径规则、跨进程统一能力、全局安全约束等系统级行为约束时，即使不直接涉及页面、交互或 IPC 公共接口，也必须先加载 `openspec-propose` skill，并按该 skill 的流程创建 change，再进入实现。
+- **纯实现细节改动通常不用建 change**：样式微调但不改交互、局部重构但不改行为、测试补充、日志与注释修正、类型补强、内部实现替换但外部输入输出不变，这类改动通常可直接实施。
+- **bug 修复按是否改变 requirement 判断**：如果只是实现偏差，按现有 spec 修复；如果修复后需要新增或修改 requirement/scenario，先建 change。
+- **拿不准时先求证，再主动询问用户**：如果无法明确判断这是“实现变化”还是“功能定义变化”，先查相关 spec、代码、文档与已有 change；若证据足以说明只是实现细节，则可直接实施；若求证后仍无法形成单一合理结论，或无法排除功能定义、系统级约束或公共契约变化，应主动询问用户，而不是自行假定。
+
+一句话判断：
+
+> 改的是“系统应该如何工作”，就用 OpenSpec change；改的只是“代码如何实现”，通常不用建 change。
+
+详细规则见 [OpenSpec 使用规范](./docs/OpenSpec.md)。
 
 ## AI 助手行为总纲（八荣八耻）
 
@@ -84,7 +104,7 @@ pnpm test:coverage    # 生成覆盖率报告
 以下准则用于约束 AI 助手的具体行为，目标是在保证质量的前提下主动推进工作，避免无谓停顿。
 
 1. **先读后改，先证后断**
-   修改前应先阅读相关代码、类型、文档与 spec；能从现有实现中得到明确依据的，不得凭空假设。
+   在制定 action 或修改代码前，应先阅读相关代码、类型、文档与 spec；能从现有实现中得到明确依据的，不得凭空假设。
 
 2. **优先自主推进，避免过度确认**
    对普通实现细节、局部重构、已有模式复用、低风险命名与结构调整，应基于现有上下文直接推进，不必事事确认。
