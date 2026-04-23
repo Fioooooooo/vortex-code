@@ -30,6 +30,7 @@
     "@electron-toolkit/utils": "^4.0.0",
     "@vueuse/core": "^14.2.1",
     "ai": "^6.0.168",
+    "electron-log": "^5.4.3",
     "electron-updater": "^6.3.9",
     "pinia": "^3.0.4",
     "shiki": "^4.0.2"

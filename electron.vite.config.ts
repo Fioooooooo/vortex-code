@@ -9,6 +9,7 @@ export default defineConfig(({ command }) => ({
     resolve: {
       alias: {
         "@shared": resolve(__dirname, "shared"),
+        "@main": resolve(__dirname, "electron/main"),
       },
     },
     build: {
@@ -23,6 +24,7 @@ export default defineConfig(({ command }) => ({
     resolve: {
       alias: {
         "@shared": resolve(__dirname, "shared"),
+        "@preload": resolve(__dirname, "electron/preload"),
       },
     },
     build: {

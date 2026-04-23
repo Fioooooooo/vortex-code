@@ -3,7 +3,7 @@ import { join } from "path";
 import { electronApp, optimizer, is, platform } from "@electron-toolkit/utils";
 import icon from "../../resources/icon.png?asset";
 import { registerAllHandlers } from "./ipc";
-import { getDataPath } from "./utils/paths";
+import logger from "@main/utils/logger";
 
 function createWindow(): void {
   // Create the browser window.
@@ -57,10 +57,7 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window);
   });
 
-  // 设置数据存储路径
-  if (is.dev) {
-    app.setPath("userData", getDataPath());
-  }
+  logger.info(`FylloCode starting — v${app.getVersion()} [${is.dev ? "dev" : "prod"}]`);
 
   // Register all IPC handlers
   registerAllHandlers();

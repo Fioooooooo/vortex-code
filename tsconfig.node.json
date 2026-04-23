@@ -12,7 +12,9 @@
     "types": ["electron-vite/node"],
     "paths": {
       "#build/ui": ["./frontend/node_modules/.nuxt-ui/ui"],
-      "@shared/*": ["./shared/*"]
+      "@shared/*": ["./shared/*"],
+      "@main/*": ["./electron/main/*"],
+      "@preload/*": ["./electron/preload/*"]
     }
   }
 }

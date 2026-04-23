@@ -29,12 +29,32 @@ FylloCode/
 ├── build/              # 构建资源（图标、entitlements）
 ├── resources/          # 应用资源
 ├── shared/             # electron 与 frontend 共享类型、配置
+├── data/               # 开发环境数据目录（已 gitignore，生产环境使用系统路径）
+│   ├── projects/       # 项目元数据
+│   ├── sessions/       # 会话记录（按 {projectId}/{sessionId}.json 组织）
+│   ├── settings/       # 用户偏好（preferences.json）
+│   ├── integrations/   # 集成配置
+│   ├── pipelines/      # Pipeline 模板与运行记录
+│   └── logs/           # 应用日志
 ├── vitest.config.mts   # Vitest 配置（ESM，.mts 后缀）
 ├── electron.vite.config.ts
 ├── electron-builder.yml
 ├── tsconfig.web.json   # 前端 tsconfig（extends @electron-toolkit/tsconfig）
 └── tsconfig.node.json  # 后端 tsconfig（extends @electron-toolkit/tsconfig）
 ```
+
+### 数据路径规范
+
+业务数据通过 `electron/main/utils/paths.ts` 统一管理：
+
+| 路径函数                     | 开发环境         | 生产环境                                                     |
+| ---------------------------- | ---------------- | ------------------------------------------------------------ |
+| `getDataSubPath("projects")` | `data/projects/` | `~/Library/Application Support/FylloCode/projects/`（macOS） |
+| `getDataSubPath("sessions")` | `data/sessions/` | `~/Library/Application Support/FylloCode/sessions/`          |
+| `getDataSubPath("settings")` | `data/settings/` | `~/Library/Application Support/FylloCode/settings/`          |
+| `getLogsPath()`              | `data/logs/`     | `~/Library/Logs/FylloCode/`（macOS）                         |
+
+Electron 内部缓存（Code Cache、GPU Cache 等）始终使用系统默认路径，不受影响。
 
 ## Electron 进程规范
 
@@ -55,6 +75,27 @@ IPC 通信：渲染进程通过 `window.electron.ipcRenderer` 调用主进程；
 - 入口 `index.ts` 负责窗口创建、应用生命周期管理、IPC 监听
 - 使用 `@electron-toolkit/utils` 提供的工具函数（`electronApp`、`optimizer`、`is`）
 - 窗口配置：开发环境通过 `ELECTRON_RENDERER_URL` 加载远程 URL，生产环境加载本地 HTML
+
+### 日志规范
+
+统一使用 `electron-log` v5，通过 `electron/main/utils/logger.ts` 封装后导出：
+
+```ts
+import logger from "../utils/logger";
+
+logger.info("...");
+logger.warn("...");
+logger.error("...");
+```
+
+- **不得**在主进程业务代码中直接使用 `console.log`
+- 渲染进程使用 `import log from 'electron-log/renderer'`，日志通过 IPC 转发到主进程统一写文件
+
+| 环境            | 日志文件路径                                            |
+| --------------- | ------------------------------------------------------- |
+| 开发            | `<project-root>/data/logs/main.log`                     |
+| 生产（macOS）   | `~/Library/Logs/FylloCode/main.log`                     |
+| 生产（Windows） | `%USERPROFILE%\AppData\Roaming\FylloCode\logs\main.log` |
 
 ### 预加载脚本 (`electron/preload/`)
 
