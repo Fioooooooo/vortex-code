@@ -5,12 +5,15 @@ import { isReasoningUIPart, isTextUIPart, isToolUIPart } from "ai";
 import { isPartStreaming, isToolStreaming } from "@nuxt/ui/utils/ai";
 import type { AgentType } from "@shared/types/chat";
 import { useChatStore } from "@renderer/stores/chat";
+import { useSessionStore } from "@renderer/stores/session";
 import ChatComark from "./ChatComark";
 import AgentSelect from "./AgentSelect.vue";
 import { getToolText, getToolSuffix, getToolOutput } from "@renderer/utils/chatTool";
 
 const store = useChatStore();
-const { agentStatus, activeSession } = storeToRefs(store);
+const sessionStore = useSessionStore();
+const { chatStatus } = storeToRefs(store);
+const { activeSession } = storeToRefs(sessionStore);
 
 const agent = computed<AgentType>({
   get: () => store.currentAgent.type,
@@ -32,90 +35,94 @@ function handleSubmit(): void {
 <template>
   <div class="flex-1 flex flex-col min-h-0">
     <div class="flex-1 overflow-y-auto py-4 px-2 relative">
-      <UChatMessages
-        should-auto-scroll
-        should-scroll-to-bottom
-        :auto-scroll="false"
-        :messages="messages"
-        :status="agentStatus"
-        :user="{
-          side: 'right',
-          avatar: {
-            icon: 'i-lucide-user',
-          },
-          ui: {
-            container: 'flex-row-reverse justify-start',
-          },
-        }"
-        :assistant="{
-          side: 'left',
-          avatar: {
-            src: '/claude.webp',
+      <div class="max-w-240 mx-auto">
+        <UChatMessages
+          should-auto-scroll
+          should-scroll-to-bottom
+          :auto-scroll="false"
+          :messages="messages"
+          :status="chatStatus"
+          :user="{
+            side: 'right',
+            avatar: {
+              icon: 'i-lucide-user',
+            },
             ui: {
-              root: 'bg-transparent',
+              container: 'flex-row-reverse justify-start',
             },
-          },
-          actions: [
-            {
-              label: 'Copy to clipboard',
-              icon: 'i-lucide-copy',
+          }"
+          :assistant="{
+            side: 'left',
+            avatar: {
+              src: '/claude.webp',
+              ui: {
+                root: 'bg-transparent',
+              },
             },
-          ],
-        }"
-      >
-        <template #content="{ message }">
-          <template
-            v-for="(part, index) in message.parts"
-            :key="`${message.id}-${part.type}-${index}`"
-          >
-            <UChatReasoning
-              v-if="isReasoningUIPart(part)"
-              :text="part.text"
-              :streaming="isPartStreaming(part)"
+            actions: [
+              {
+                label: 'Copy to clipboard',
+                icon: 'i-lucide-copy',
+              },
+            ],
+          }"
+        >
+          <template #content="{ message }">
+            <template
+              v-for="(part, index) in message.parts"
+              :key="`${message.id}-${part.type}-${index}`"
             >
-              <ChatComark :markdown="part.text" :streaming="isPartStreaming(part)" />
-            </UChatReasoning>
-
-            <UChatTool
-              v-else-if="isToolUIPart(part)"
-              :streaming="isToolStreaming(part)"
-              :text="getToolText(part)"
-              :suffix="getToolSuffix(part)"
-            >
-              <pre v-if="getToolOutput(part)" class="whitespace-pre-wrap text-xs">{{
-                getToolOutput(part)
-              }}</pre>
-            </UChatTool>
-
-            <template v-else-if="isTextUIPart(part)">
-              <ChatComark
-                v-if="message.role === 'assistant'"
-                :markdown="part.text"
+              <UChatReasoning
+                v-if="isReasoningUIPart(part)"
+                :text="part.text"
                 :streaming="isPartStreaming(part)"
-              />
-              <p v-else-if="message.role === 'user'" class="whitespace-pre-wrap">
-                {{ part.text }}
-              </p>
+              >
+                <ChatComark :markdown="part.text" :streaming="isPartStreaming(part)" />
+              </UChatReasoning>
+
+              <UChatTool
+                v-else-if="isToolUIPart(part)"
+                :streaming="isToolStreaming(part)"
+                :text="getToolText(part)"
+                :suffix="getToolSuffix(part)"
+              >
+                <pre v-if="getToolOutput(part)" class="whitespace-pre-wrap text-xs">{{
+                  getToolOutput(part)
+                }}</pre>
+              </UChatTool>
+
+              <template v-else-if="isTextUIPart(part)">
+                <ChatComark
+                  v-if="message.role === 'assistant'"
+                  :markdown="part.text"
+                  :streaming="isPartStreaming(part)"
+                />
+                <p v-else-if="message.role === 'user'" class="whitespace-pre-wrap">
+                  {{ part.text }}
+                </p>
+              </template>
             </template>
           </template>
-        </template>
-      </UChatMessages>
+        </UChatMessages>
+      </div>
     </div>
 
     <div class="p-4">
-      <UChatPrompt
-        v-model="input"
-        variant="subtle"
-        class="sticky bottom-0 [view-transition-name:chat-prompt]"
-        :ui="{ base: 'px-1.5' }"
-        @submit="handleSubmit"
-      >
-        <template #footer>
-          <AgentSelect v-model="agent" />
+      <div class="max-w-240 mx-auto">
+        <UChatPrompt
+          v-model="input"
+          variant="subtle"
+          class="sticky bottom-0 [view-transition-name:chat-prompt]"
+          :ui="{ base: 'px-1.5' }"
+          @submit="handleSubmit"
+        >
+          <template #footer>
+            <AgentSelect v-model="agent" />
 
-          <UChatPromptSubmit :status="agentStatus" color="neutral" size="sm" />
-        </template>
-      </UChatPrompt>
+            <UChatPromptSubmit :status="chatStatus" color="neutral" size="sm" />
+          </template>
+        </UChatPrompt>
+      </div>
     </div>
   </div>
 </template>
