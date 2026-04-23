@@ -1,6 +1,16 @@
 import { ipcMain } from "electron";
 import { IntegrationChannels } from "@shared/types/channels";
 import { wrapHandler } from "./utils";
+import {
+  setYunxiaoToken,
+  setYunxiaoOrganization,
+  disconnectYunxiao,
+} from "@main/services/integrations/yunxiao";
+import {
+  getConnections,
+  getConnection,
+  removeConnection,
+} from "@main/services/integrations/connections";
 
 export function registerIntegrationHandlers(): void {
   ipcMain.handle(IntegrationChannels.listTools, () =>
@@ -9,25 +19,30 @@ export function registerIntegrationHandlers(): void {
     })
   );
 
+  ipcMain.handle(IntegrationChannels.getConnections, () => wrapHandler(() => getConnections()));
+
   ipcMain.handle(IntegrationChannels.getConnection, (_event, { toolId }: { toolId: string }) =>
-    wrapHandler(async () => {
-      void toolId;
-      return null;
-    })
+    wrapHandler(() => getConnection(toolId))
   );
 
   ipcMain.handle(
     IntegrationChannels.connect,
     (_event, input: { toolId: string; credentials: Record<string, string> }) =>
       wrapHandler(async () => {
-        void input;
+        if (input.toolId.startsWith("yunxiao-")) {
+          return setYunxiaoToken(input.credentials["x-yunxiao-token"] ?? "");
+        }
         return null;
       })
   );
 
   ipcMain.handle(IntegrationChannels.disconnect, (_event, { toolId }: { toolId: string }) =>
-    wrapHandler(async () => {
-      void toolId;
+    wrapHandler(() => {
+      if (toolId.startsWith("yunxiao-")) {
+        disconnectYunxiao();
+      } else {
+        removeConnection(toolId);
+      }
     })
   );
 
@@ -76,5 +91,15 @@ export function registerIntegrationHandlers(): void {
     wrapHandler(async () => {
       void id;
     })
+  );
+
+  ipcMain.handle(IntegrationChannels.yunxiaoSetToken, (_event, { token }: { token: string }) =>
+    wrapHandler(() => setYunxiaoToken(token))
+  );
+
+  ipcMain.handle(
+    IntegrationChannels.yunxiaoSetOrganization,
+    (_event, { organizationId }: { organizationId: string }) =>
+      wrapHandler(() => setYunxiaoOrganization(organizationId))
   );
 }

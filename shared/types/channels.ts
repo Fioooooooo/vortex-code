@@ -43,6 +43,7 @@ export const PipelineEventChannels = {
 
 export const IntegrationChannels = {
   listTools: "integration:listTools",
+  getConnections: "integration:getConnections",
   getConnection: "integration:getConnection",
   connect: "integration:connect",
   disconnect: "integration:disconnect",
@@ -51,6 +52,8 @@ export const IntegrationChannels = {
   listCustom: "integration:listCustom",
   createCustom: "integration:createCustom",
   removeCustom: "integration:removeCustom",
+  yunxiaoSetToken: "integration:yunxiao:setToken",
+  yunxiaoSetOrganization: "integration:yunxiao:setOrganization",
 } as const;
 
 export const SettingsChannels = {

@@ -4,11 +4,16 @@ import type {
   ToolConnection,
   ProjectToolConfig,
   CustomIntegration,
+  YunxiaoOrganization,
 } from "@shared/types/integration";
 
 export const integrationApi = {
   listTools(): Promise<IpcResponse<IntegrationTool[]>> {
     return window.api.integration.listTools();
+  },
+
+  getConnections(): Promise<IpcResponse<ToolConnection[]>> {
+    return window.api.integration.getConnections();
   },
 
   getConnection(toolId: string): Promise<IpcResponse<ToolConnection | null>> {
@@ -53,5 +58,13 @@ export const integrationApi = {
 
   removeCustom(id: string): Promise<IpcResponse<void>> {
     return window.api.integration.removeCustom(id);
+  },
+
+  yunxiaoSetToken(token: string): Promise<IpcResponse<YunxiaoOrganization[]>> {
+    return window.api.integration.yunxiaoSetToken(token);
+  },
+
+  yunxiaoSetOrganization(organizationId: string): Promise<IpcResponse<void>> {
+    return window.api.integration.yunxiaoSetOrganization(organizationId);
   },
 };

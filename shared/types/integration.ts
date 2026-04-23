@@ -56,8 +56,9 @@ export interface ToolConnection {
   toolId: string;
   status: ConnectionStatus;
   accountName?: string;
-  connectedAt?: Date;
-  credentials?: Record<string, string>;
+  connectedAt?: string;
+  /** 脱敏后的凭证回显，key 与 connectionFields 对应，敏感字段用掩码替换 */
+  credentialPreview?: Record<string, string>;
 }
 
 export interface ToolConfig {
@@ -78,4 +79,10 @@ export interface CustomIntegration {
   mcpServerUrl: string;
   skillConfig: string;
   createdAt: Date;
+}
+
+export interface YunxiaoOrganization {
+  id: string;
+  name: string;
+  description: string;
 }

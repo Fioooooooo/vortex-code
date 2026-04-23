@@ -6,11 +6,16 @@ import type {
   ToolConnection,
   ProjectToolConfig,
   CustomIntegration,
+  YunxiaoOrganization,
 } from "@shared/types/integration";
 
 export const integrationApi = {
   listTools(): Promise<IpcResponse<IntegrationTool[]>> {
     return ipcRenderer.invoke(IntegrationChannels.listTools);
+  },
+
+  getConnections(): Promise<IpcResponse<ToolConnection[]>> {
+    return ipcRenderer.invoke(IntegrationChannels.getConnections);
   },
 
   getConnection(toolId: string): Promise<IpcResponse<ToolConnection | null>> {
@@ -60,5 +65,13 @@ export const integrationApi = {
 
   removeCustom(id: string): Promise<IpcResponse<void>> {
     return ipcRenderer.invoke(IntegrationChannels.removeCustom, { id });
+  },
+
+  yunxiaoSetToken(token: string): Promise<IpcResponse<YunxiaoOrganization[]>> {
+    return ipcRenderer.invoke(IntegrationChannels.yunxiaoSetToken, { token });
+  },
+
+  yunxiaoSetOrganization(organizationId: string): Promise<IpcResponse<void>> {
+    return ipcRenderer.invoke(IntegrationChannels.yunxiaoSetOrganization, { organizationId });
   },
 };

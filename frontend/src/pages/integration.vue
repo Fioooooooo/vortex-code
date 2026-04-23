@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, onMounted } from "vue";
 import IntegrationSearchFilter from "@renderer/components/integration/IntegrationSearchFilter.vue";
 import IntegrationCategorySection from "@renderer/components/integration/IntegrationCategorySection.vue";
 import CustomIntegrationSection from "@renderer/components/integration/CustomIntegrationSection.vue";
@@ -8,6 +8,8 @@ import { useProjectStore } from "@renderer/stores/project";
 
 const integrationStore = useIntegrationStore();
 const projectStore = useProjectStore();
+
+onMounted(() => integrationStore.loadConnections());
 
 const hasProject = computed(() => projectStore.hasCurrentProject);
 

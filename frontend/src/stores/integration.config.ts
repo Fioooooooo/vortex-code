@@ -1,10 +1,4 @@
-import type {
-  IntegrationCategory,
-  IntegrationTool,
-  ToolConnection,
-  ToolConfig,
-  ProjectToolConfig,
-} from "@shared/types/integration";
+import type { IntegrationCategory, IntegrationTool } from "@shared/types/integration";
 
 export const categories: IntegrationCategory[] = [
   {
@@ -49,20 +43,13 @@ export const tools: IntegrationTool[] = [
     connectionType: "api-token",
     connectionFields: [
       {
-        key: "accessKey",
-        label: "Access Key",
-        type: "text",
-        placeholder: "请输入阿里云 Access Key",
-        helperText: "在阿里云控制台 RAM 访问控制中获取",
-        helpLink: "https://ram.console.aliyun.com/manage/ak",
-        required: true,
-      },
-      {
-        key: "accessSecret",
-        label: "Access Secret",
+        key: "x-yunxiao-token",
+        label: "个人访问令牌",
         type: "password",
-        placeholder: "请输入阿里云 Access Secret",
-        helperText: "与 Access Key 配对使用",
+        placeholder: "请输入云效个人访问令牌",
+        helperText: "在云效个人设置中生成",
+        helpLink:
+          "https://help.aliyun.com/zh/yunxiao/developer-reference/obtain-personal-access-token",
         required: true,
       },
     ],
@@ -123,19 +110,13 @@ export const tools: IntegrationTool[] = [
     connectionType: "api-token",
     connectionFields: [
       {
-        key: "accessKey",
-        label: "Access Key",
-        type: "text",
-        placeholder: "请输入阿里云 Access Key",
-        helperText: "在阿里云控制台 RAM 访问控制中获取",
-        helpLink: "https://ram.console.aliyun.com/manage/ak",
-        required: true,
-      },
-      {
-        key: "accessSecret",
-        label: "Access Secret",
+        key: "x-yunxiao-token",
+        label: "个人访问令牌",
         type: "password",
-        placeholder: "请输入阿里云 Access Secret",
+        placeholder: "请输入云效个人访问令牌",
+        helperText: "在云效个人设置中生成",
+        helpLink:
+          "https://help.aliyun.com/zh/yunxiao/developer-reference/obtain-personal-access-token",
         required: true,
       },
     ],
@@ -207,19 +188,13 @@ export const tools: IntegrationTool[] = [
     connectionType: "api-token",
     connectionFields: [
       {
-        key: "accessKey",
-        label: "Access Key",
-        type: "text",
-        placeholder: "请输入阿里云 Access Key",
-        helperText: "在阿里云控制台 RAM 访问控制中获取",
-        helpLink: "https://ram.console.aliyun.com/manage/ak",
-        required: true,
-      },
-      {
-        key: "accessSecret",
-        label: "Access Secret",
+        key: "x-yunxiao-token",
+        label: "个人访问令牌",
         type: "password",
-        placeholder: "请输入阿里云 Access Secret",
+        placeholder: "请输入云效个人访问令牌",
+        helperText: "在云效个人设置中生成",
+        helpLink:
+          "https://help.aliyun.com/zh/yunxiao/developer-reference/obtain-personal-access-token",
         required: true,
       },
     ],
@@ -505,15 +480,3 @@ export const tools: IntegrationTool[] = [
     comingSoon: true,
   },
 ];
-
-export function generateMockConnections(): ToolConnection[] {
-  return [];
-}
-
-export function generateMockToolConfigs(): ToolConfig[] {
-  return [];
-}
-
-export function generateMockProjectToolConfigs(): ProjectToolConfig[] {
-  return [];
-}

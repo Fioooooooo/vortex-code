@@ -2,7 +2,6 @@
 import { computed } from "vue";
 import type { IntegrationTool } from "@shared/types/integration";
 import { useIntegrationStore } from "@renderer/stores/integration";
-import { useProjectStore } from "@renderer/stores/project";
 import IntegrationToolCardExpand from "./IntegrationToolCardExpand.vue";
 
 const props = defineProps<{
@@ -15,25 +14,12 @@ const emit = defineEmits<{
 }>();
 
 const integrationStore = useIntegrationStore();
-const projectStore = useProjectStore();
 
 const isConnected = computed(() => integrationStore.isToolConnected(props.tool.id));
-const isEnabled = computed(() => integrationStore.isToolEnabledInProject(props.tool.id));
-const hasProject = computed(() => projectStore.hasCurrentProject);
-const currentProjectName = computed(() => projectStore.currentProject?.name ?? "");
 
 function onToggleExpand(): void {
   if (props.tool.comingSoon) return;
   emit("toggleExpand", props.tool.id);
-}
-
-function onEnableToggle(): void {
-  if (props.tool.comingSoon) return;
-  if (isEnabled.value) {
-    integrationStore.disableToolInProject(props.tool.id);
-  } else {
-    integrationStore.enableToolInProject(props.tool.id);
-  }
 }
 </script>
 
@@ -49,7 +35,7 @@ function onEnableToggle(): void {
     @click="onToggleExpand"
   >
     <!-- Card Front -->
-    <div class="p-4 space-y-3">
+    <div class="p-4">
       <div class="flex items-start justify-between">
         <div class="flex items-center gap-3">
           <div
@@ -78,29 +64,6 @@ function onEnableToggle(): void {
           <template v-else>
             <UBadge size="xs" variant="soft" color="neutral">未连接</UBadge>
           </template>
-        </div>
-      </div>
-
-      <!-- Project Enablement -->
-      <div class="pt-2 border-t border-default">
-        <div v-if="!hasProject" class="text-xs text-muted flex items-center gap-1.5">
-          <UIcon name="i-lucide-folder-x" class="w-3.5 h-3.5" />
-          打开项目以启用
-        </div>
-        <div v-else-if="!isConnected" class="text-xs text-muted flex items-center gap-1.5">
-          <UIcon name="i-lucide-plug" class="w-3.5 h-3.5" />
-          先连接才能在项目中启用
-        </div>
-        <div v-else class="flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <USwitch
-              :model-value="isEnabled"
-              size="xs"
-              @click.stop
-              @update:model-value="onEnableToggle"
-            />
-            <span class="text-xs text-muted">{{ currentProjectName }}</span>
-          </div>
         </div>
       </div>
     </div>
