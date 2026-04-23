@@ -1,49 +1,47 @@
-# file-tree Specification
+# file-tree 规范
 
-## Purpose
-
-TBD - created by archiving change workspace-page. Update Purpose after archive.
+文件树在 Chat 左侧边栏的"文件"标签中展示当前项目的目录结构，并标注 Agent 在当前 session 中产生的文件变更。
 
 ## Requirements
 
-### Requirement: Files tab displays project directory tree
+### Requirement: 文件标签显示项目目录树
 
-The system SHALL display a standard file tree in the left sidebar's "Files" tab, showing the current project's directory structure.
+系统 SHALL 在左侧边栏的"文件"标签中显示标准文件树，展示当前项目的目录结构。
 
-#### Scenario: File tree rendered
+#### Scenario: 文件树渲染
 
-- **WHEN** the user switches to the Files tab
-- **THEN** the project directory structure is displayed as an expandable tree
+- **WHEN** 用户切换到文件标签
+- **THEN** 项目目录结构以可展开的树形结构显示
 
-### Requirement: File tree shows session change markers
+### Requirement: 文件树显示 session 变更标记
 
-The system SHALL annotate file names in the tree with change markers for the current session: green for added files, yellow for modified files, and red strikethrough for deleted files. These markers represent agent-generated changes, distinct from git status markers.
+系统 SHALL 在树中为当前 session 的文件名添加变更标记：新增文件显示绿色标记，修改文件显示黄色标记，删除文件显示红色删除线。这些标记代表 Agent 生成的变更，与 git 状态标记不同。
 
-#### Scenario: Added file marker
+#### Scenario: 新增文件标记
 
-- **WHEN** the agent creates a new file in the current session
-- **THEN** the file name in the tree displays a green indicator
+- **WHEN** Agent 在当前 session 中创建新文件
+- **THEN** 树中该文件名显示绿色指示器
 
-#### Scenario: Modified file marker
+#### Scenario: 修改文件标记
 
-- **WHEN** the agent modifies an existing file in the current session
-- **THEN** the file name in the tree displays a yellow indicator
+- **WHEN** Agent 在当前 session 中修改现有文件
+- **THEN** 树中该文件名显示黄色指示器
 
-#### Scenario: Deleted file marker
+#### Scenario: 删除文件标记
 
-- **WHEN** the agent deletes a file in the current session
-- **THEN** the file name in the tree displays a red indicator with strikethrough
+- **WHEN** Agent 在当前 session 中删除文件
+- **THEN** 树中该文件名显示带删除线的红色指示器
 
-### Requirement: File click opens diff or read-only preview
+### Requirement: 点击文件打开 diff 或只读预览
 
-The system SHALL open the clicked file in the right Diff panel: showing a diff comparison if the file has session changes, or a read-only preview if it has no changes.
+系统 SHALL 在右侧 Diff 面板中打开被点击的文件：若文件有 session 变更则显示 diff 对比，若无变更则显示只读预览。
 
-#### Scenario: Clicking a changed file
+#### Scenario: 点击有变更的文件
 
-- **WHEN** the user clicks a file that has session changes
-- **THEN** the right Diff panel opens showing the file's diff comparison
+- **WHEN** 用户点击有 session 变更的文件
+- **THEN** 右侧 Diff 面板打开并显示该文件的 diff 对比
 
-#### Scenario: Clicking an unchanged file
+#### Scenario: 点击无变更的文件
 
-- **WHEN** the user clicks a file with no session changes
-- **THEN** the right Diff panel opens showing a read-only preview of the file content
+- **WHEN** 用户点击无 session 变更的文件
+- **THEN** 右侧 Diff 面板打开并显示该文件内容的只读预览

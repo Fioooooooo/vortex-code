@@ -1,67 +1,71 @@
-## ADDED Requirements
+# pipeline-runs 规范
 
-### Requirement: Runs tab displays pipeline run records
+Pipeline 运行记录定义了运行列表的展示、新建运行流程、运行详情视图以及阶段节点的交互行为。
 
-The system SHALL display a list of pipeline run records for the current project in the left sidebar's Runs tab, with the most recent records at the top, and running records visually distinguished.
+## Requirements
 
-#### Scenario: View run list
+### Requirement: 运行标签显示 pipeline 运行记录
 
-- **WHEN** the user switches to the Runs tab
-- **THEN** a list of run records is displayed
-- **AND** each record shows the run title, template name, compact stage progress indicator, and last updated time
-- **AND** running records are positioned at the top with a pulsing indicator
+系统 SHALL 在左侧边栏的运行标签中显示当前项目的 pipeline 运行记录列表，最新记录在顶部，运行中的记录有视觉区分。
 
-### Requirement: New Run creation flow
+#### Scenario: 查看运行列表
 
-The system SHALL provide a "New Run" button in the Runs tab that opens a selection panel for choosing a template and entering a trigger requirement description, after which a new run is created and the first stage begins execution.
+- **WHEN** 用户切换到运行标签
+- **THEN** 显示运行记录列表
+- **AND** 每条记录显示运行标题、模板名称、紧凑阶段进度指示器和最后更新时间
+- **AND** 运行中的记录置顶并带有脉冲指示器
 
-#### Scenario: Create a new run
+### Requirement: 新建运行创建流程
 
-- **WHEN** the user clicks the "New Run" button
-- **THEN** a modal or panel opens for template selection
-- **AND** the user selects a template and enters a natural language trigger description
-- **AND** upon confirmation, a new run record is created and prepended to the list
-- **AND** the new run's first stage enters "running" status
+系统 SHALL 在运行标签中提供"新建运行"按钮，点击后打开选择面板以选择模板并输入触发需求描述，确认后创建新运行并开始执行第一个阶段。
 
-### Requirement: Run selection updates central detail view
+#### Scenario: 创建新运行
 
-The system SHALL update the central main area to show the selected run's detail view when a run record is clicked in the left panel.
+- **WHEN** 用户点击"新建运行"按钮
+- **THEN** 打开模态框或面板用于选择模板
+- **AND** 用户选择模板并输入自然语言触发描述
+- **AND** 确认后创建新运行记录并添加到列表顶部
+- **AND** 新运行的第一个阶段进入"运行中"状态
 
-#### Scenario: Select a run
+### Requirement: 选择运行更新中央详情视图
 
-- **WHEN** the user clicks a run record in the left panel
-- **THEN** the central main area switches to the Run Detail view for that run
-- **AND** the selected run is visually highlighted in the list
+系统 SHALL 在左侧面板中点击运行记录时，将中央主区域更新为显示该运行的详情视图。
 
-### Requirement: Run detail view shows stage progress bar
+#### Scenario: 选择运行
 
-The system SHALL display a horizontal stage flow progress bar at the top of the run detail view, showing all stages with their status icons, connecting lines, and gate markers.
+- **WHEN** 用户点击左侧面板中的运行记录
+- **THEN** 中央主区域切换到该运行的详情视图
+- **AND** 所选运行在列表中高亮显示
 
-#### Scenario: View stage progress
+### Requirement: 运行详情视图显示阶段进度条
 
-- **WHEN** the user views a run's detail
-- **THEN** a horizontal stage flow is displayed at the top
-- **AND** each stage node shows the stage name and status icon
-- **AND** connecting lines reflect the transition state between stages
-- **AND** gate markers appear between stages that have gate conditions
+系统 SHALL 在运行详情视图顶部显示水平阶段流进度条，显示所有阶段的状态图标、连接线和关卡标记。
 
-### Requirement: Stage nodes are interactive
+#### Scenario: 查看阶段进度
 
-The system SHALL allow clicking a stage node to switch the lower detail area to that stage's content, with the currently executing stage selected by default.
+- **WHEN** 用户查看运行详情
+- **THEN** 顶部显示水平阶段流
+- **AND** 每个阶段节点显示阶段名称和状态图标
+- **AND** 连接线反映阶段间的过渡状态
+- **AND** 有关卡条件的阶段之间显示关卡标记
 
-#### Scenario: Click a stage node
+### Requirement: 阶段节点可交互
 
-- **WHEN** the user clicks a stage node in the progress bar
-- **THEN** the lower detail area updates to show that stage's content
-- **AND** the clicked node receives active visual state
+系统 SHALL 允许点击阶段节点将下方详情区域切换到该阶段的内容，默认选中当前执行中的阶段。
 
-### Requirement: Gate approval actions are accessible
+#### Scenario: 点击阶段节点
 
-The system SHALL display Approve/Reject action controls below a stage node when that stage has a manual approval gate and is in "waiting approval" status.
+- **WHEN** 用户点击进度条中的阶段节点
+- **THEN** 下方详情区域更新显示该阶段的内容
+- **AND** 被点击的节点获得激活视觉状态
 
-#### Scenario: Approve a waiting stage
+### Requirement: 关卡审批操作可访问
 
-- **WHEN** a stage is in "waiting approval" status
-- **THEN** an Approve button and a Reject button appear below the stage node
-- **AND** clicking Approve transitions the stage to "passed" and resumes the pipeline
-- **AND** clicking Reject transitions the stage to "failed"
+系统 SHALL 在阶段有手动审批关卡且处于"等待审批"状态时，在阶段节点下方显示批准/拒绝操作控件。
+
+#### Scenario: 批准等待中的阶段
+
+- **WHEN** 阶段处于"等待审批"状态
+- **THEN** 阶段节点下方出现批准按钮和拒绝按钮
+- **AND** 点击批准将阶段过渡到"已通过"并恢复 pipeline
+- **AND** 点击拒绝将阶段过渡到"失败"

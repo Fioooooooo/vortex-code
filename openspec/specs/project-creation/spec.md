@@ -1,55 +1,61 @@
-### Requirement: Project creation modal collects project information
+# project-creation 规范
 
-The system SHALL display a modal that allows the user to input project name and select a storage path.
+项目创建功能通过模态框收集项目信息，支持空项目和 Git 克隆两种模板，创建成功后进入工作区。
 
-#### Scenario: Modal opens with form fields
+## Requirements
 
-- **WHEN** user clicks "Create Project" button
-- **THEN** a modal dialog opens with input fields for project name and storage path
-- **AND** a selection for project template type (empty project or git clone)
+### Requirement: 项目创建模态框收集项目信息
 
-### Requirement: Project name is required
+系统 SHALL 显示模态框，允许用户输入项目名称并选择存储路径。
 
-The system SHALL require a non-empty project name before allowing project creation.
+#### Scenario: 模态框打开并显示表单字段
 
-#### Scenario: User attempts to create without project name
+- **WHEN** 用户点击"创建项目"按钮
+- **THEN** 模态对话框打开，包含项目名称和存储路径的输入字段
+- **AND** 提供项目模板类型选择（空项目或 Git 克隆）
 
-- **WHEN** user clicks the create button without entering a project name
-- **THEN** the form shows a validation error indicating the project name is required
-- **AND** the project is not created
+### Requirement: 项目名称为必填项
 
-### Requirement: Storage path defaults to a sensible location
+系统 SHALL 在允许创建项目前要求填写非空的项目名称。
 
-The system SHALL default the storage path to the user's projects directory or home directory.
+#### Scenario: 用户未填写项目名称即尝试创建
 
-#### Scenario: Default path is populated
+- **WHEN** 用户未输入项目名称即点击创建按钮
+- **THEN** 表单显示验证错误，提示项目名称为必填项
+- **AND** 项目不被创建
 
-- **WHEN** the project creation modal opens
-- **THEN** the storage path field is pre-filled with a default directory path
+### Requirement: 存储路径默认为合理位置
 
-### Requirement: Template selection supports empty project and git clone
+系统 SHALL 将存储路径默认设置为用户的项目目录或主目录。
 
-The system SHALL allow the user to choose between creating an empty project or cloning from a git repository.
+#### Scenario: 默认路径已填充
 
-#### Scenario: Empty project is selected
+- **WHEN** 项目创建模态框打开
+- **THEN** 存储路径字段预填充默认目录路径
 
-- **WHEN** user selects "Empty Project" template
-- **THEN** no additional git URL input is shown
+### Requirement: 模板选择支持空项目和 Git 克隆
 
-#### Scenario: Git clone is selected
+系统 SHALL 允许用户选择创建空项目或从 Git 仓库克隆。
 
-- **WHEN** user selects "Clone from Git" template
-- **THEN** an additional input field for the git repository URL is displayed
-- **AND** the git URL is required for creation
+#### Scenario: 选择空项目
 
-### Requirement: Project creation enters Workspace
+- **WHEN** 用户选择"空项目"模板
+- **THEN** 不显示额外的 Git URL 输入字段
 
-The system SHALL write the newly created project into the unified current project context and enter `/workspace` upon successful creation.
+#### Scenario: 选择 Git 克隆
 
-#### Scenario: Project is successfully created
+- **WHEN** 用户选择"从 Git 克隆"模板
+- **THEN** 显示 Git 仓库 URL 的额外输入字段
+- **AND** 创建时 Git URL 为必填项
 
-- **WHEN** user fills in valid project information and clicks create
-- **THEN** the modal closes
-- **AND** the current project context is updated with the new project
-- **AND** the system enters `/workspace`
-- **AND** the project is added to the recent projects list
+### Requirement: 项目创建后进入工作区
+
+系统 SHALL 在成功创建后将新项目写入统一的当前项目上下文并进入 `/workspace`。
+
+#### Scenario: 项目成功创建
+
+- **WHEN** 用户填写有效的项目信息并点击创建
+- **THEN** 模态框关闭
+- **AND** 当前项目上下文更新为新项目
+- **AND** 系统进入 `/workspace`
+- **AND** 项目被添加到最近项目列表

@@ -1,83 +1,87 @@
-## ADDED Requirements
+# pipeline-templates 规范
 
-### Requirement: Templates tab displays available templates
+Pipeline 模板定义了模板列表的展示、模板编辑器的配置能力以及模板的新建、保存和复制行为。
 
-The system SHALL display all available pipeline templates in the left sidebar's Templates tab, grouped by source into "Built-in" and "Custom" sections.
+## Requirements
 
-#### Scenario: View template list
+### Requirement: 模板标签显示可用模板
 
-- **WHEN** the user switches to the Templates tab
-- **THEN** templates are displayed in two groups: Built-in and Custom
-- **AND** each template card shows the template name, stage count, and stage name summary
-- **AND** built-in templates are visually distinguished from custom templates
+系统 SHALL 在左侧边栏的模板标签中显示所有可用的 pipeline 模板，按来源分为"内置"和"自定义"两组。
 
-### Requirement: Template card supports hover actions
+#### Scenario: 查看模板列表
 
-The system SHALL display additional action buttons (duplicate, delete, set as default) on a template card when hovered, with built-in templates only supporting duplicate.
+- **WHEN** 用户切换到模板标签
+- **THEN** 模板以两组显示：内置和自定义
+- **AND** 每个模板卡片显示模板名称、阶段数量和阶段名称摘要
+- **AND** 内置模板与自定义模板在视觉上有所区分
 
-#### Scenario: Hover built-in template card
+### Requirement: 模板卡片支持悬停操作
 
-- **WHEN** the user hovers over a built-in template card
-- **THEN** a duplicate action button appears
-- **AND** delete and set-default actions are not available
+系统 SHALL 在悬停时在模板卡片上显示额外操作按钮（复制、删除、设为默认），内置模板仅支持复制。
 
-#### Scenario: Hover custom template card
+#### Scenario: 悬停内置模板卡片
 
-- **WHEN** the user hovers over a custom template card
-- **THEN** duplicate, delete, and set-default action buttons appear
+- **WHEN** 用户悬停在内置模板卡片上
+- **THEN** 出现复制操作按钮
+- **AND** 删除和设为默认操作不可用
 
-### Requirement: Template selection opens editor view
+#### Scenario: 悬停自定义模板卡片
 
-The system SHALL open the template editor view in the central main area when a template card is clicked.
+- **WHEN** 用户悬停在自定义模板卡片上
+- **THEN** 出现复制、删除和设为默认操作按钮
 
-#### Scenario: Click a template card
+### Requirement: 选择模板打开编辑器视图
 
-- **WHEN** the user clicks a template card
-- **THEN** the central main area switches to the Template Editor view
-- **AND** the editor is populated with the selected template's data
+系统 SHALL 在点击模板卡片时，在中央主区域打开模板编辑器视图。
 
-### Requirement: New template creation
+#### Scenario: 点击模板卡片
 
-The system SHALL provide a "New Template" button that opens a blank template editor in the central main area.
+- **WHEN** 用户点击模板卡片
+- **THEN** 中央主区域切换到模板编辑器视图
+- **AND** 编辑器填充所选模板的数据
 
-#### Scenario: Create new template
+### Requirement: 新建模板创建
 
-- **WHEN** the user clicks the "New Template" button
-- **THEN** the central main area opens a blank Template Editor
-- **AND** the editor contains a single default stage ready for configuration
+系统 SHALL 提供"新建模板"按钮，在中央主区域打开空白模板编辑器。
 
-### Requirement: Template editor supports stage configuration
+#### Scenario: 创建新模板
 
-The system SHALL allow editing template name and description, and provide a stage list where each stage can be reordered via drag-and-drop, configured with type, name, prompt template, agent, gate conditions, failure strategy, and MCP/skills.
+- **WHEN** 用户点击"新建模板"按钮
+- **THEN** 中央主区域打开空白模板编辑器
+- **AND** 编辑器包含一个已准备好配置的默认阶段
 
-#### Scenario: Expand stage configuration
+### Requirement: 模板编辑器支持阶段配置
 
-- **WHEN** the user clicks the expand arrow on a stage row
-- **THEN** the stage row expands to reveal detailed configuration fields
-- **AND** the fields include Prompt template textarea, Agent selector, Gate conditions list, Failure strategy selector, and MCP/Skills checkboxes
+系统 SHALL 允许编辑模板名称和描述，并提供阶段列表，每个阶段可通过拖拽重新排序，并可配置类型、名称、提示模板、Agent、关卡条件、失败策略和 MCP/Skills。
 
-#### Scenario: Reorder stages
+#### Scenario: 展开阶段配置
 
-- **WHEN** the user drags a stage row using the drag handle and drops it at a new position
-- **THEN** the stage order is updated in the template
+- **WHEN** 用户点击阶段行上的展开箭头
+- **THEN** 阶段行展开显示详细配置字段
+- **AND** 字段包括提示模板文本区、Agent 选择器、关卡条件列表、失败策略选择器和 MCP/Skills 复选框
 
-#### Scenario: Add a new stage
+#### Scenario: 重新排序阶段
 
-- **WHEN** the user clicks the "+ Add Stage" button
-- **THEN** a new stage row is appended to the stage list
-- **AND** the new stage has default values based on the selected stage type
+- **WHEN** 用户使用拖拽手柄拖动阶段行并放置到新位置
+- **THEN** 模板中的阶段顺序更新
 
-### Requirement: Template editor supports save and cancel
+#### Scenario: 添加新阶段
 
-The system SHALL provide Save and Cancel buttons at the bottom of the template editor, with saving a modified built-in template creating a new custom template copy.
+- **WHEN** 用户点击"+ 添加阶段"按钮
+- **THEN** 新阶段行追加到阶段列表
+- **AND** 新阶段根据所选阶段类型有默认值
 
-#### Scenario: Save built-in template copy
+### Requirement: 模板编辑器支持保存和取消
 
-- **WHEN** the user edits a built-in template and clicks Save
-- **THEN** a new custom template is created with the modifications
-- **AND** the original built-in template remains unchanged
+系统 SHALL 在模板编辑器底部提供保存和取消按钮，保存修改后的内置模板将创建新的自定义模板副本。
 
-#### Scenario: Save custom template
+#### Scenario: 保存内置模板副本
 
-- **WHEN** the user edits a custom template and clicks Save
-- **THEN** the existing custom template is updated in place
+- **WHEN** 用户编辑内置模板并点击保存
+- **THEN** 创建包含修改内容的新自定义模板
+- **AND** 原内置模板保持不变
+
+#### Scenario: 保存自定义模板
+
+- **WHEN** 用户编辑自定义模板并点击保存
+- **THEN** 现有自定义模板就地更新

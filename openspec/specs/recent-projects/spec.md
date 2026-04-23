@@ -1,65 +1,71 @@
-### Requirement: Recent projects list is displayed
+# recent-projects 规范
 
-The system SHALL display a list of recently opened projects on the Welcome page.
+欢迎页的最近项目列表展示用户最近打开的项目，支持快速打开和从历史记录中移除。
 
-#### Scenario: Recent projects are shown
+## Requirements
 
-- **WHEN** the Welcome page is displayed and recent projects exist
-- **THEN** a "Recent Projects" section title is shown
-- **AND** a vertical list of recent projects is displayed below it
-- **AND** the list shows at most 10 recent projects
+### Requirement: 显示最近项目列表
 
-### Requirement: Each recent project item shows project details
+系统 SHALL 在欢迎页显示最近打开的项目列表。
 
-The system SHALL display the project name, local path, and last opened time for each recent project.
+#### Scenario: 显示最近项目
 
-#### Scenario: Project item displays all information
+- **WHEN** 欢迎页显示且存在最近项目
+- **THEN** 显示"最近项目"区块标题
+- **AND** 标题下方显示垂直排列的最近项目列表
+- **AND** 列表最多显示 10 个最近项目
 
-- **WHEN** the recent projects list is displayed
-- **THEN** each list item shows the project name in bold
-- **AND** the project's local path in smaller gray text
-- **AND** the relative last opened time (e.g., "2 hours ago", "Yesterday")
+### Requirement: 每个最近项目条目显示项目详情
 
-### Requirement: Clicking a recent project opens it
+系统 SHALL 为每个最近项目显示项目名称、本地路径和最后打开时间。
 
-The system SHALL write the selected recent project into the unified current project context and enter `/workspace` when a recent project item is clicked.
+#### Scenario: 项目条目显示完整信息
 
-#### Scenario: User clicks a recent project
+- **WHEN** 最近项目列表显示
+- **THEN** 每个列表条目以粗体显示项目名称
+- **AND** 以较小灰色文字显示项目本地路径
+- **AND** 显示相对的最后打开时间（如"2 小时前"、"昨天"）
 
-- **WHEN** user clicks on a recent project list item
-- **THEN** the current project context is updated with that project
-- **AND** the system enters `/workspace`
+### Requirement: 点击最近项目可打开
 
-### Requirement: Recent project items have hover highlighting
+系统 SHALL 在用户点击最近项目条目时，将所选项目写入统一的当前项目上下文并进入 `/workspace`。
 
-The system SHALL highlight a recent project item on hover.
+#### Scenario: 用户点击最近项目
 
-#### Scenario: User hovers over a project item
+- **WHEN** 用户点击最近项目列表条目
+- **THEN** 当前项目上下文更新为该项目
+- **AND** 系统进入 `/workspace`
 
-- **WHEN** user hovers over a recent project list item
-- **THEN** the item's background changes to a light highlight color
+### Requirement: 最近项目条目悬停高亮
 
-### Requirement: Recent project items can be removed from history
+系统 SHALL 在悬停时高亮显示最近项目条目。
 
-The system SHALL allow the user to remove a project from the recent projects history without deleting the actual files.
+#### Scenario: 用户悬停在项目条目上
 
-#### Scenario: Remove button appears on hover
+- **WHEN** 用户悬停在最近项目列表条目上
+- **THEN** 条目背景变为浅色高亮
 
-- **WHEN** user hovers over a recent project list item
-- **THEN** a remove button (x icon) appears on the right side of the item
+### Requirement: 最近项目条目可从历史记录中移除
 
-#### Scenario: Project is removed from history
+系统 SHALL 允许用户从最近项目历史记录中移除项目，而不删除实际文件。
 
-- **WHEN** user clicks the remove button
-- **THEN** the project is removed from the recent projects list
-- **AND** the actual project files are not affected
+#### Scenario: 悬停时显示移除按钮
 
-### Requirement: Recent projects list supports internal scrolling
+- **WHEN** 用户悬停在最近项目列表条目上
+- **THEN** 条目右侧出现移除按钮（x 图标）
 
-The system SHALL keep the brand identity and action buttons visible while allowing the recent projects list to scroll internally.
+#### Scenario: 从历史记录中移除项目
 
-#### Scenario: Many recent projects
+- **WHEN** 用户点击移除按钮
+- **THEN** 该项目从最近项目列表中移除
+- **AND** 实际项目文件不受影响
 
-- **WHEN** the recent projects list contains more items than can fit in the viewport
-- **THEN** the list area scrolls internally
-- **AND** the brand identity and action buttons remain fixed and visible
+### Requirement: 最近项目列表支持内部滚动
+
+系统 SHALL 在最近项目列表内部滚动时保持品牌标识和操作按钮可见。
+
+#### Scenario: 最近项目数量较多
+
+- **WHEN** 最近项目列表包含的条目超过视口可显示数量
+- **THEN** 列表区域内部滚动
+- **AND** 品牌标识和操作按钮保持固定可见

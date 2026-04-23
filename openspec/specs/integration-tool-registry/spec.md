@@ -1,105 +1,103 @@
-# integration-tool-registry Specification
+# integration-tool-registry 规范
 
-## Purpose
-
-TBD - created by archiving change integrations-page. Update Purpose after archive.
+集成工具注册表定义了集成页面的工具展示、分类组织、连接状态、搜索和筛选行为。
 
 ## Requirements
 
-### Requirement: Integrations page displays tools organized by category
+### Requirement: 集成页面按分类展示工具
 
-The system SHALL display integrations grouped into six categories in a fixed vertical order: Project Management, Source Control, CI/CD, Deployment, Communication, Observability. Each category SHALL have a title and a one-line description of its Pipeline role.
+系统 SHALL 将集成工具按六个分类以固定垂直顺序分组显示：项目管理、源代码控制、CI/CD、部署、通信、可观测性。每个分类 SHALL 有标题和一行描述其在 Pipeline 中的作用。
 
-#### Scenario: Category sections render in order
+#### Scenario: 分类区块按顺序渲染
 
-- **WHEN** the user navigates to the Integrations page
-- **THEN** the page displays six category sections vertically
-- **AND** the sections appear in the order: Project Management, Source Control, CI/CD, Deployment, Communication, Observability
+- **WHEN** 用户导航到集成页面
+- **THEN** 页面垂直显示六个分类区块
+- **AND** 区块按以下顺序显示：项目管理、源代码控制、CI/CD、部署、通信、可观测性
 
-### Requirement: Each tool is displayed as a card within its category
+### Requirement: 每个工具以卡片形式显示在其分类中
 
-The system SHALL render each integration tool as a card. Cards within the same category SHALL be arranged horizontally in a responsive grid (2-3 cards per row depending on viewport width).
+系统 SHALL 将每个集成工具渲染为卡片。同一分类内的卡片 SHALL 以响应式网格水平排列（根据视口宽度每行 2-3 张）。
 
-#### Scenario: Tool cards render in responsive grid
+#### Scenario: 工具卡片以响应式网格渲染
 
-- **WHEN** the user views a category section
-- **THEN** the category's tools are displayed as cards in a grid layout
-- **AND** the grid adapts to show 2-3 cards per row based on available width
+- **WHEN** 用户查看分类区块
+- **THEN** 该分类的工具以网格布局显示为卡片
+- **AND** 网格根据可用宽度自适应显示每行 2-3 张
 
-### Requirement: Tool card displays brand identity and description
+### Requirement: 工具卡片显示品牌标识和描述
 
-Each tool card SHALL display the tool's brand logo (approx. 36x36px), name, and a one-line description on its front face.
+每个工具卡片 SHALL 在正面显示工具品牌 Logo（约 36x36px）、名称和一行描述。
 
-#### Scenario: Card front shows tool metadata
+#### Scenario: 卡片正面显示工具元数据
 
-- **WHEN** the user views a tool card
-- **THEN** the card shows the tool logo on the left
-- **AND** the tool name and description on the right
+- **WHEN** 用户查看工具卡片
+- **THEN** 卡片左侧显示工具 Logo
+- **AND** 右侧显示工具名称和描述
 
-### Requirement: Tool card displays connection status
+### Requirement: 工具卡片显示连接状态
 
-Each tool card SHALL display a connection status badge in the top-right corner. The badge SHALL show "Connected" with a checkmark in green when connected, or "Not Connected" in gray when not connected.
+每个工具卡片 SHALL 在右上角显示连接状态徽章。已连接时 SHALL 显示带勾选图标的绿色"已连接"，未连接时显示灰色"未连接"。
 
-#### Scenario: Connected tool shows green status
+#### Scenario: 已连接工具显示绿色状态
 
-- **WHEN** a tool has an active connection
-- **THEN** its card displays a green "Connected" badge with a checkmark icon
+- **WHEN** 工具有活跃连接
+- **THEN** 卡片显示带勾选图标的绿色"已连接"徽章
 
-#### Scenario: Unconnected tool shows gray status
+#### Scenario: 未连接工具显示灰色状态
 
-- **WHEN** a tool has no active connection
-- **THEN** its card displays a gray "Not Connected" badge
+- **WHEN** 工具无活跃连接
+- **THEN** 卡片显示灰色"未连接"徽章
 
-### Requirement: Tool card displays project-level enablement status
+### Requirement: 工具卡片显示项目级启用状态
 
-Each tool card SHALL display a project enablement area at the bottom. If a project is open and the tool is connected, the area SHALL show a toggle switch labeled with the current project name. If the tool is not connected, the area SHALL show "Connect first to enable in project". If no project is open, the area SHALL show "Open a project to enable".
+每个工具卡片 SHALL 在底部显示项目启用区域。若项目已打开且工具已连接，该区域 SHALL 显示带当前项目名称的切换开关。若工具未连接，显示"请先连接以在项目中启用"。若无项目打开，显示"打开项目以启用"。
 
-#### Scenario: Tool connected with project open
+#### Scenario: 工具已连接且项目已打开
 
-- **WHEN** a tool is connected and a project is currently open
-- **THEN** the card bottom shows a toggle switch with the project name
+- **WHEN** 工具已连接且当前有项目打开
+- **THEN** 卡片底部显示带项目名称的切换开关
 
-#### Scenario: Tool not connected
+#### Scenario: 工具未连接
 
-- **WHEN** a tool has no connection
-- **THEN** the card bottom shows "Connect first to enable in project"
+- **WHEN** 工具无连接
+- **THEN** 卡片底部显示"请先连接以在项目中启用"
 
-#### Scenario: No project open
+#### Scenario: 无项目打开
 
-- **WHEN** no project is currently open
-- **THEN** the card bottom shows "Open a project to enable"
+- **WHEN** 当前无项目打开
+- **THEN** 卡片底部显示"打开项目以启用"
 
-### Requirement: Coming Soon tools are visually distinct and non-interactive
+### Requirement: 即将推出的工具视觉上有所区分且不可交互
 
-Tools marked as "coming soon" SHALL have a "Coming Soon" label, be visually grayed out, and SHALL NOT be clickable or expandable.
+标记为"即将推出"的工具 SHALL 显示"即将推出"标签，视觉上呈灰色，且 SHALL NOT 可点击或展开。
 
-#### Scenario: Coming soon tool is disabled
+#### Scenario: 即将推出的工具被禁用
 
-- **WHEN** a tool is marked as coming soon
-- **THEN** the card is rendered with reduced opacity
-- **AND** a "Coming Soon" badge is visible
-- **AND** the card does not respond to click or expand interactions
+- **WHEN** 工具被标记为即将推出
+- **THEN** 卡片以降低透明度渲染
+- **AND** "即将推出"徽章可见
+- **AND** 卡片不响应点击或展开交互
 
-### Requirement: Users can search tools by name
+### Requirement: 用户可按名称搜索工具
 
-The system SHALL provide a search input at the top of the page. Typing in the search input SHALL filter the displayed tool cards to show only those whose names match the search text.
+系统 SHALL 在页面顶部提供搜索输入框。在搜索框中输入文字 SHALL 过滤显示的工具卡片，仅显示名称匹配搜索文字的工具。
 
-#### Scenario: Search filters tools
+#### Scenario: 搜索过滤工具
 
-- **WHEN** the user types "钉钉" in the search box
-- **THEN** only tools with names containing "钉钉" remain visible
-- **AND** tools not matching are hidden
+- **WHEN** 用户在搜索框中输入"钉钉"
+- **THEN** 仅名称包含"钉钉"的工具保持可见
+- **AND** 不匹配的工具被隐藏
 
-### Requirement: Users can filter tools by connection status
+### Requirement: 用户可按连接状态筛选工具
 
-The system SHALL provide a filter dropdown next to the search input with options: "All", "Connected", and "Enabled in Project". The "Enabled in Project" option SHALL only be available when a project context exists.
+系统 SHALL 在搜索输入框旁提供筛选下拉框，选项为："全部"、"已连接"和"在项目中已启用"。"在项目中已启用"选项 SHALL 仅在存在项目上下文时可用。
 
-#### Scenario: Filter by connected status
+#### Scenario: 按已连接状态筛选
 
-- **WHEN** the user selects "Connected" from the filter dropdown
-- **THEN** only tools with an active connection are displayed
+- **WHEN** 用户从筛选下拉框选择"已连接"
+- **THEN** 仅有活跃连接的工具显示
 
-#### Scenario: Enabled in Project filter requires project context
+#### Scenario: 在项目中已启用筛选需要项目上下文
 
-- **WHEN** no project is open and the filter dropdown is opened
-- **THEN** the "Enabled in Project" option is disabled or hidden
+- **WHEN** 无项目打开时打开筛选下拉框
+- **THEN** "在项目中已启用"选项被禁用或隐藏

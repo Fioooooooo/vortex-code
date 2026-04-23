@@ -1,39 +1,37 @@
-# integration-project-enablement Specification
+# integration-project-enablement 规范
 
-## Purpose
-
-TBD - created by archiving change integrations-page. Update Purpose after archive.
+集成工具的项目级启用功能允许用户针对特定项目独立控制工具的启用状态，并支持覆盖全局配置的项目专属参数。
 
 ## Requirements
 
-### Requirement: Tools can be enabled per project
+### Requirement: 工具可按项目启用
 
-When a project is open and a tool is connected, the system SHALL allow the user to toggle the tool's enabled state for that specific project via a switch on the tool card.
+当项目已打开且工具已连接时，系统 SHALL 允许用户通过工具卡片上的开关切换该工具在当前项目中的启用状态。
 
-#### Scenario: Enable a tool in the current project
+#### Scenario: 在当前项目中启用工具
 
-- **WHEN** a tool is connected, a project is open, and the user toggles the enable switch ON
-- **THEN** the tool is marked as enabled for the current project
-- **AND** the project-level configuration panel becomes visible when the card is expanded
+- **WHEN** 工具已连接、项目已打开，且用户将启用开关切换为开启
+- **THEN** 该工具被标记为在当前项目中已启用
+- **AND** 展开卡片时项目级配置面板变为可见
 
-#### Scenario: Disable a tool in the current project
+#### Scenario: 在当前项目中禁用工具
 
-- **WHEN** the user toggles the enable switch OFF for an enabled tool
-- **THEN** the tool is marked as disabled for the current project
-- **AND** the project-level configuration panel is hidden
+- **WHEN** 用户将已启用工具的开关切换为关闭
+- **THEN** 该工具被标记为在当前项目中已禁用
+- **AND** 项目级配置面板隐藏
 
-### Requirement: Project-level configuration overrides global settings
+### Requirement: 项目级配置覆盖全局设置
 
-When a tool is enabled in a project, the system SHALL display a project-specific configuration section within the expanded card. This section SHALL allow overriding global tool parameters for the current project only. The section title SHALL include the current project name.
+当工具在项目中启用时，系统 SHALL 在展开的卡片内显示项目专属配置区块。该区块 SHALL 允许仅针对当前项目覆盖全局工具参数。区块标题 SHALL 包含当前项目名称。
 
-#### Scenario: Project-level config visible for enabled tool
+#### Scenario: 已启用工具的项目级配置可见
 
-- **WHEN** a tool is enabled in the current project and the card is expanded
-- **THEN** a configuration section titled "Configuration for {project-name}" is displayed
-- **AND** it contains project-specific override fields
+- **WHEN** 工具在当前项目中已启用且卡片已展开
+- **THEN** 显示标题为"为 {项目名} 的配置"的配置区块
+- **AND** 其中包含项目专属的覆盖字段
 
-#### Scenario: Project config saves independently
+#### Scenario: 项目配置独立保存
 
-- **WHEN** the user changes a project-level configuration value and saves
-- **THEN** the change applies only to the current project
-- **AND** other projects using the same tool retain their own configurations
+- **WHEN** 用户修改项目级配置值并保存
+- **THEN** 该修改仅应用于当前项目
+- **AND** 使用同一工具的其他项目保留各自的配置

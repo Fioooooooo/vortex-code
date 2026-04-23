@@ -1,75 +1,79 @@
-## ADDED Requirements
+# pipeline-stage-visualization 规范
 
-### Requirement: Stage nodes display status with correct visual state
+Pipeline 阶段可视化定义了进度条中阶段节点的状态视觉表现、连接线过渡状态以及关卡标记的显示规则。
 
-The system SHALL render each stage in the progress bar as a node containing the stage name and a status icon, where the visual appearance reflects the stage's current status.
+## Requirements
 
-#### Scenario: Completed stage
+### Requirement: 阶段节点以正确视觉状态显示状态
 
-- **WHEN** a stage has status "passed"
-- **THEN** the node displays a green checkmark icon
-- **AND** the node border and icon use the success color
+系统 SHALL 将进度条中的每个阶段渲染为包含阶段名称和状态图标的节点，视觉外观反映阶段当前状态。
 
-#### Scenario: Running stage
+#### Scenario: 已完成阶段
 
-- **WHEN** a stage has status "running"
-- **THEN** the node displays a blue spinning icon
-- **AND** the node border and icon use the primary color
+- **WHEN** 阶段状态为"已通过"
+- **THEN** 节点显示绿色勾选图标
+- **AND** 节点边框和图标使用成功色
 
-#### Scenario: Failed stage
+#### Scenario: 运行中阶段
 
-- **WHEN** a stage has status "failed"
-- **THEN** the node displays a red cross icon
-- **AND** the node border and icon use the error color
+- **WHEN** 阶段状态为"运行中"
+- **THEN** 节点显示蓝色旋转图标
+- **AND** 节点边框和图标使用主色
 
-#### Scenario: Skipped stage
+#### Scenario: 失败阶段
 
-- **WHEN** a stage has status "skipped"
-- **THEN** the node displays a gray horizontal line icon
-- **AND** the node uses the neutral muted color
+- **WHEN** 阶段状态为"失败"
+- **THEN** 节点显示红色叉号图标
+- **AND** 节点边框和图标使用错误色
 
-#### Scenario: Waiting approval stage
+#### Scenario: 已跳过阶段
 
-- **WHEN** a stage has status "waiting approval"
-- **THEN** the node displays a yellow pause icon
-- **AND** the node border and icon use the warning color
+- **WHEN** 阶段状态为"已跳过"
+- **THEN** 节点显示灰色横线图标
+- **AND** 节点使用中性静音色
 
-#### Scenario: Pending stage
+#### Scenario: 等待审批阶段
 
-- **WHEN** a stage has status "pending"
-- **THEN** the node displays a gray hollow circle icon
-- **AND** the node uses the neutral muted color
+- **WHEN** 阶段状态为"等待审批"
+- **THEN** 节点显示黄色暂停图标
+- **AND** 节点边框和图标使用警告色
 
-### Requirement: Connecting lines reflect transition state
+#### Scenario: 待执行阶段
 
-The system SHALL render connecting lines between stage nodes that visually indicate whether the transition has been completed, is in progress, or has not been reached.
+- **WHEN** 阶段状态为"待执行"
+- **THEN** 节点显示灰色空心圆图标
+- **AND** 节点使用中性静音色
 
-#### Scenario: Completed transition
+### Requirement: 连接线反映过渡状态
 
-- **WHEN** the source stage is passed and the target stage is not pending
-- **THEN** the connecting line is rendered as a solid line in success color
+系统 SHALL 在阶段节点之间渲染连接线，视觉上指示过渡是否已完成、进行中或尚未到达。
 
-#### Scenario: In-progress transition
+#### Scenario: 已完成过渡
 
-- **WHEN** the source stage is running and transitioning to the next stage
-- **THEN** the connecting line is rendered as a dashed line with primary color animation
+- **WHEN** 源阶段已通过且目标阶段不是待执行
+- **THEN** 连接线渲染为成功色实线
 
-#### Scenario: Unreached transition
+#### Scenario: 进行中过渡
 
-- **WHEN** neither stage has been started
-- **THEN** the connecting line is rendered as a dashed line in neutral muted color
+- **WHEN** 源阶段运行中且正在过渡到下一阶段
+- **THEN** 连接线渲染为带主色动画的虚线
 
-### Requirement: Gate markers display between stages
+#### Scenario: 未到达过渡
 
-The system SHALL render a diamond-shaped marker on the connecting line between two stages when a gate condition exists between them, with color indicating whether the gate is satisfied.
+- **WHEN** 两个阶段均未开始
+- **THEN** 连接线渲染为中性静音色虚线
 
-#### Scenario: Gate marker hover
+### Requirement: 关卡标记显示在阶段之间
 
-- **WHEN** the user hovers over a gate marker
-- **THEN** a tooltip displays the gate condition description
+系统 SHALL 在两个阶段之间存在关卡条件时，在连接线上渲染菱形标记，颜色指示关卡是否满足。
 
-#### Scenario: Unsatisfied gate
+#### Scenario: 关卡标记悬停
 
-- **WHEN** a gate condition is not met
-- **THEN** the diamond marker is rendered in error color
-- **AND** the tooltip shows which specific condition is not satisfied
+- **WHEN** 用户悬停在关卡标记上
+- **THEN** tooltip 显示关卡条件描述
+
+#### Scenario: 未满足的关卡
+
+- **WHEN** 关卡条件未满足
+- **THEN** 菱形标记以错误色渲染
+- **AND** tooltip 显示具体哪个条件未满足

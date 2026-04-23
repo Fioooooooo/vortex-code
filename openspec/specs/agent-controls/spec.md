@@ -1,68 +1,66 @@
-# agent-controls Specification
+# agent-controls 规范
 
-## Purpose
-
-TBD - created by archiving change workspace-page. Update Purpose after archive.
+Agent 控件定义了 Chat 底部输入栏的固定布局、多行输入、发送、附件以及功能栏中 Agent 选择和模式切换的交互规范。
 
 ## Requirements
 
-### Requirement: Input bar is fixed at the bottom of the chat area
+### Requirement: 输入栏固定在 Chat 区域底部
 
-The system SHALL render a fixed input bar at the bottom of the central chat area that does not scroll with the message stream.
+系统 SHALL 在中央 Chat 区域底部渲染固定输入栏，不随消息流滚动。
 
-#### Scenario: Scrolling messages
+#### Scenario: 滚动消息时
 
-- **WHEN** the user scrolls through the message history
-- **THEN** the input bar remains fixed at the bottom of the chat area
+- **WHEN** 用户滚动消息历史
+- **THEN** 输入栏保持固定在 Chat 区域底部
 
-### Requirement: Input bar supports multi-line text entry
+### Requirement: 输入栏支持多行文本输入
 
-The system SHALL provide a multi-line text input that supports Shift+Enter for line breaks and Enter for sending the message.
+系统 SHALL 提供多行文本输入，支持 Shift+Enter 换行和 Enter 发送消息。
 
-#### Scenario: Shift+Enter inserts newline
+#### Scenario: Shift+Enter 插入换行
 
-- **WHEN** the user presses Shift+Enter in the input field
-- **THEN** a newline is inserted in the text
+- **WHEN** 用户在输入框中按 Shift+Enter
+- **THEN** 文本中插入换行符
 
-#### Scenario: Enter sends message
+#### Scenario: Enter 发送消息
 
-- **WHEN** the user presses Enter without Shift
-- **THEN** the message is sent and the input field clears
+- **WHEN** 用户不按 Shift 直接按 Enter
+- **THEN** 消息发送，输入框清空
 
-### Requirement: Input bar has a send button
+### Requirement: 输入栏有发送按钮
 
-The system SHALL provide a send button to the right of the input field that submits the current message.
+系统 SHALL 在输入框右侧提供发送按钮以提交当前消息。
 
-#### Scenario: Clicking send button
+#### Scenario: 点击发送按钮
 
-- **WHEN** the user clicks the send button
-- **THEN** the current message is sent
+- **WHEN** 用户点击发送按钮
+- **THEN** 当前消息被发送
 
-### Requirement: Input bar supports attachments
+### Requirement: 输入栏支持附件
 
-The system SHALL provide an attachment entry point near the input field allowing users to attach images or files as context.
+系统 SHALL 在输入框附近提供附件入口，允许用户附加图片或文件作为上下文。
 
-#### Scenario: Attaching a file
+#### Scenario: 附加文件
 
-- **WHEN** the user selects a file via the attachment entry
-- **THEN** the file appears as an attachment preview in the input area
-- **AND** the file is included as context when the message is sent
+- **WHEN** 用户通过附件入口选择文件
+- **THEN** 文件在输入区域显示为附件预览
+- **AND** 发送消息时文件作为上下文一并发送
 
-### Requirement: Function bar shows agent selector and auto/manual toggle
+### Requirement: 功能栏显示 Agent 选择器和自动/手动切换
 
-The system SHALL render a function bar above the input bar containing the current agent name (clickable to switch agents) on the left and an Auto/Manual mode toggle on the right.
+系统 SHALL 在输入栏上方渲染功能栏，左侧显示当前 Agent 名称（可点击切换），右侧显示自动/手动模式切换。
 
-#### Scenario: Agent name display
+#### Scenario: Agent 名称显示
 
-- **WHEN** the function bar is visible
-- **THEN** the left side shows the current agent name (e.g., "Claude Code")
+- **WHEN** 功能栏可见
+- **THEN** 左侧显示当前 Agent 名称（如"Claude Code"）
 
-#### Scenario: Switching agents
+#### Scenario: 切换 Agent
 
-- **WHEN** the user clicks the agent name
-- **THEN** an agent selection dropdown or modal appears
+- **WHEN** 用户点击 Agent 名称
+- **THEN** 出现 Agent 选择下拉框或模态框
 
-#### Scenario: Auto/Manual toggle
+#### Scenario: 自动/手动切换
 
-- **WHEN** the user toggles between Auto and Manual mode
-- **THEN** the mode changes immediately and affects whether confirmation request cards appear in future agent actions
+- **WHEN** 用户在自动和手动模式之间切换
+- **THEN** 模式立即变更，影响后续 Agent 操作中是否出现确认请求卡片

@@ -1,57 +1,57 @@
-## Purpose
+# pipeline-page 规范
 
-Define the Pipeline page layout and sidebar behavior.
+定义 Pipeline 页面的布局结构和侧边栏行为。
 
 ## Requirements
 
-### Requirement: Pipeline page renders inside the shared app shell
+### Requirement: Pipeline 页面在共享应用外壳内渲染
 
-The system SHALL render the Pipeline page within the shared application shell, displaying the Pipeline-specific content in the shell's main region, with the Activity Bar highlighting the Pipeline icon.
+系统 SHALL 在共享应用外壳内渲染 Pipeline 页面，在外壳主区域显示 Pipeline 专属内容，活动栏高亮 Pipeline 图标。
 
-#### Scenario: User navigates to Pipeline
+#### Scenario: 用户导航到 Pipeline
 
-- **WHEN** the user navigates to `/pipeline`
-- **THEN** the shared app shell header and activity bar are visible
-- **AND** the Activity Bar's Pipeline icon is highlighted with primary color
-- **AND** the main content area shows the Pipeline page layout
+- **WHEN** 用户导航到 `/pipeline`
+- **THEN** 共享应用外壳的 header 和活动栏可见
+- **AND** 活动栏的 Pipeline 图标以主色高亮
+- **AND** 主内容区域显示 Pipeline 页面布局
 
-### Requirement: Pipeline page has a two-region layout
+### Requirement: Pipeline 页面采用两区域布局
 
-The system SHALL render the Pipeline page with a left sidebar panel and a central main area, where the left panel contains tab-switchable content and the central area displays the selected Run detail, Template editor, or empty state.
+系统 SHALL 以左侧边栏面板和中央主区域渲染 Pipeline 页面，左侧面板包含可切换标签的内容，中央区域显示所选运行详情、模板编辑器或空状态。
 
-#### Scenario: Default Pipeline layout
+#### Scenario: 默认 Pipeline 布局
 
-- **WHEN** the user is on the `/pipeline` route
-- **THEN** the left sidebar panel is visible at 260px width
-- **AND** the central main area occupies the remaining horizontal space
-- **AND** no right-side diff panel is present
+- **WHEN** 用户处于 `/pipeline` 路由
+- **THEN** 左侧边栏面板以 260px 宽度可见
+- **AND** 中央主区域占据剩余水平空间
+- **AND** 右侧无 diff 面板
 
-#### Scenario: Responsive behavior on smaller viewports
+#### Scenario: 较小视口的响应式行为
 
-- **WHEN** the viewport width is below the desktop breakpoint
-- **THEN** the left sidebar panel may collapse or overlay
-- **AND** the central main area remains accessible
+- **WHEN** 视口宽度低于桌面断点
+- **THEN** 左侧边栏面板可能折叠或以浮层显示
+- **AND** 中央主区域保持可访问
 
-### Requirement: Pipeline sidebar supports tab switching between Runs and Templates
+### Requirement: Pipeline 侧边栏支持在运行和模板之间切换标签
 
-The system SHALL render the Pipeline sidebar with a tab switcher at the top, allowing the user to switch between "Runs" and "Templates" views. The tab switcher SHALL use the nuxt/ui `UTabs` component with `variant="link"`.
+系统 SHALL 在 Pipeline 侧边栏顶部渲染标签切换器，允许用户在"运行"和"模板"视图之间切换。标签切换器 SHALL 使用 nuxt/ui 的 `UTabs` 组件，`variant="link"`。
 
-#### Scenario: Default tab
+#### Scenario: 默认标签
 
-- **WHEN** the user opens the Pipeline sidebar
-- **THEN** the "Runs" tab is active by default
-- **AND** the RunList is displayed
+- **WHEN** 用户打开 Pipeline 侧边栏
+- **THEN** "运行"标签默认激活
+- **AND** 显示运行列表
 
-#### Scenario: Switch to Templates tab
+#### Scenario: 切换到模板标签
 
-- **WHEN** the user clicks the "Templates" tab
-- **THEN** the TemplateList is displayed
-- **AND** the "Templates" tab shows the active visual state
+- **WHEN** 用户点击"模板"标签
+- **THEN** 显示模板列表
+- **AND** "模板"标签显示激活视觉状态
 
-#### Scenario: Tab switcher visual style
+#### Scenario: 标签切换器视觉样式
 
-- **WHEN** the sidebar tab switcher is rendered
-- **THEN** it uses `UTabs` with `variant="link"`
-- **AND** the active tab has a bottom border indicator in primary color
-- **AND** the active tab has primary-colored text
-- **AND** inactive tabs show muted text with hover highlight
+- **WHEN** 侧边栏标签切换器渲染
+- **THEN** 使用 `variant="link"` 的 `UTabs`
+- **AND** 激活标签有主色底部边框指示器
+- **AND** 激活标签文字为主色
+- **AND** 非激活标签显示静音文字并有悬停高亮

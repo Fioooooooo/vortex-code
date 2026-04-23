@@ -1,70 +1,74 @@
-## ADDED Requirements
+# project-page-routing 规范
 
-### Requirement: Project-scoped pages are top-level routes
+项目页面路由定义了工作区、Pipeline、集成和设置页面的路由结构，以及根路径的项目上下文重定向逻辑。
 
-The system SHALL route workspace, pipeline, and integration pages as top-level routes directly under `/`.
+## Requirements
 
-#### Scenario: Workspace route
+### Requirement: 项目作用域页面为顶级路由
 
-- **WHEN** the user navigates to `/workspace`
-- **THEN** the workspace page is rendered inside the shared application shell
+系统 SHALL 将工作区、Pipeline 和集成页面作为顶级路由直接挂载在 `/` 下。
 
-#### Scenario: Pipeline route
+#### Scenario: 工作区路由
 
-- **WHEN** the user navigates to `/pipeline`
-- **THEN** the pipeline page is rendered inside the shared application shell
+- **WHEN** 用户导航到 `/workspace`
+- **THEN** 工作区页面在共享应用外壳内渲染
 
-#### Scenario: Integration route
+#### Scenario: Pipeline 路由
 
-- **WHEN** the user navigates to `/integration`
-- **THEN** the integration page is rendered inside the shared application shell
+- **WHEN** 用户导航到 `/pipeline`
+- **THEN** Pipeline 页面在共享应用外壳内渲染
 
-### Requirement: Settings page uses /settings path
+#### Scenario: 集成路由
 
-The system SHALL route the settings page at `/settings`.
+- **WHEN** 用户导航到 `/integration`
+- **THEN** 集成页面在共享应用外壳内渲染
 
-#### Scenario: Settings route
+### Requirement: 设置页面使用 /settings 路径
 
-- **WHEN** the user navigates to `/settings`
-- **THEN** the settings page is rendered inside the shared application shell
-- **AND** the page is accessible regardless of whether a project is open
+系统 SHALL 将设置页面路由到 `/settings`。
+
+#### Scenario: 设置路由
+
+- **WHEN** 用户导航到 `/settings`
+- **THEN** 设置页面在共享应用外壳内渲染
+- **AND** 无论是否有项目打开，页面均可访问
 
 ## MODIFIED Requirements
 
-### Requirement: Non-welcome pages share a route-level app shell
+### Requirement: 非欢迎页共享路由级应用外壳
 
-The system SHALL provide a route-level parent page for all application pages, and that parent page SHALL render a shared application shell layout with dedicated header, side navigation, and main content regions.
+系统 SHALL 为所有应用页面提供路由级父页面，该父页面 SHALL 渲染带有专用 header、侧边导航和主内容区域的共享应用外壳布局。
 
-#### Scenario: Shared shell wraps application pages
+#### Scenario: 共享外壳包裹应用页面
 
-- **WHEN** the user navigates to `/workspace`, `/pipeline`, `/integration`, or `/settings`
-- **THEN** the route is rendered inside the shared application shell
-- **AND** the page-specific content is rendered in the shell's main region
+- **WHEN** 用户导航到 `/workspace`、`/pipeline`、`/integration` 或 `/settings`
+- **THEN** 路由在共享应用外壳内渲染
+- **AND** 页面专属内容在外壳主区域渲染
 
-### Requirement: Root application entry redirects by current project context
+### Requirement: 根路径入口根据当前项目上下文重定向
 
-The system SHALL resolve access to `/` by checking the current project context and keeping the user on `/` (which renders WelcomeView) when no project is selected, or redirecting to `/workspace` when a project is already selected.
+系统 SHALL 通过检查当前项目上下文来解析对 `/` 的访问：无项目时保持在 `/`（渲染 WelcomeView），已有项目时重定向到 `/workspace`。
 
-#### Scenario: No project stays on root
+#### Scenario: 无项目时停留在根路径
 
-- **WHEN** the user navigates to `/` and there is no current project
-- **THEN** the application stays on `/` and renders the WelcomeView inside the shared shell
+- **WHEN** 用户导航到 `/` 且无当前项目
+- **THEN** 应用停留在 `/` 并在共享外壳内渲染 WelcomeView
 
-#### Scenario: Current project redirects to workspace
+#### Scenario: 有当前项目时重定向到工作区
 
-- **WHEN** the user navigates to `/` and a current project exists
-- **THEN** the application redirects to `/workspace`
+- **WHEN** 用户导航到 `/` 且存在当前项目
+- **THEN** 应用重定向到 `/workspace`
 
-### Requirement: Application pages require a current project
+### Requirement: 应用页面需要当前项目
 
-The system SHALL prevent access to project-scoped application routes when no current project is selected by rendering WelcomeView instead.
+系统 SHALL 在无当前项目时阻止访问项目作用域的应用路由，改为渲染 WelcomeView。
 
-#### Scenario: Project-scoped route without project
+#### Scenario: 无项目时访问项目作用域路由
 
-- **WHEN** the user navigates directly to `/workspace`, `/pipeline`, or `/integration` without a current project
-- **THEN** the application renders the WelcomeView in the main content region
+- **WHEN** 用户在无当前项目的情况下直接导航到 `/workspace`、`/pipeline` 或 `/integration`
+- **THEN** 应用在主内容区域渲染 WelcomeView
 
-#### Scenario: Settings route is accessible without project
+#### Scenario: 无项目时设置路由可访问
 
-- **WHEN** the user navigates to `/settings` without a current project
-- **THEN** the Settings page is accessible
+- **WHEN** 用户在无当前项目的情况下导航到 `/settings`
+- **THEN** 设置页面可正常访问

@@ -1,51 +1,49 @@
-# integration-config-panel Specification
+# integration-config-panel 规范
 
-## Purpose
-
-TBD - created by archiving change integrations-page. Update Purpose after archive.
+集成配置面板定义了工具卡片展开后的配置区块结构，包含账户连接、工具参数和项目配置三个区块。
 
 ## Requirements
 
-### Requirement: Tool cards expand to reveal configuration panel
+### Requirement: 工具卡片展开后显示配置面板
 
-Clicking a tool card (that is not coming soon) SHALL expand the card to reveal a configuration panel below the card front. The expansion SHALL use an accordion-style animation without navigating to a new page.
+点击非"即将推出"的工具卡片 SHALL 展开卡片，在卡片正面下方显示配置面板。展开 SHALL 使用手风琴动画，不导航到新页面。
 
-#### Scenario: Card expands on click
+#### Scenario: 点击后卡片展开
 
-- **WHEN** the user clicks an available tool card
-- **THEN** the card expands downward
-- **AND** a configuration panel is revealed below the card front
-- **AND** clicking the same card again collapses it
+- **WHEN** 用户点击可用的工具卡片
+- **THEN** 卡片向下展开
+- **AND** 卡片正面下方显示配置面板
+- **AND** 再次点击同一卡片则折叠
 
-### Requirement: Configuration panel has three sections
+### Requirement: 配置面板包含三个区块
 
-The expanded configuration panel SHALL contain up to three sections in order: (1) Account Connection, (2) Tool Parameters (visible only when connected), (3) Project Configuration (visible only when enabled in a project).
+展开的配置面板 SHALL 按顺序包含最多三个区块：（1）账户连接，（2）工具参数（仅在已连接时可见），（3）项目配置（仅在项目中已启用时可见）。
 
-#### Scenario: Unconnected tool shows only connection section
+#### Scenario: 未连接工具仅显示连接区块
 
-- **WHEN** the user expands an unconnected tool card
-- **THEN** only the "Account Connection" section is visible
+- **WHEN** 用户展开未连接的工具卡片
+- **THEN** 仅"账户连接"区块可见
 
-#### Scenario: Connected tool shows connection and parameters
+#### Scenario: 已连接工具显示连接和参数区块
 
-- **WHEN** the user expands a connected tool card
-- **THEN** both "Account Connection" and "Tool Parameters" sections are visible
+- **WHEN** 用户展开已连接的工具卡片
+- **THEN** "账户连接"和"工具参数"区块均可见
 
-#### Scenario: Enabled tool shows all three sections
+#### Scenario: 已启用工具显示全部三个区块
 
-- **WHEN** the user expands a tool that is connected and enabled in the current project
-- **THEN** all three sections are visible: Connection, Parameters, and Project Configuration
+- **WHEN** 用户展开已连接且在当前项目中已启用的工具
+- **THEN** 全部三个区块可见：连接、参数和项目配置
 
-### Requirement: Tool Parameters section contains tool-specific settings
+### Requirement: 工具参数区块包含工具专属设置
 
-The Tool Parameters section SHALL display configuration fields specific to the tool type. Examples include: default organization for Codeup, pipeline template for Flow, target region for Alibaba Cloud, webhook URL and event triggers for DingTalk.
+工具参数区块 SHALL 显示特定工具类型的配置字段。示例包括：Codeup 的默认组织、Flow 的 pipeline 模板、阿里云的目标地域、钉钉的 Webhook URL 和事件触发器。
 
-#### Scenario: Codeup parameters render correctly
+#### Scenario: Codeup 参数正确渲染
 
-- **WHEN** the user expands a connected Codeup card
-- **THEN** the Tool Parameters section shows an organization selector and branch naming preference
+- **WHEN** 用户展开已连接的 Codeup 卡片
+- **THEN** 工具参数区块显示组织选择器和分支命名偏好
 
-#### Scenario: DingTalk parameters render correctly
+#### Scenario: 钉钉参数正确渲染
 
-- **WHEN** the user expands a connected DingTalk card
-- **THEN** the Tool Parameters section shows a webhook URL input and event trigger checkboxes
+- **WHEN** 用户展开已连接的钉钉卡片
+- **THEN** 工具参数区块显示 Webhook URL 输入框和事件触发器复选框

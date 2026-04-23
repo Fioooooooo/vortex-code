@@ -1,71 +1,75 @@
-## ADDED Requirements
+# pipeline-stage-details 规范
 
-### Requirement: Stage detail view has a unified layout framework
+Pipeline 阶段详情定义了各类型阶段（讨论、编码、测试、评审、部署）在详情视图中的内容展示规范。
 
-The system SHALL render all stage detail content within a unified layout framework containing a title bar with stage name, status badge, duration, token usage, and action buttons.
+## Requirements
 
-#### Scenario: View stage detail header
+### Requirement: 阶段详情视图采用统一布局框架
 
-- **WHEN** the user views any stage's detail
-- **THEN** the title bar shows the stage name, status badge, elapsed time, and token count
-- **AND** action buttons include "Rerun Stage", "Skip Stage", and "Force Pass" (visible when failed)
+系统 SHALL 在统一布局框架内渲染所有阶段详情内容，框架包含带有阶段名称、状态徽章、耗时、Token 用量和操作按钮的标题栏。
 
-### Requirement: Discuss stage shows conversation and summary
+#### Scenario: 查看阶段详情标题栏
 
-The system SHALL display the requirement discussion stage as a conversation thread followed by a summary card containing the task breakdown and technical decisions.
+- **WHEN** 用户查看任意阶段的详情
+- **THEN** 标题栏显示阶段名称、状态徽章、已用时间和 Token 数量
+- **AND** 操作按钮包括"重新运行阶段"、"跳过阶段"和"强制通过"（失败时可见）
 
-#### Scenario: View discuss stage with human confirmation
+### Requirement: 讨论阶段显示对话和摘要
 
-- **WHEN** the user views a discuss stage that requires human confirmation
-- **THEN** the conversation is displayed in the same visual style as Workspace chat
-- **AND** the last message is a confirmation card awaiting user action
+系统 SHALL 将需求讨论阶段显示为对话线程，后跟包含任务分解和技术决策的摘要卡片。
 
-#### Scenario: View discuss stage conclusion
+#### Scenario: 查看需要人工确认的讨论阶段
 
-- **WHEN** the discussion has concluded
-- **THEN** a summary card is displayed at the end showing task breakdown and technical decisions
-- **AND** the summary content is formatted as the input for the next stage
+- **WHEN** 用户查看需要人工确认的讨论阶段
+- **THEN** 对话以与工作区 Chat 相同的视觉风格显示
+- **AND** 最后一条消息是等待用户操作的确认卡片
 
-### Requirement: Code stage shows execution and file changes
+#### Scenario: 查看讨论阶段结论
 
-The system SHALL display the code writing stage in two parts: the upper part shows the agent's execution process as a sequence of operation cards, and the lower part shows the list of file changes with expandable inline diffs.
+- **WHEN** 讨论已结束
+- **THEN** 末尾显示摘要卡片，包含任务分解和技术决策
+- **AND** 摘要内容格式化为下一阶段的输入
 
-#### Scenario: View code stage execution
+### Requirement: 编码阶段显示执行过程和文件变更
 
-- **WHEN** the user views a code stage
-- **THEN** the execution process is shown as a sequence of file operation and command cards
-- **AND** each file change can be clicked to expand and show its inline diff
+系统 SHALL 将代码编写阶段分两部分显示：上部以操作卡片序列显示 Agent 的执行过程，下部显示文件变更列表，支持展开内联 diff。
 
-### Requirement: Test stage shows test results
+#### Scenario: 查看编码阶段执行过程
 
-The system SHALL display the unit test stage with a test result summary card showing passed count, failed count, and coverage percentage, plus detailed failure information for any failed tests.
+- **WHEN** 用户查看编码阶段
+- **THEN** 执行过程以文件操作和命令卡片序列显示
+- **AND** 每个文件变更可点击展开显示内联 diff
 
-#### Scenario: View test results with failures
+### Requirement: 测试阶段显示测试结果
 
-- **WHEN** the user views a test stage with failures
-- **THEN** the summary card shows passed/failed counts and coverage
-- **AND** failed tests are listed with error details
-- **AND** if auto-repair is configured, the agent's repair attempts are shown chronologically
+系统 SHALL 将单元测试阶段显示为测试结果摘要卡片，包含通过数、失败数和覆盖率百分比，以及失败测试的详细信息。
 
-### Requirement: Review stage shows review comments
+#### Scenario: 查看有失败的测试结果
 
-The system SHALL display the code review stage as a list of review comment cards, each containing the affected file and line numbers, issue category, severity level, and description.
+- **WHEN** 用户查看有失败的测试阶段
+- **THEN** 摘要卡片显示通过/失败数量和覆盖率
+- **AND** 失败测试列出错误详情
+- **AND** 若配置了自动修复，按时间顺序显示 Agent 的修复尝试
 
-#### Scenario: View review comment
+### Requirement: 评审阶段显示评审意见
 
-- **WHEN** the user views a review stage
-- **THEN** each review comment card shows file path, line numbers, category badge, severity badge, and description
-- **AND** clicking a line number navigates to the corresponding diff position
-- **AND** if auto-fix is configured, the fix process and re-review results are shown
+系统 SHALL 将代码评审阶段显示为评审意见卡片列表，每张卡片包含受影响的文件和行号、问题分类、严重级别和描述。
 
-### Requirement: Deploy stage shows deployment log and result
+#### Scenario: 查看评审意见
 
-The system SHALL display the deploy stage as a log stream with deployment target information, deployment result status, and post-deployment verification results if configured.
+- **WHEN** 用户查看评审阶段
+- **THEN** 每张评审意见卡片显示文件路径、行号、分类徽章、严重级别徽章和描述
+- **AND** 点击行号导航到对应的 diff 位置
+- **AND** 若配置了自动修复，显示修复过程和重新评审结果
 
-#### Scenario: View deploy stage
+### Requirement: 部署阶段显示部署日志和结果
 
-- **WHEN** the user views a deploy stage
-- **THEN** a scrollable log stream is displayed
-- **AND** deployment target information is shown
-- **AND** the final deployment result is prominently displayed
-- **AND** verification results appear after successful deployment if configured
+系统 SHALL 将部署阶段显示为带有部署目标信息、部署结果状态的日志流，以及配置了验证时的部署后验证结果。
+
+#### Scenario: 查看部署阶段
+
+- **WHEN** 用户查看部署阶段
+- **THEN** 显示可滚动的日志流
+- **AND** 显示部署目标信息
+- **AND** 最终部署结果突出显示
+- **AND** 若配置了验证，成功部署后显示验证结果

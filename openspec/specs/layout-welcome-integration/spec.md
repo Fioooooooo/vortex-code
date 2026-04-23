@@ -1,52 +1,56 @@
-## ADDED Requirements
+# layout-welcome-integration 规范
 
-### Requirement: WelcomeView is rendered inside the shared application shell
+欢迎页集成布局定义了无项目打开时 WelcomeView 在共享应用外壳内的渲染方式，以及欢迎页功能的完整保留。
 
-The system SHALL render the WelcomeView component inside the main content region of the shared application shell when no project is currently open.
+## Requirements
 
-#### Scenario: No project shows WelcomeView in layout
+### Requirement: WelcomeView 在共享应用外壳内渲染
 
-- **WHEN** the application starts with no active project
-- **THEN** the shared application shell header and side navigation are visible
-- **AND** the WelcomeView is rendered in the main content region, centered
+系统 SHALL 在无项目打开时，将 WelcomeView 组件渲染在共享应用外壳的主内容区域内。
 
-#### Scenario: WelcomeView has consistent theming
+#### Scenario: 无项目时在布局中显示 WelcomeView
 
-- **WHEN** the WelcomeView is displayed inside the shared shell
-- **THEN** the theme toggle in the header works and affects the WelcomeView appearance
-- **AND** the WelcomeView uses the same background color as other pages
+- **WHEN** 应用启动时无活跃项目
+- **THEN** 共享应用外壳的 header 和侧边导航可见
+- **AND** WelcomeView 居中渲染在主内容区域
 
-### Requirement: WelcomeView preserves all original functionality
+#### Scenario: WelcomeView 主题一致
 
-The system SHALL preserve all Welcome page functionality within the WelcomeView component.
+- **WHEN** WelcomeView 在共享外壳内显示
+- **THEN** header 中的主题切换生效并影响 WelcomeView 外观
+- **AND** WelcomeView 使用与其他页面相同的背景色
 
-#### Scenario: Open Folder from WelcomeView
+### Requirement: WelcomeView 保留所有原有功能
 
-- **WHEN** user clicks "Open Folder" in WelcomeView
-- **THEN** a directory selection dialog is invoked
-- **AND** upon selection, the current project context is updated
-- **AND** the main content region switches from WelcomeView to the project workspace
+系统 SHALL 在 WelcomeView 组件内保留所有欢迎页功能。
 
-#### Scenario: Create Project from WelcomeView
+#### Scenario: 从 WelcomeView 打开文件夹
 
-- **WHEN** user clicks "Create Project" in WelcomeView
-- **THEN** the project creation modal opens
-- **AND** upon successful creation, the main content region switches to the project workspace
+- **WHEN** 用户在 WelcomeView 中点击"打开文件夹"
+- **THEN** 调起目录选择对话框
+- **AND** 选择后当前项目上下文更新
+- **AND** 主内容区域从 WelcomeView 切换到项目工作区
 
-#### Scenario: Recent projects in WelcomeView
+#### Scenario: 从 WelcomeView 创建项目
 
-- **WHEN** user clicks a recent project in WelcomeView
-- **THEN** the current project context is updated
-- **AND** the main content region switches to the project workspace
+- **WHEN** 用户在 WelcomeView 中点击"创建项目"
+- **THEN** 项目创建模态框打开
+- **AND** 成功创建后主内容区域切换到项目工作区
+
+#### Scenario: WelcomeView 中的最近项目
+
+- **WHEN** 用户在 WelcomeView 中点击最近项目
+- **THEN** 当前项目上下文更新
+- **AND** 主内容区域切换到项目工作区
 
 ## MODIFIED Requirements
 
-### Requirement: Welcome page displays when no project is open
+### Requirement: 无项目打开时显示欢迎页
 
-The system SHALL display the Welcome content when no project is currently open, and the Welcome content SHALL render inside the shared application shell.
+系统 SHALL 在无项目打开时显示欢迎内容，欢迎内容 SHALL 在共享应用外壳内渲染。
 
-#### Scenario: User opens app with no project
+#### Scenario: 用户打开应用时无项目
 
-- **WHEN** the application starts with no active project
-- **THEN** the Welcome content is displayed in the main content region
-- **AND** the shared application shell header and side navigation are visible
+- **WHEN** 应用启动时无活跃项目
+- **THEN** 欢迎内容显示在主内容区域
+- **AND** 共享应用外壳的 header 和侧边导航可见

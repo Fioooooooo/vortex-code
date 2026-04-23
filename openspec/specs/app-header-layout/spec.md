@@ -1,161 +1,159 @@
-# app-header-layout Specification
+# app-header-layout 规范
 
-## Purpose
-
-TBD - created by archiving change optimize-app-header. Update Purpose after archive.
+应用 Header 布局定义了 AppHeader 组件的尺寸、三栏布局、交互元素、Electron 窗口拖拽以及 macOS 原生标题栏的处理规范。
 
 ## Requirements
 
-### Requirement: Header has fixed height of 35px
+### Requirement: Header 固定高度为 35px
 
-The system SHALL render the AppHeader with a fixed height of 35 pixels.
+系统 SHALL 以 35 像素固定高度渲染 AppHeader。
 
-#### Scenario: Header renders at correct height
+#### Scenario: Header 以正确高度渲染
 
-- **WHEN** the AppHeader component is rendered
-- **THEN** its height is exactly 35px
+- **WHEN** AppHeader 组件渲染
+- **THEN** 其高度恰好为 35px
 
-### Requirement: Header uses three-column layout
+### Requirement: Header 采用三栏布局
 
-The system SHALL divide the AppHeader horizontally into three sections: left (20% width), center (60% width), and right (20% width).
+系统 SHALL 将 AppHeader 水平分为三个区域：左侧（20% 宽度）、中央（60% 宽度）和右侧（20% 宽度）。
 
-#### Scenario: Layout proportions are correct
+#### Scenario: 布局比例正确
 
-- **WHEN** the AppHeader is rendered
-- **THEN** the left section occupies 20% of the width
-- **AND** the center section occupies 60% of the width
-- **AND** the right section occupies 20% of the width
+- **WHEN** AppHeader 渲染
+- **THEN** 左侧区域占 20% 宽度
+- **AND** 中央区域占 60% 宽度
+- **AND** 右侧区域占 20% 宽度
 
-### Requirement: Left section is empty placeholder
+### Requirement: 左侧区域为空占位
 
-The system SHALL render the left section as an empty placeholder with no visible content.
+系统 SHALL 将左侧区域渲染为无可见内容的空占位。
 
-#### Scenario: Left section has no content
+#### Scenario: 左侧区域无内容
 
-- **WHEN** the AppHeader is rendered
-- **THEN** the left section contains no interactive elements or text
+- **WHEN** AppHeader 渲染
+- **THEN** 左侧区域不包含任何交互元素或文字
 
-### Requirement: Center section displays project and agent info
+### Requirement: 中央区域显示项目和 Agent 信息
 
-The system SHALL render the center section with the current project name, current agent name, and a chevron-down icon, all horizontally centered.
+系统 SHALL 在中央区域渲染当前项目名称、当前 Agent 名称和向下箭头图标，所有元素水平居中。
 
-#### Scenario: Center section shows project switcher
+#### Scenario: 中央区域显示项目切换器（有活跃项目）
 
-- **WHEN** the AppHeader is rendered with an active project
-- **THEN** the center section displays the project name
-- **AND** the current agent name
-- **AND** a chevron-down icon
-- **AND** all elements are horizontally centered within the section
+- **WHEN** AppHeader 在有活跃项目时渲染
+- **THEN** 中央区域显示项目名称
+- **AND** 显示当前 Agent 名称
+- **AND** 显示向下箭头图标
+- **AND** 所有元素在区域内水平居中
 
-#### Scenario: Center section shows fallback when no project
+#### Scenario: 中央区域无项目时显示回退内容
 
-- **WHEN** the AppHeader is rendered without an active project
-- **THEN** the center section displays "No Project" as the project name
+- **WHEN** AppHeader 在无活跃项目时渲染
+- **THEN** 中央区域显示"无项目"作为项目名称
 
-### Requirement: Right section contains theme toggle icon button
+### Requirement: 右侧区域仅包含主题切换图标按钮
 
-The system SHALL render only the theme toggle icon button in the right section.
+系统 SHALL 在右侧区域仅渲染主题切换图标按钮。
 
-#### Scenario: Right section has theme toggle
+#### Scenario: 右侧区域有主题切换
 
-- **WHEN** the AppHeader is rendered
-- **THEN** the right section contains a theme toggle icon button
-- **AND** no other controls (token usage, agent status) are present
+- **WHEN** AppHeader 渲染
+- **THEN** 右侧区域包含主题切换图标按钮
+- **AND** 不存在其他控件（Token 用量、Agent 状态）
 
-### Requirement: Right section icon button container has proper spacing
+### Requirement: 右侧区域图标按钮容器有适当间距
 
-The system SHALL render the right section with an inner container that has 8px right padding, and icon buttons inside are right-aligned with 4px gap between them.
+系统 SHALL 以 8px 右内边距渲染右侧区域的内部容器，内部图标按钮右对齐，按钮间距为 4px。
 
-#### Scenario: Icon button container layout
+#### Scenario: 图标按钮容器布局
 
-- **WHEN** the AppHeader is rendered
-- **THEN** the right section's inner container has 8px right padding
-- **AND** icon buttons are aligned to the right
-- **AND** the gap between icon buttons is 4px
+- **WHEN** AppHeader 渲染
+- **THEN** 右侧区域内部容器有 8px 右内边距
+- **AND** 图标按钮右对齐
+- **AND** 图标按钮间距为 4px
 
-### Requirement: Icon buttons have fixed dimensions
+### Requirement: 图标按钮有固定尺寸
 
-The system SHALL render each icon button at 22px by 22px, with the actual icon at 16px by 16px.
+系统 SHALL 将每个图标按钮渲染为 22px × 22px，实际图标为 16px × 16px。
 
-#### Scenario: Icon button sizing
+#### Scenario: 图标按钮尺寸
 
-- **WHEN** the AppHeader is rendered
-- **THEN** each icon button has width 22px and height 22px
-- **AND** each icon inside has width 16px and height 16px
+- **WHEN** AppHeader 渲染
+- **THEN** 每个图标按钮宽 22px、高 22px
+- **AND** 每个图标宽 16px、高 16px
 
-### Requirement: Icon buttons have hover background effect
+### Requirement: 图标按钮有悬停背景效果
 
-The system SHALL apply a background color change on hover for each icon button.
+系统 SHALL 在每个图标按钮悬停时应用背景色变化。
 
-#### Scenario: Hover effect on icon button
+#### Scenario: 图标按钮悬停效果
 
-- **WHEN** the user hovers over an icon button
-- **THEN** the icon button's background color changes
+- **WHEN** 用户悬停在图标按钮上
+- **THEN** 图标按钮背景色改变
 
-### Requirement: Header supports Electron window drag
+### Requirement: Header 支持 Electron 窗口拖拽
 
-The system SHALL apply `-webkit-app-region: drag` to the Header root element to enable Electron window dragging.
+系统 SHALL 在 Header 根元素上应用 `-webkit-app-region: drag` 以启用 Electron 窗口拖拽。
 
-#### Scenario: Header is draggable
+#### Scenario: Header 可拖拽
 
-- **WHEN** the AppHeader is rendered in an Electron environment
-- **THEN** the user can drag the window by clicking and dragging the Header area
+- **WHEN** AppHeader 在 Electron 环境中渲染
+- **THEN** 用户可通过点击并拖拽 Header 区域移动窗口
 
-### Requirement: Header interactive elements do not trigger drag
+### Requirement: Header 交互元素不触发拖拽
 
-The system SHALL apply `-webkit-app-region: no-drag` to all interactive elements inside the Header (buttons, icons, clickable areas) to prevent them from initiating window drag.
+系统 SHALL 在 Header 内所有交互元素（按钮、图标、可点击区域）上应用 `-webkit-app-region: no-drag`，防止其触发窗口拖拽。
 
-#### Scenario: Interactive elements are clickable
+#### Scenario: 交互元素可点击
 
-- **WHEN** the user clicks on a button or interactive element inside the Header
-- **THEN** the click triggers the element's intended action
-- **AND** the window does not start dragging
+- **WHEN** 用户点击 Header 内的按钮或交互元素
+- **THEN** 点击触发元素的预期操作
+- **AND** 窗口不开始拖拽
 
-### Requirement: macOS window hides native titlebar but keeps traffic lights
+### Requirement: macOS 隐藏原生标题栏但保留交通灯按钮
 
-On macOS, the system SHALL create the main window with `titleBarStyle: 'hidden'` to hide the native titlebar while preserving the traffic light buttons.
+在 macOS 上，系统 SHALL 以 `titleBarStyle: 'hidden'` 创建主窗口，隐藏原生标题栏同时保留交通灯按钮。
 
-#### Scenario: macOS window has no native titlebar
+#### Scenario: macOS 窗口无原生标题栏
 
-- **WHEN** the application launches on macOS
-- **THEN** the window has no native titlebar
-- **AND** the traffic light buttons (close, minimize, maximize) are visible
+- **WHEN** 应用在 macOS 上启动
+- **THEN** 窗口无原生标题栏
+- **AND** 交通灯按钮（关闭、最小化、最大化）可见
 
-### Requirement: Center section uses bordered div with vertical spacing
+### Requirement: 中央区域使用带边框的 div 并有垂直间距
 
-The system SHALL render the center section's project switcher as a bordered div container with vertical spacing from the Header edges, instead of a UButton.
+系统 SHALL 将中央区域的项目切换器渲染为带边框的 div 容器，与 Header 上下边缘有垂直间距，而非使用 UButton。
 
-#### Scenario: Center section has bordered div
+#### Scenario: 中央区域有带边框的 div
 
-- **WHEN** the AppHeader is rendered
-- **THEN** the center section contains a div with a border
-- **AND** the div has vertical spacing from the Header top and bottom edges
-- **AND** the div is horizontally centered
+- **WHEN** AppHeader 渲染
+- **THEN** 中央区域包含一个带边框的 div
+- **AND** 该 div 与 Header 上下边缘有垂直间距
+- **AND** 该 div 水平居中
 
-### Requirement: Clicking center div opens project switcher dropdown
+### Requirement: 点击中央 div 打开项目切换器下拉框
 
-The system SHALL open a dropdown menu when the user clicks the center section div, showing recent projects and a "Create New Project" option separated by a divider.
+系统 SHALL 在用户点击中央区域 div 时打开下拉菜单，显示最近项目和以分隔线分隔的"新建项目"选项。
 
-#### Scenario: Dropdown shows recent projects
+#### Scenario: 下拉框显示最近项目
 
-- **WHEN** the user clicks the center section div
-- **THEN** a dropdown menu opens
-- **AND** the menu displays recent projects in a scrollable list
-- **AND** a divider separates the project list from the "Create New Project" option
+- **WHEN** 用户点击中央区域 div
+- **THEN** 下拉菜单打开
+- **AND** 菜单以可滚动列表显示最近项目
+- **AND** 分隔线将项目列表与"新建项目"选项分开
 
-#### Scenario: Clicking "Create New Project" opens modal
+#### Scenario: 点击"新建项目"打开模态框
 
-- **WHEN** the user clicks "Create New Project" in the dropdown
-- **THEN** the CreateProjectModal opens
-- **AND** the modal functions identically to the welcome page's create project flow
+- **WHEN** 用户点击下拉框中的"新建项目"
+- **THEN** CreateProjectModal 打开
+- **AND** 模态框功能与欢迎页的创建项目流程完全一致
 
-### Requirement: macOS traffic lights are positioned in the left header area
+### Requirement: macOS 交通灯按钮定位在 Header 左侧区域
 
-On macOS, the system SHALL position the traffic light buttons within the Header's left section using `trafficLightPosition`.
+在 macOS 上，系统 SHALL 使用 `trafficLightPosition` 将交通灯按钮定位在 Header 左侧区域内。
 
-#### Scenario: Traffic lights align with header left section
+#### Scenario: 交通灯与 Header 左侧区域对齐
 
-- **WHEN** the application launches on macOS
-- **THEN** the traffic light buttons are positioned at the top-left of the window
-- **AND** they visually align with the Header's left 20% section
-- **AND** they do not overlap with the center section content
+- **WHEN** 应用在 macOS 上启动
+- **THEN** 交通灯按钮定位在窗口左上角
+- **AND** 与 Header 左侧 20% 区域视觉对齐
+- **AND** 不与中央区域内容重叠

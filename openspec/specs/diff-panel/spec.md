@@ -1,72 +1,70 @@
-# diff-panel Specification
+# diff-panel 规范
 
-## Purpose
-
-TBD - created by archiving change workspace-page. Update Purpose after archive.
+Diff 面板位于工作区右侧，默认折叠，支持通过多种触发方式展开，提供并排和内联两种 diff 渲染模式。
 
 ## Requirements
 
-### Requirement: Diff panel is collapsed by default
+### Requirement: Diff 面板默认折叠
 
-The system SHALL render the right Diff panel hidden by default.
+系统 SHALL 默认隐藏右侧 Diff 面板。
 
-#### Scenario: Initial workspace load
+#### Scenario: 工作区初始加载
 
-- **WHEN** the Workspace page loads
-- **THEN** the Diff panel is collapsed and only a grab handle is visible on the right edge
+- **WHEN** 工作区页面加载
+- **THEN** Diff 面板折叠，右侧边缘仅可见拖拽手柄
 
-### Requirement: Diff panel expands via multiple triggers
+### Requirement: Diff 面板通过多种触发方式展开
 
-The system SHALL expand the Diff panel when the user clicks a file operation card in the chat, clicks a changed file in the file tree, or manually drags/click the right-edge handle.
+系统 SHALL 在用户点击 Chat 中的文件操作卡片、点击文件树中的已变更文件或手动拖拽/点击右侧边缘手柄时展开 Diff 面板。
 
-#### Scenario: Expand from file operation card
+#### Scenario: 从文件操作卡片展开
 
-- **WHEN** the user clicks a file operation message card in the chat area
-- **THEN** the Diff panel expands showing that file's diff
+- **WHEN** 用户点击 Chat 区域中的文件操作消息卡片
+- **THEN** Diff 面板展开并显示该文件的 diff
 
-#### Scenario: Expand from file tree
+#### Scenario: 从文件树展开
 
-- **WHEN** the user clicks a file with changes in the file tree
-- **THEN** the Diff panel expands showing that file's diff
+- **WHEN** 用户点击文件树中有变更的文件
+- **THEN** Diff 面板展开并显示该文件的 diff
 
-#### Scenario: Manual expand via handle
+#### Scenario: 通过手柄手动展开
 
-- **WHEN** the user clicks or drags the right-edge handle
-- **THEN** the Diff panel expands
+- **WHEN** 用户点击或拖拽右侧边缘手柄
+- **THEN** Diff 面板展开
 
-### Requirement: Diff panel shows file path and close button
+### Requirement: Diff 面板显示文件路径和关闭按钮
 
-The system SHALL display the current file path in the Diff panel header with a close button to collapse the panel.
+系统 SHALL 在 Diff 面板 header 中显示当前文件路径，并提供关闭按钮以折叠面板。
 
-#### Scenario: Diff panel header
+#### Scenario: Diff 面板 header
 
-- **WHEN** the Diff panel is open
-- **THEN** the header shows the file path and a close button
+- **WHEN** Diff 面板打开
+- **THEN** header 显示文件路径和关闭按钮
 
-#### Scenario: Closing the panel
+#### Scenario: 关闭面板
 
-- **WHEN** the user clicks the close button
-- **THEN** the Diff panel collapses
+- **WHEN** 用户点击关闭按钮
+- **THEN** Diff 面板折叠
 
-### Requirement: Diff panel supports side-by-side and inline modes
+### Requirement: Diff 面板支持并排和内联模式
 
-The system SHALL provide a toggle to switch between side-by-side and inline diff rendering modes.
+系统 SHALL 提供切换按钮，在并排和内联 diff 渲染模式之间切换。
 
-#### Scenario: Side-by-side mode
+#### Scenario: 并排模式
 
-- **WHEN** the user selects side-by-side mode
-- **THEN** the diff is rendered with original and modified versions side by side
+- **WHEN** 用户选择并排模式
+- **THEN** diff 以原始版本和修改版本并排渲染
 
-#### Scenario: Inline mode
+#### Scenario: 内联模式
 
-- **WHEN** the user selects inline mode
-- **THEN** the diff is rendered as a single column with additions and deletions inline
+- **WHEN** 用户选择内联模式
+- **THEN** diff 以单列形式渲染，新增和删除内容内联显示
 
-### Requirement: Diff panel supports multiple changed files
+### Requirement: Diff 面板支持多个已变更文件
 
-The system SHALL provide a file list dropdown or tab bar at the top of the Diff panel when multiple files have changes in the current session, allowing the user to switch between them.
+系统 SHALL 在当前 session 有多个文件变更时，在 Diff 面板顶部提供文件列表下拉框或标签栏，允许用户在不同文件的 diff 之间切换。
 
-#### Scenario: Multiple file changes
+#### Scenario: 多文件变更
 
-- **WHEN** the current session has changes in multiple files
-- **THEN** the Diff panel header includes a file selector to switch between diffs
+- **WHEN** 当前 session 有多个文件的变更
+- **THEN** Diff 面板 header 包含文件选择器以在不同 diff 之间切换
