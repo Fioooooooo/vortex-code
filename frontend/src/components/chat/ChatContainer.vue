@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { storeToRefs } from "pinia";
-import { isReasoningUIPart, isTextUIPart, isToolUIPart, getToolName } from "ai";
+import { isReasoningUIPart, isTextUIPart, isToolUIPart } from "ai";
 import { isPartStreaming, isToolStreaming } from "@nuxt/ui/utils/ai";
 import type { AgentType } from "@shared/types/chat";
 import { useChatStore } from "@renderer/stores/chat";
 import ChatComark from "./ChatComark";
 import AgentSelect from "./AgentSelect.vue";
+import { getToolText, getToolSuffix, getToolOutput } from "@renderer/utils/chatTool";
 
 const store = useChatStore();
 const { agentStatus, activeSession } = storeToRefs(store);
@@ -32,8 +33,8 @@ function handleSubmit(): void {
   <div class="flex-1 flex flex-col min-h-0">
     <div class="flex-1 overflow-y-auto py-4 px-2 relative">
       <UChatMessages
-        :should-auto-scroll="true"
-        :should-scroll-to-bottom="false"
+        should-auto-scroll
+        should-scroll-to-bottom
         :auto-scroll="false"
         :messages="messages"
         :status="agentStatus"
@@ -77,9 +78,14 @@ function handleSubmit(): void {
 
             <UChatTool
               v-else-if="isToolUIPart(part)"
-              :text="getToolName(part)"
               :streaming="isToolStreaming(part)"
-            />
+              :text="getToolText(part)"
+              :suffix="getToolSuffix(part)"
+            >
+              <pre v-if="getToolOutput(part)" class="whitespace-pre-wrap text-xs">{{
+                getToolOutput(part)
+              }}</pre>
+            </UChatTool>
 
             <template v-else-if="isTextUIPart(part)">
               <ChatComark

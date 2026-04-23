@@ -115,25 +115,32 @@ export function registerChatHandlers(): void {
         }
       });
 
-      try {
-        session.start();
-      } catch (err: unknown) {
-        const e = err as Error & { code?: string };
-        if (e.code === "ENOENT") {
-          port1.postMessage({
-            type: "error",
-            data: {
-              code: "CLAUDE_NOT_FOUND",
-              message:
-                "claude command not found. Please install Claude CLI and ensure it is in PATH.",
-            },
-          });
-          port1.close();
-          activeSessions.delete(sessionId);
-        } else {
-          throw err;
+      // Wait for renderer to signal ready before starting, so no chunks are
+      // buffered in the port queue before onmessage is registered.
+      port1.once("message", (msg) => {
+        if ((msg.data as { type: string }).type === "ready") {
+          try {
+            session.start();
+          } catch (err: unknown) {
+            const e = err as Error & { code?: string };
+            if (e.code === "ENOENT") {
+              port1.postMessage({
+                type: "error",
+                data: {
+                  code: "CLAUDE_NOT_FOUND",
+                  message:
+                    "claude command not found. Please install Claude CLI and ensure it is in PATH.",
+                },
+              });
+              port1.close();
+              activeSessions.delete(sessionId);
+            } else {
+              throw err;
+            }
+          }
         }
-      }
+      });
+      port1.start();
 
       return { ok: true, data: null };
     }

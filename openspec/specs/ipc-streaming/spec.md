@@ -8,12 +8,6 @@ AI 聊天的流式响应 SHALL 通过 MessagePort 传输。Main 进程创建 `Me
 - **THEN** preload 调用 `ipcRenderer.invoke('chat:stream:message', { sessionId, prompt })` 发起流式请求
 - **AND** main 创建 MessagePort 并通过 `event.sender.postMessage('chat:stream:port', null, [port2])` 传递给 renderer
 
-#### Scenario: 接收流式 chunk
-
-- **WHEN** main 进程从 AI 服务收到一个文本 chunk
-- **THEN** 通过 port1 发送 `{ type: 'chunk', data: { content: string, tokenCount: number } }`
-- **AND** preload 层调用 `callbacks.onChunk(data)` 回调
-
 #### Scenario: 流式完成
 
 - **WHEN** AI 服务完成响应
@@ -27,6 +21,28 @@ AI 聊天的流式响应 SHALL 通过 MessagePort 传输。Main 进程创建 `Me
 - **THEN** main 通过 port1 发送 `{ type: 'error', data: { code: string, message: string } }`
 - **AND** 关闭 port1
 - **AND** preload 层调用 `callbacks.onError(error)` 回调
+
+### Requirement: 接收流式 chunk
+
+系统 SHALL 通过 MessagePort 传输 `StreamMessage<MessageChunkData>` 类型的消息，其中 `MessageChunkData` 为联合类型，支持 `text_delta`、`message_upsert`、`message_patch`、`status` 四种 chunk 语义。Preload 层的 `StreamCallbacks.onChunk` 回调参数类型 SHALL 更新为 `MessageChunkData`。
+
+#### Scenario: 接收 text_delta chunk
+
+- **WHEN** main 进程从 Claude CLI 收到文本增量
+- **THEN** 通过 port1 发送 `{ type: "chunk", data: { kind: "text_delta", text: string } }`
+- **AND** preload 层调用 `callbacks.onChunk({ kind: "text_delta", text })` 回调
+
+#### Scenario: 接收 message_upsert chunk
+
+- **WHEN** main 进程收到完整的 assistant 消息
+- **THEN** 通过 port1 发送 `{ type: "chunk", data: { kind: "message_upsert", message: UIMessage } }`
+- **AND** preload 层调用 `callbacks.onChunk({ kind: "message_upsert", message })` 回调
+
+#### Scenario: 接收 message_patch chunk
+
+- **WHEN** main 进程收到 tool_result 并回填 assistant 消息
+- **THEN** 通过 port1 发送 `{ type: "chunk", data: { kind: "message_patch", id: string, parts: UIMessagePart[] } }`
+- **AND** preload 层调用 `callbacks.onChunk({ kind: "message_patch", id, parts })` 回调
 
 ### Requirement: 流式 API 封装为回调式接口
 

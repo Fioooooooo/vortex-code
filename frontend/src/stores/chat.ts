@@ -344,17 +344,10 @@ export const useChatStore = defineStore("chat", () => {
     session.messages.push(userMsg);
     session.turnCount++;
     session.updatedAt = new Date();
-
-    // Insert placeholder assistant message
-    const placeholderId = `msg-${Date.now()}-assistant`;
-    const placeholder: Message = {
-      id: placeholderId,
-      role: "assistant",
-      parts: [{ type: "text", text: "" }],
-      metadata: { sessionId: session.id, createdAt: new Date() },
-    };
-    session.messages.push(placeholder);
     agentStatus.value = "submitted";
+
+    // Tracks the id of the current active assistant message for text_delta targeting
+    let activeAssistantId: string | null = null;
 
     window.api.chat.streamMessage(session.id, session.projectId, content, {
       onChunk(data) {
@@ -363,11 +356,11 @@ export const useChatStore = defineStore("chat", () => {
           agentStatus.value = "streaming";
         }
 
-        const idx = session.messages.findIndex((m) => m.id === placeholderId);
-
         if (data.kind === "text_delta") {
-          // Append text to placeholder
-          const msg = idx !== -1 ? session.messages[idx] : null;
+          // Append text to the current active assistant message
+          const msg = activeAssistantId
+            ? session.messages.find((m) => m.id === activeAssistantId)
+            : null;
           if (msg) {
             const textPart = msg.parts.find((p) => p.type === "text");
             if (textPart && textPart.type === "text") {
@@ -375,12 +368,14 @@ export const useChatStore = defineStore("chat", () => {
             }
           }
         } else if (data.kind === "message_upsert") {
-          // Replace placeholder with authoritative message
-          if (idx !== -1) {
-            session.messages.splice(idx, 1, data.message);
+          // Replace existing message by id, or append
+          const existingIdx = session.messages.findIndex((m) => m.id === data.message.id);
+          if (existingIdx !== -1) {
+            session.messages.splice(existingIdx, 1, data.message);
           } else {
             session.messages.push(data.message);
           }
+          activeAssistantId = data.message.id;
         } else if (data.kind === "message_patch") {
           // Back-fill tool-invocation result
           const msgIdx = session.messages.findIndex((m) => m.id === data.id);
@@ -400,9 +395,6 @@ export const useChatStore = defineStore("chat", () => {
       },
       onError(err) {
         agentStatus.value = "error";
-        // Remove placeholder on error
-        const errIdx = session.messages.findIndex((m) => m.id === placeholderId);
-        if (errIdx !== -1) session.messages.splice(errIdx, 1);
         console.error("Stream error:", err.code, err.message);
       },
     });

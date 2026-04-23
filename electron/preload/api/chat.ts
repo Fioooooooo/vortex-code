@@ -56,6 +56,8 @@ export const chatApi = {
         else if (data.type === "error") callbacks.onError(data.data);
       };
       port.start();
+      // Signal main that onmessage is registered and we're ready to receive chunks
+      port.postMessage({ type: "ready" });
     });
 
     return () => {
