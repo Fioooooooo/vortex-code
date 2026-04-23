@@ -331,20 +331,6 @@ function createMockStageRunFromConfig(
     output = {
       type: "code",
       messages: createMockMessages().map((m) => ({ ...m, id: `code-${m.id}` })),
-      fileChanges: [
-        {
-          filePath: "src/components/AvatarUploader.vue",
-          changeType: "added",
-          summary: "+86 lines",
-          diffLines: [],
-        },
-        {
-          filePath: "src/utils/upload.ts",
-          changeType: "added",
-          summary: "+42 lines",
-          diffLines: [],
-        },
-      ],
     };
   } else if (config.type === "test" && status === "running") {
     output = { type: "test", testResult: createMockTestResult() };

@@ -2,34 +2,8 @@ import type { UIMessage, ChatStatus } from "ai";
 
 export type { ChatStatus };
 export type AgentType = "claude-code" | "codex";
-export type FileChangeType = "added" | "modified" | "deleted";
-export type DiffLineType = "added" | "removed" | "context";
 export type ModeType = "auto" | "manual";
-export type SidebarTab = "sessions" | "files";
-export type DiffViewMode = "side-by-side" | "inline";
-
-export interface DiffLine {
-  type: DiffLineType;
-  content: string;
-  oldLineNumber?: number;
-  newLineNumber?: number;
-}
-
-export interface FileChange {
-  filePath: string;
-  changeType: FileChangeType;
-  summary: string;
-  diffLines: DiffLine[];
-}
-
-export interface FileNode {
-  id: string;
-  name: string;
-  path: string;
-  type: "file" | "directory";
-  children?: FileNode[];
-  changeType?: FileChangeType;
-}
+export type SidebarTab = "sessions";
 
 export interface MessageMeta {
   sessionId: string;
@@ -47,7 +21,6 @@ export interface Session {
   createdAt: Date;
   updatedAt: Date;
   messages: Message[];
-  fileChanges: FileChange[];
 }
 
 export interface AgentInfo {

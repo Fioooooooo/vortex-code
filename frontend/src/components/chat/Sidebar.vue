@@ -1,37 +1,9 @@
 <script setup lang="ts">
-import { useChatStore } from "@renderer/stores/chat";
 import SessionList from "./SessionList.vue";
-import FileTree from "./FileTree.vue";
-
-const chatStore = useChatStore();
-
-const tabs = [
-  { id: "sessions" as const, label: "会话", icon: "i-lucide-message-square" },
-  { id: "files" as const, label: "文件", icon: "i-lucide-folder-tree" },
-];
 </script>
 
 <template>
   <div class="w-65 h-full flex flex-col border-r border-default bg-default shrink-0">
-    <!-- Tab Switcher -->
-    <UTabs
-      :items="tabs"
-      variant="link"
-      :content="false"
-      :ui="{
-        trigger: 'flex-1',
-        leadingIcon: 'size-3.5',
-        label: 'text-sm',
-      }"
-      @update:model-value="
-        (payload: string | number) => chatStore.setSidebarTab(tabs[payload as number].id)
-      "
-    />
-
-    <!-- Content -->
-    <div class="flex-1 overflow-hidden flex flex-col">
-      <SessionList v-if="chatStore.sidebarTab === 'sessions'" />
-      <FileTree v-else />
-    </div>
+    <SessionList />
   </div>
 </template>

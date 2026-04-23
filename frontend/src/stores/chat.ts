@@ -3,137 +3,11 @@ import { defineStore } from "pinia";
 import type {
   Session,
   Message,
-  FileNode,
-  FileChange,
   AgentInfo,
   ChatStatus,
   TokenUsage,
   ModeType,
-  SidebarTab,
-  DiffViewMode,
-  FileChangeType,
 } from "@shared/types/chat";
-
-function generateMockFileTree(): FileNode[] {
-  return [
-    {
-      id: "root",
-      name: "src",
-      path: "src",
-      type: "directory",
-      children: [
-        {
-          id: "components",
-          name: "components",
-          path: "src/components",
-          type: "directory",
-          children: [
-            {
-              id: "btn",
-              name: "Button.vue",
-              path: "src/components/Button.vue",
-              type: "file",
-            },
-            {
-              id: "input",
-              name: "Input.vue",
-              path: "src/components/Input.vue",
-              type: "file",
-            },
-          ],
-        },
-        {
-          id: "auth",
-          name: "auth",
-          path: "src/auth",
-          type: "directory",
-          children: [
-            {
-              id: "login",
-              name: "login.ts",
-              path: "src/auth/login.ts",
-              type: "file",
-              changeType: "added" as FileChangeType,
-            },
-          ],
-        },
-        {
-          id: "utils",
-          name: "utils",
-          path: "src/utils",
-          type: "directory",
-          children: [
-            {
-              id: "api",
-              name: "api.ts",
-              path: "src/utils/api.ts",
-              type: "file",
-              changeType: "modified" as FileChangeType,
-            },
-          ],
-        },
-        {
-          id: "styles",
-          name: "styles",
-          path: "src/styles",
-          type: "directory",
-          children: [
-            {
-              id: "main",
-              name: "main.css",
-              path: "src/styles/main.css",
-              type: "file",
-              changeType: "deleted" as FileChangeType,
-            },
-          ],
-        },
-        {
-          id: "app",
-          name: "App.vue",
-          path: "src/App.vue",
-          type: "file",
-        },
-        {
-          id: "main",
-          name: "main.ts",
-          path: "src/main.ts",
-          type: "file",
-        },
-      ],
-    },
-    {
-      id: "pkg",
-      name: "package.json",
-      path: "package.json",
-      type: "file",
-    },
-    {
-      id: "tsconfig",
-      name: "tsconfig.json",
-      path: "tsconfig.json",
-      type: "file",
-    },
-  ];
-}
-
-function generateMockDiffLines(): FileChange["diffLines"] {
-  return [
-    { type: "context", content: "import { ref } from 'vue';" },
-    { type: "context", content: "import { defineStore } from 'pinia';" },
-    { type: "context", content: "" },
-    { type: "removed", content: "export const useAuthStore = defineStore('auth', () => {" },
-    { type: "added", content: "export const useAuthStore = defineStore('auth', () => {" },
-    { type: "context", content: "  const token = ref<string | null>(null);" },
-    { type: "context", content: "" },
-    { type: "added", content: "  function setToken(newToken: string): void {" },
-    { type: "added", content: "    token.value = newToken;" },
-    { type: "added", content: "  }" },
-    { type: "context", content: "" },
-    { type: "removed", content: "  return { token };" },
-    { type: "added", content: "  return { token, setToken };" },
-    { type: "context", content: "});" },
-  ];
-}
 
 function generateMockMessages(sessionId: string): Message[] {
   const now = new Date();
@@ -180,32 +54,6 @@ function generateMockSessions(): Session[] {
     createdAt: new Date(now.getTime() - 1000 * 60 * 60 * 2),
     updatedAt: now,
     messages: generateMockMessages("session-1"),
-    fileChanges: [
-      {
-        filePath: "src/stores/auth.ts",
-        changeType: "added",
-        summary: "+42 lines",
-        diffLines: generateMockDiffLines(),
-      },
-      {
-        filePath: "src/composables/useAuth.ts",
-        changeType: "added",
-        summary: "+28 lines",
-        diffLines: generateMockDiffLines(),
-      },
-      {
-        filePath: "src/utils/api.ts",
-        changeType: "modified",
-        summary: "+5 -2 lines",
-        diffLines: generateMockDiffLines(),
-      },
-      {
-        filePath: "src/styles/main.css",
-        changeType: "deleted",
-        summary: "-120 lines",
-        diffLines: generateMockDiffLines(),
-      },
-    ],
   };
 
   const session2: Session = {
@@ -217,7 +65,6 @@ function generateMockSessions(): Session[] {
     createdAt: new Date(now.getTime() - 1000 * 60 * 60 * 24),
     updatedAt: new Date(now.getTime() - 1000 * 60 * 60 * 23),
     messages: [],
-    fileChanges: [],
   };
 
   const session3: Session = {
@@ -229,7 +76,6 @@ function generateMockSessions(): Session[] {
     createdAt: new Date(now.getTime() - 1000 * 60 * 60 * 48),
     updatedAt: new Date(now.getTime() - 1000 * 60 * 60 * 47),
     messages: [],
-    fileChanges: [],
   };
 
   return [session1, session2, session3];
@@ -257,30 +103,6 @@ export const useChatStore = defineStore("chat", () => {
     () => sessions.value.find((s) => s.id === activeSessionId.value) ?? null
   );
 
-  // File tree
-  const fileTree = ref<FileNode[]>(generateMockFileTree());
-
-  // Sidebar
-  const sidebarTab = ref<SidebarTab>("sessions");
-
-  // Diff panel
-  const diffPanelOpen = ref(false);
-  const diffPanelFilePath = ref<string | null>(null);
-  const diffViewMode = ref<DiffViewMode>("side-by-side");
-
-  // Computed
-  const currentFileChange = computed<FileChange | null>(() => {
-    if (!diffPanelFilePath.value || !activeSession.value) return null;
-    return (
-      activeSession.value.fileChanges.find((fc) => fc.filePath === diffPanelFilePath.value) ?? null
-    );
-  });
-
-  const changedFilePaths = computed(() => {
-    if (!activeSession.value) return [];
-    return activeSession.value.fileChanges.map((fc) => fc.filePath);
-  });
-
   // Session actions
   function createSession(): Session {
     const id = `session-${Date.now()}`;
@@ -293,7 +115,6 @@ export const useChatStore = defineStore("chat", () => {
       createdAt: new Date(),
       updatedAt: new Date(),
       messages: [],
-      fileChanges: [],
     };
     sessions.value.unshift(session);
     activeSessionId.value = id;
@@ -400,30 +221,6 @@ export const useChatStore = defineStore("chat", () => {
     });
   }
 
-  // Diff panel actions
-  function openDiffPanel(filePath: string): void {
-    diffPanelFilePath.value = filePath;
-    diffPanelOpen.value = true;
-  }
-
-  function closeDiffPanel(): void {
-    diffPanelOpen.value = false;
-    diffPanelFilePath.value = null;
-  }
-
-  function setDiffViewMode(viewMode: DiffViewMode): void {
-    diffViewMode.value = viewMode;
-  }
-
-  function toggleDiffPanel(): void {
-    diffPanelOpen.value = !diffPanelOpen.value;
-  }
-
-  // Sidebar actions
-  function setSidebarTab(tab: SidebarTab): void {
-    sidebarTab.value = tab;
-  }
-
   // Mode actions
   function setMode(newMode: ModeType): void {
     mode.value = newMode;
@@ -437,24 +234,12 @@ export const useChatStore = defineStore("chat", () => {
     sessions,
     activeSessionId,
     activeSession,
-    fileTree,
-    sidebarTab,
-    diffPanelOpen,
-    diffPanelFilePath,
-    diffViewMode,
-    currentFileChange,
-    changedFilePaths,
     createSession,
     selectSession,
     renameSession,
     deleteSession,
     archiveSession,
     sendMessage,
-    openDiffPanel,
-    closeDiffPanel,
-    setDiffViewMode,
-    toggleDiffPanel,
-    setSidebarTab,
     setMode,
   };
 });

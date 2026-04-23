@@ -1,4 +1,4 @@
-import type { FileChange, Message } from "./chat";
+import type { Message } from "./chat";
 
 export type StageType = "discuss" | "code" | "test" | "review" | "deploy" | "custom";
 
@@ -70,7 +70,6 @@ export interface StageOutput {
   type: StageType;
   messages?: Message[];
   summary?: string;
-  fileChanges?: FileChange[];
   testResult?: TestResult;
   reviewComments?: ReviewComment[];
   deployLog?: DeployLog;
