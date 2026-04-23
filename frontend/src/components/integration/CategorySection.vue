@@ -1,20 +1,11 @@
 <script setup lang="ts">
 import type { IntegrationCategory, IntegrationTool } from "@shared/types/integration";
-import IntegrationToolCard from "./IntegrationToolCard.vue";
+import ToolCard from "./ToolCard.vue";
 
 defineProps<{
   category: IntegrationCategory;
   tools: IntegrationTool[];
-  expandedToolId: string | null;
 }>();
-
-const emit = defineEmits<{
-  toggleExpand: [toolId: string];
-}>();
-
-function onToggleExpand(toolId: string): void {
-  emit("toggleExpand", toolId);
-}
 </script>
 
 <template>
@@ -25,13 +16,7 @@ function onToggleExpand(toolId: string): void {
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      <IntegrationToolCard
-        v-for="tool in tools"
-        :key="tool.id"
-        :tool="tool"
-        :is-expanded="expandedToolId === tool.id"
-        @toggle-expand="onToggleExpand"
-      />
+      <ToolCard v-for="tool in tools" :key="tool.id" :tool="tool" />
     </div>
   </section>
 </template>

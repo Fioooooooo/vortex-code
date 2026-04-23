@@ -1,35 +1,16 @@
 <script setup lang="ts">
-import { computed, onMounted } from "vue";
-import IntegrationSearchFilter from "@renderer/components/integration/IntegrationSearchFilter.vue";
-import IntegrationCategorySection from "@renderer/components/integration/IntegrationCategorySection.vue";
+import { onMounted } from "vue";
+import { storeToRefs } from "pinia";
+import SearchFilter from "@renderer/components/integration/SearchFilter.vue";
+import CategorySection from "@renderer/components/integration/CategorySection.vue";
 import CustomIntegrationSection from "@renderer/components/integration/CustomIntegrationSection.vue";
 import { useIntegrationStore } from "@renderer/stores/integration";
-import { useProjectStore } from "@renderer/stores/project";
 
 const integrationStore = useIntegrationStore();
-const projectStore = useProjectStore();
 
 onMounted(() => integrationStore.loadConnections());
 
-const hasProject = computed(() => projectStore.hasCurrentProject);
-
-const searchQuery = computed({
-  get: () => integrationStore.searchQuery,
-  set: (val) => integrationStore.setSearchQuery(val),
-});
-
-const filterOption = computed({
-  get: () => integrationStore.filterOption,
-  set: (val) => integrationStore.setFilterOption(val),
-});
-
-const toolsByCategory = computed(() => integrationStore.toolsByCategory);
-const categories = computed(() => integrationStore.allCategories);
-const expandedToolId = computed(() => integrationStore.expandedToolId);
-
-function onToggleExpand(toolId: string): void {
-  integrationStore.toggleExpandTool(toolId);
-}
+const { toolsByCategory, allCategories } = storeToRefs(integrationStore);
 </script>
 
 <template>
@@ -42,21 +23,15 @@ function onToggleExpand(toolId: string): void {
       </div>
 
       <!-- Search & Filter -->
-      <IntegrationSearchFilter
-        v-model="searchQuery"
-        v-model:filter="filterOption"
-        :has-project="hasProject"
-      />
+      <SearchFilter />
 
       <!-- Category Sections -->
       <div class="space-y-10">
-        <IntegrationCategorySection
-          v-for="category in categories"
+        <CategorySection
+          v-for="category in allCategories"
           :key="category.id"
           :category="category"
           :tools="toolsByCategory.get(category.id) ?? []"
-          :expanded-tool-id="expandedToolId"
-          @toggle-expand="onToggleExpand"
         />
       </div>
 

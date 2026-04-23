@@ -17,7 +17,6 @@ export const useIntegrationStore = defineStore("integration", () => {
   const connections = ref<ToolConnection[]>([]);
   const searchQuery = ref("");
   const filterOption = ref<FilterOption>("all");
-  const expandedToolId = ref<string | null>(null);
   const testingConnectionId = ref<string | null>(null);
 
   async function loadConnections(): Promise<void> {
@@ -54,10 +53,6 @@ export const useIntegrationStore = defineStore("integration", () => {
     return map;
   });
 
-  const connectedTools = computed(() =>
-    allTools.value.filter((t) => getConnectionStatus(t.id) === "connected")
-  );
-
   // Helpers
   function resolveConnectionId(toolId: string): string {
     if (toolId.startsWith("yunxiao-")) return "yunxiao";
@@ -83,14 +78,6 @@ export const useIntegrationStore = defineStore("integration", () => {
 
   function setFilterOption(option: FilterOption): void {
     filterOption.value = option;
-  }
-
-  function setExpandedTool(toolId: string | null): void {
-    expandedToolId.value = toolId;
-  }
-
-  function toggleExpandTool(toolId: string): void {
-    expandedToolId.value = expandedToolId.value === toolId ? null : toolId;
   }
 
   async function connectTool(
@@ -125,10 +112,6 @@ export const useIntegrationStore = defineStore("integration", () => {
   async function disconnectTool(toolId: string): Promise<void> {
     await integrationApi.disconnect(toolId);
     await loadConnections();
-
-    if (expandedToolId.value === toolId) {
-      expandedToolId.value = null;
-    }
   }
 
   async function simulateOAuthConnect(toolId: string): Promise<boolean> {
@@ -158,27 +141,19 @@ export const useIntegrationStore = defineStore("integration", () => {
 
   return {
     // State
-    allTools,
     allCategories,
-    connections,
     searchQuery,
     filterOption,
-    expandedToolId,
     testingConnectionId,
     // Getters
-    filteredTools,
     toolsByCategory,
-    connectedTools,
     // Helpers
     getConnection,
-    getConnectionStatus,
     isToolConnected,
     // Actions
     loadConnections,
     setSearchQuery,
     setFilterOption,
-    setExpandedTool,
-    toggleExpandTool,
     connectTool,
     testConnection,
     disconnectTool,

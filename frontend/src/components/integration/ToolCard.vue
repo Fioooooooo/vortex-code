@@ -1,25 +1,21 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { ref, computed } from "vue";
 import type { IntegrationTool } from "@shared/types/integration";
 import { useIntegrationStore } from "@renderer/stores/integration";
-import IntegrationToolCardExpand from "./IntegrationToolCardExpand.vue";
+import ToolCardExpand from "./ToolCardExpand.vue";
 
 const props = defineProps<{
   tool: IntegrationTool;
-  isExpanded: boolean;
-}>();
-
-const emit = defineEmits<{
-  toggleExpand: [toolId: string];
 }>();
 
 const integrationStore = useIntegrationStore();
 
+const isExpanded = ref(false);
 const isConnected = computed(() => integrationStore.isToolConnected(props.tool.id));
 
 function onToggleExpand(): void {
   if (props.tool.comingSoon) return;
-  emit("toggleExpand", props.tool.id);
+  isExpanded.value = !isExpanded.value;
 }
 </script>
 
@@ -74,7 +70,7 @@ function onToggleExpand(): void {
       class="border-t border-default bg-muted/20"
       @click.stop
     >
-      <IntegrationToolCardExpand :tool="tool" />
+      <ToolCardExpand :tool="tool" />
     </div>
   </div>
 </template>
