@@ -1,14 +1,18 @@
 <script setup lang="ts">
-import { usePipelineStore } from "@renderer/stores/pipeline";
-import RunList from "./RunList.vue";
-import TemplateList from "./TemplateList.vue";
-
-const pipelineStore = usePipelineStore();
+import { ref } from "vue";
 
 const tabs = [
   { id: "runs" as const, label: "运行", icon: "i-lucide-play" },
   { id: "templates" as const, label: "模板", icon: "i-lucide-layers" },
 ];
+
+const activeTab = ref<(typeof tabs)[number]["id"]>("runs");
+
+function updateActiveTab(payload: string | number): void {
+  if (typeof payload === "number") {
+    activeTab.value = tabs[payload]?.id ?? "runs";
+  }
+}
 </script>
 
 <template>
@@ -23,15 +27,10 @@ const tabs = [
         leadingIcon: 'size-3.5',
         label: 'text-sm',
       }"
-      @update:model-value="
-        (payload: string | number) => pipelineStore.setSidebarTab(tabs[payload as number].id)
-      "
+      @update:model-value="updateActiveTab"
     />
 
     <!-- Content -->
-    <div class="flex-1 overflow-hidden flex flex-col">
-      <RunList v-if="pipelineStore.sidebarTab === 'runs'" />
-      <TemplateList v-else />
-    </div>
+    <div class="flex-1 overflow-hidden flex flex-col" />
   </div>
 </template>

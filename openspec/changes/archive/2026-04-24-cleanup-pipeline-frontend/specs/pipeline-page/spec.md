@@ -1,19 +1,4 @@
-# pipeline-page 规范
-
-定义 Pipeline 页面的布局结构和侧边栏行为。
-
-## Requirements
-
-### Requirement: Pipeline 页面在共享应用外壳内渲染
-
-系统 SHALL 在共享应用外壳内渲染 Pipeline 页面，在外壳主区域显示 Pipeline 专属内容，活动栏高亮 Pipeline 图标。
-
-#### Scenario: 用户导航到 Pipeline
-
-- **WHEN** 用户导航到 `/pipeline`
-- **THEN** 共享应用外壳的 header 和活动栏可见
-- **AND** 活动栏的 Pipeline 图标以主色高亮
-- **AND** 主内容区域显示 Pipeline 页面布局
+## MODIFIED Requirements
 
 ### Requirement: Pipeline 页面采用两区域布局
 
