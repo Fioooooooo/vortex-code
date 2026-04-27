@@ -46,7 +46,16 @@ export const IntegrationChannels = {
 export const SettingsChannels = {
   get: "settings:get",
   update: "settings:update",
-  listAgents: "settings:listAgents",
+} as const;
+
+export const AgentsChannels = {
+  getRegistry: "settings:agents:getRegistry",
+  refreshRegistry: "settings:agents:refreshRegistry",
+  getIcons: "settings:agents:getIcons",
+  detectStatus: "settings:agents:detectStatus",
+  install: "settings:agents:install",
+  registryUpdated: "settings:agents:registryUpdated",
+  installProgress: "settings:agents:installProgress",
 } as const;
 
 export const WindowChannels = {

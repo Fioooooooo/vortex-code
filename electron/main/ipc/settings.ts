@@ -17,11 +17,4 @@ export function registerSettingsHandlers(): void {
       return null;
     })
   );
-
-  ipcMain.handle(SettingsChannels.listAgents, () =>
-    wrapHandler(async () => {
-      // TODO: detect installed CLI agents (claude-code, codex)
-      return [];
-    })
-  );
 }
