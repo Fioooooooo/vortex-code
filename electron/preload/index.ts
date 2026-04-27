@@ -5,6 +5,7 @@ import { projectApi } from "./api/project";
 import { integrationApi } from "./api/integration";
 import { settingsApi } from "./api/settings";
 import { windowApi } from "./api/window";
+import { netApi } from "./api/net";
 
 const api = {
   chat: chatApi,
@@ -12,6 +13,7 @@ const api = {
   integration: integrationApi,
   settings: settingsApi,
   window: windowApi,
+  net: netApi,
 };
 
 if (process.contextIsolated) {

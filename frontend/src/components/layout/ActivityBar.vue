@@ -16,7 +16,11 @@ const projectStore = useProjectStore();
 const hasProject = computed(() => projectStore.hasCurrentProject);
 
 const items: NavItem[] = [
-  { id: "chat", icon: "i-lucide-message-square", label: "对话", to: "/chat" },
+  { id: "chat", icon: "i-lucide-message-circle-more", label: "对话", to: "/chat" },
+  { id: "task", icon: "i-lucide-list-checks", label: "任务", to: "/task" },
+  { id: "proposal", icon: "i-lucide-file-pen", label: "提案", to: "/proposal" },
+  { id: "workflow", icon: "i-lucide-workflow", label: "工作流", to: "/workflow" },
+  { id: "cron", icon: "i-lucide-calendar-days", label: "定时任务", to: "/cron" },
   { id: "integration", icon: "i-lucide-plug", label: "集成", to: "/integration" },
 ];
 
@@ -25,6 +29,10 @@ const bottomItems: NavItem[] = [
 ];
 
 const activeItem = computed(() => {
+  if (route.path.startsWith("/task")) return "task";
+  if (route.path.startsWith("/proposal")) return "proposal";
+  if (route.path.startsWith("/workflow")) return "workflow";
+  if (route.path.startsWith("/cron")) return "cron";
   if (route.path.startsWith("/integration")) return "integration";
   if (route.path.startsWith("/settings")) return "setting";
   if (route.path.startsWith("/chat")) return "chat";

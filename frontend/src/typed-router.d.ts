@@ -41,6 +41,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/cron': RouteRecordInfo<
+      '/cron',
+      '/cron',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/integration': RouteRecordInfo<
       '/integration',
       '/integration',
@@ -48,9 +55,30 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/proposal': RouteRecordInfo<
+      '/proposal',
+      '/proposal',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/settings': RouteRecordInfo<
       '/settings',
       '/settings',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/task': RouteRecordInfo<
+      '/task',
+      '/task',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/workflow': RouteRecordInfo<
+      '/workflow',
+      '/workflow',
       Record<never, never>,
       Record<never, never>,
       | never
@@ -80,15 +108,39 @@ declare module 'vue-router/auto-routes' {
       views:
         | never
     }
+    'src/pages/cron.vue': {
+      routes:
+        | '/cron'
+      views:
+        | never
+    }
     'src/pages/integration.vue': {
       routes:
         | '/integration'
       views:
         | never
     }
+    'src/pages/proposal.vue': {
+      routes:
+        | '/proposal'
+      views:
+        | never
+    }
     'src/pages/settings.vue': {
       routes:
         | '/settings'
+      views:
+        | never
+    }
+    'src/pages/task.vue': {
+      routes:
+        | '/task'
+      views:
+        | never
+    }
+    'src/pages/workflow.vue': {
+      routes:
+        | '/workflow'
       views:
         | never
     }

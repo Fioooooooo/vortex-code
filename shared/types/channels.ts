@@ -23,6 +23,11 @@ export const ProjectChannels = {
   setActive: "project:setActive",
 } as const;
 
+export const NetChannels = {
+  fetch: "net:fetch",
+  fetchImage: "net:fetchImage",
+} as const;
+
 export const IntegrationChannels = {
   listTools: "integration:listTools",
   getConnections: "integration:getConnections",

@@ -8,7 +8,7 @@ const route = useRoute();
 const router = useRouter();
 const projectStore = useProjectStore();
 
-const protectedRoutes = ["/chat", "/pipeline", "/integration"];
+const protectedRoutes = ["/chat", "/task", "/proposal", "/workflow", "/cron", "/integration"];
 
 watchEffect(() => {
   const isProtectedRoute = protectedRoutes.some((path) => route.path.startsWith(path));
