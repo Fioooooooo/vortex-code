@@ -7,6 +7,15 @@ import { vi } from "vitest";
 // 但在 vitest 中不经过该插件，因此需要手动 mock
 // ─────────────────────────────────────────────
 const mockToast = { add: vi.fn() };
+const buttonStub = {
+  template: "<button @click=\"$emit('click')\"><slot /></button>",
+  props: ["loading", "icon", "color", "variant", "size"],
+};
+const dropdownMenuStub = {
+  template:
+    '<div><slot /><button v-for="item in items" :key="item.label" type="button" :data-test="`dropdown-item-${item.label}`" @click="item.onSelect?.()">{{ item.label }}</button></div>',
+  props: ["items"],
+};
 
 vi.mock("@nuxt/ui/composables", () => ({
   useToast: vi.fn(() => mockToast),
@@ -25,16 +34,18 @@ config.global.stubs = {
   UApp: true,
 
   // @nuxt/ui components — 保留基础交互能力用于测试
-  UButton: {
-    template: "<button @click=\"$emit('click')\"><slot /></button>",
-    props: ["loading", "icon", "color", "variant", "size"],
-  },
+  UButton: buttonStub,
+  Button: buttonStub,
+  UDropdownMenu: dropdownMenuStub,
+  DropdownMenu: dropdownMenuStub,
   UBadge: true,
   UInput: {
     template:
       '<input :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />',
     props: ["modelValue", "placeholder"],
   },
+  UIcon: true,
+  Icon: true,
   USelect: true,
   UCheckbox: true,
   UCard: {

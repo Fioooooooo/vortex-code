@@ -34,6 +34,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@renderer": resolve(__dirname, "frontend/src"),
+      "@shared": resolve(__dirname, "shared"),
     },
   },
 });

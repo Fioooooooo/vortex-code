@@ -23,24 +23,6 @@ export const ProjectChannels = {
   setActive: "project:setActive",
 } as const;
 
-export const PipelineChannels = {
-  listTemplates: "pipeline:listTemplates",
-  getTemplate: "pipeline:getTemplate",
-  createTemplate: "pipeline:createTemplate",
-  updateTemplate: "pipeline:updateTemplate",
-  removeTemplate: "pipeline:removeTemplate",
-  listRuns: "pipeline:listRuns",
-  getRun: "pipeline:getRun",
-  createRun: "pipeline:createRun",
-  abortRun: "pipeline:abortRun",
-  approveStage: "pipeline:approveStage",
-} as const;
-
-export const PipelineEventChannels = {
-  stageChanged: "pipeline:event:stageChanged",
-  runCompleted: "pipeline:event:runCompleted",
-} as const;
-
 export const IntegrationChannels = {
   listTools: "integration:listTools",
   getConnections: "integration:getConnections",

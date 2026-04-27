@@ -17,7 +17,6 @@ const hasProject = computed(() => projectStore.hasCurrentProject);
 
 const items: NavItem[] = [
   { id: "chat", icon: "i-lucide-message-square", label: "对话", to: "/chat" },
-  { id: "pipeline", icon: "i-lucide-workflow", label: "流水线", to: "/pipeline" },
   { id: "integration", icon: "i-lucide-plug", label: "集成", to: "/integration" },
 ];
 
@@ -26,7 +25,6 @@ const bottomItems: NavItem[] = [
 ];
 
 const activeItem = computed(() => {
-  if (route.path.startsWith("/pipeline")) return "pipeline";
   if (route.path.startsWith("/integration")) return "integration";
   if (route.path.startsWith("/settings")) return "setting";
   if (route.path.startsWith("/chat")) return "chat";

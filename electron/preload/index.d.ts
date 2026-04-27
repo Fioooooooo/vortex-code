@@ -1,7 +1,6 @@
 import { ElectronAPI } from "@electron-toolkit/preload";
 import type { chatApi } from "./api/chat";
 import type { projectApi } from "./api/project";
-import type { pipelineApi } from "./api/pipeline";
 import type { integrationApi } from "./api/integration";
 import type { settingsApi } from "./api/settings";
 import type { windowApi } from "./api/window";
@@ -9,7 +8,6 @@ import type { windowApi } from "./api/window";
 export interface AppApi {
   chat: typeof chatApi;
   project: typeof projectApi;
-  pipeline: typeof pipelineApi;
   integration: typeof integrationApi;
   settings: typeof settingsApi;
   window: typeof windowApi;

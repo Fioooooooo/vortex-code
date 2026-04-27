@@ -118,14 +118,6 @@ export const useSessionStore = defineStore("session", () => {
     }
   }
 
-  function archiveSession(sessionId: string): void {
-    const session = sessions.value.find((s) => s.id === sessionId);
-    if (session) {
-      session.status = "ended";
-      session.updatedAt = new Date();
-    }
-  }
-
   return {
     sessions,
     activeSessionId,
@@ -134,6 +126,5 @@ export const useSessionStore = defineStore("session", () => {
     selectSession,
     renameSession,
     deleteSession,
-    archiveSession,
   };
 });

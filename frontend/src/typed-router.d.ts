@@ -48,13 +48,6 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
-    '/pipeline': RouteRecordInfo<
-      '/pipeline',
-      '/pipeline',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
     '/settings': RouteRecordInfo<
       '/settings',
       '/settings',
@@ -90,12 +83,6 @@ declare module 'vue-router/auto-routes' {
     'src/pages/integration.vue': {
       routes:
         | '/integration'
-      views:
-        | never
-    }
-    'src/pages/pipeline.vue': {
-      routes:
-        | '/pipeline'
       views:
         | never
     }
