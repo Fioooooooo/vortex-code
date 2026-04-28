@@ -1,26 +1,26 @@
 import { BrowserWindow, ipcMain } from "electron";
-import { AgentsChannels } from "@shared/types/channels";
-import type { AgentRegistry, InstallProgress } from "@shared/types/agents";
-import { createAgentError, detectAgentStatuses } from "@main/agents/detector";
-import { getAgentIcons } from "@main/agents/iconCache";
-import { installAgent } from "@main/agents/installer";
-import { getRegistry, refreshRegistry } from "@main/agents/registryCache";
+import { AcpAgentChannels } from "@shared/types/channels";
+import type { AcpInstallProgress, AcpRegistry } from "@shared/types/acp-agent";
+import { createAgentError, detectAgentStatuses } from "@main/acp/detector";
+import { getAgentIcons } from "@main/acp/iconCache";
+import { installAgent } from "@main/acp/installer";
+import { getRegistry, refreshRegistry } from "@main/acp/registryCache";
 import { wrapHandler } from "./utils";
 
-function broadcastRegistryUpdated(registry: AgentRegistry): void {
+function broadcastRegistryUpdated(registry: AcpRegistry): void {
   for (const window of BrowserWindow.getAllWindows()) {
-    window.webContents.send(AgentsChannels.registryUpdated, registry);
+    window.webContents.send(AcpAgentChannels.registryUpdated, registry);
   }
 }
 
-function broadcastInstallProgress(progress: InstallProgress): void {
+function broadcastInstallProgress(progress: AcpInstallProgress): void {
   for (const window of BrowserWindow.getAllWindows()) {
-    window.webContents.send(AgentsChannels.installProgress, progress);
+    window.webContents.send(AcpAgentChannels.installProgress, progress);
   }
 }
 
-export function registerAgentsHandlers(): void {
-  ipcMain.handle(AgentsChannels.getRegistry, () =>
+export function registerAcpAgentHandlers(): void {
+  ipcMain.handle(AcpAgentChannels.getRegistry, () =>
     wrapHandler(async () =>
       getRegistry({
         onUpdated: broadcastRegistryUpdated,
@@ -28,7 +28,7 @@ export function registerAgentsHandlers(): void {
     )
   );
 
-  ipcMain.handle(AgentsChannels.refreshRegistry, () =>
+  ipcMain.handle(AcpAgentChannels.refreshRegistry, () =>
     wrapHandler(async () =>
       refreshRegistry({
         onUpdated: broadcastRegistryUpdated,
@@ -36,7 +36,7 @@ export function registerAgentsHandlers(): void {
     )
   );
 
-  ipcMain.handle(AgentsChannels.getIcons, () =>
+  ipcMain.handle(AcpAgentChannels.getIcons, () =>
     wrapHandler(async () => {
       const registry = await getRegistry({
         onUpdated: broadcastRegistryUpdated,
@@ -45,7 +45,7 @@ export function registerAgentsHandlers(): void {
     })
   );
 
-  ipcMain.handle(AgentsChannels.detectStatus, () =>
+  ipcMain.handle(AcpAgentChannels.detectStatus, () =>
     wrapHandler(async () => {
       const registry = await getRegistry({
         onUpdated: broadcastRegistryUpdated,
@@ -54,7 +54,7 @@ export function registerAgentsHandlers(): void {
     })
   );
 
-  ipcMain.handle(AgentsChannels.install, (_event, agentId: string) =>
+  ipcMain.handle(AcpAgentChannels.install, (_event, agentId: string) =>
     wrapHandler(async () => {
       const registry = await getRegistry({
         onUpdated: broadcastRegistryUpdated,

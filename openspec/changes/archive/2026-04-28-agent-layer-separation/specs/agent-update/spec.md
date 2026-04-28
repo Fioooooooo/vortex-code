@@ -1,10 +1,4 @@
-# agent-update Specification
-
-## Purpose
-
-管理已安装 CLI agent 的版本检测与更新流程，区分 FylloCode 管理与用户自管理两种场景。
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: 更新可用检测
 

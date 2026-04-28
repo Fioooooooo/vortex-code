@@ -48,14 +48,14 @@ export const SettingsChannels = {
   update: "settings:update",
 } as const;
 
-export const AgentsChannels = {
-  getRegistry: "settings:agents:getRegistry",
-  refreshRegistry: "settings:agents:refreshRegistry",
-  getIcons: "settings:agents:getIcons",
-  detectStatus: "settings:agents:detectStatus",
-  install: "settings:agents:install",
-  registryUpdated: "settings:agents:registryUpdated",
-  installProgress: "settings:agents:installProgress",
+export const AcpAgentChannels = {
+  getRegistry: "acp:getRegistry",
+  refreshRegistry: "acp:refreshRegistry",
+  getIcons: "acp:getIcons",
+  detectStatus: "acp:detectStatus",
+  install: "acp:install",
+  registryUpdated: "acp:registryUpdated",
+  installProgress: "acp:installProgress",
 } as const;
 
 export const WindowChannels = {

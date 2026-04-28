@@ -1,12 +1,14 @@
 import { ref } from "vue";
 import { defineStore } from "pinia";
-import type { AgentInfo, ChatStatus, TokenUsage, ModeType, Message } from "@shared/types/chat";
+import type { ChatAgent } from "@shared/types/chat-agent";
+import type { ChatStatus, TokenUsage, ModeType, Message } from "@shared/types/chat";
 import { useSessionStore } from "./session";
 
 export const useChatStore = defineStore("chat", () => {
-  const currentAgent = ref<AgentInfo>({
-    type: "claude-code",
+  const currentAgent = ref<ChatAgent>({
+    id: "claude-code",
     name: "Claude Code",
+    acpAgentId: "claude-code",
   });
   const chatStatus = ref<ChatStatus>("ready");
   const mode = ref<ModeType>("manual");

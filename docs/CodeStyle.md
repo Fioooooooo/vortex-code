@@ -106,6 +106,47 @@ const emit = defineEmits<{
 <UIcon name="i-lucide-plus" /> <UIcon name="i-lucide-settings" />
 ```
 
+## 命名规范
+
+### 文件与目录
+
+| 场景            | 规范       | 示例                                  |
+| --------------- | ---------- | ------------------------------------- |
+| 目录名          | kebab-case | `acp-agents/`、`chat-agent/`          |
+| TypeScript 文件 | kebab-case | `acp-agent.ts`、`acp-agents.ts`       |
+| Vue 组件文件    | PascalCase | `AgentCard.vue`、`SettingsAgents.vue` |
+| 测试文件        | kebab-case | `acp-agent.spec.ts`                   |
+
+**禁止**在目录或非组件文件名中使用驼峰（camelCase）或 PascalCase。
+
+### TypeScript 标识符
+
+| 场景                       | 规范       | 示例                               |
+| -------------------------- | ---------- | ---------------------------------- |
+| 类型、接口、类、枚举       | PascalCase | `AcpAgentEntry`、`ChatAgent`       |
+| 变量、函数、store action   | camelCase  | `acpAgentsStore`、`loadRegistry()` |
+| 常量对象（channel 映射等） | PascalCase | `AcpAgentChannels`                 |
+| 枚举成员                   | PascalCase | `InstallStatus.Done`               |
+
+### IPC Channel 字符串
+
+格式为 `domain:action`，domain 使用 kebab-case，action 使用 camelCase：
+
+```
+acp:getRegistry
+acp:installProgress
+chat-agent:select
+```
+
+**禁止**将 UI 入口路径（如 `settings:`）作为 domain 前缀，domain 应反映功能领域。
+
+### 领域前缀约定
+
+| 领域               | 类型前缀 | Channel 前缀  | Store 文件      |
+| ------------------ | -------- | ------------- | --------------- |
+| ACP agent 安装管理 | `Acp`    | `acp:`        | `acp-agents.ts` |
+| Chat 会话层 agent  | `Chat`   | `chat-agent:` | `chat.ts`       |
+
 ## 自动生成文件（禁止手动修改）
 
 | 文件                                  | 生成来源             |

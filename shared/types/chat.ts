@@ -1,7 +1,7 @@
 import type { UIMessage, ChatStatus } from "ai";
+import type { ChatAgent } from "./chat-agent";
 
 export type { ChatStatus };
-export type AgentType = "claude-code" | "codex";
 export type ModeType = "auto" | "manual";
 export type SidebarTab = "sessions";
 
@@ -23,11 +23,6 @@ export interface Session {
   messages: Message[];
 }
 
-export interface AgentInfo {
-  type: AgentType;
-  name: string;
-}
-
 export interface TokenUsage {
   input: number;
   output: number;
@@ -35,11 +30,7 @@ export interface TokenUsage {
   estimatedCost: string;
 }
 
-export interface ProjectAgent {
-  id: string;
-  name: string;
-  type: AgentType;
-}
+export type ProjectAgent = ChatAgent;
 
 export interface ProjectSummary {
   id: string;

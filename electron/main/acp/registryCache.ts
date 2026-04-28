@@ -1,7 +1,7 @@
 import { promises as fs } from "fs";
 import { join } from "path";
 import { net } from "electron";
-import type { AgentRegistry, AgentRegistryCache } from "@shared/types/agents";
+import type { AcpRegistry, AcpRegistryCache } from "@shared/types/acp-agent";
 import { getDataSubPath } from "@main/utils/paths";
 import logger from "@main/utils/logger";
 import { invalidateChangedIcons } from "./iconCache";
@@ -9,36 +9,36 @@ import { invalidateChangedIcons } from "./iconCache";
 const REGISTRY_URL = "https://cdn.agentclientprotocol.com/registry/v1/latest/registry.json";
 const REGISTRY_TTL_MS = 24 * 60 * 60 * 1000;
 
-let refreshPromise: Promise<AgentRegistry> | null = null;
+let refreshPromise: Promise<AcpRegistry> | null = null;
 
 function getRegistryCachePath(): string {
-  return join(getDataSubPath("agents"), "registry-cache.json");
+  return join(getDataSubPath("acp"), "registry-cache.json");
 }
 
 async function ensureAgentsDirectory(): Promise<void> {
-  await fs.mkdir(getDataSubPath("agents"), { recursive: true });
+  await fs.mkdir(getDataSubPath("acp"), { recursive: true });
 }
 
-export async function readRegistryCache(): Promise<AgentRegistryCache | null> {
+export async function readRegistryCache(): Promise<AcpRegistryCache | null> {
   try {
     const content = await fs.readFile(getRegistryCachePath(), "utf8");
-    return JSON.parse(content) as AgentRegistryCache;
+    return JSON.parse(content) as AcpRegistryCache;
   } catch {
     return null;
   }
 }
 
-export function isRegistryCacheExpired(cache: AgentRegistryCache): boolean {
+export function isRegistryCacheExpired(cache: AcpRegistryCache): boolean {
   return Date.now() - cache.fetchedAt > REGISTRY_TTL_MS;
 }
 
-async function writeRegistryCache(data: AgentRegistry): Promise<void> {
+async function writeRegistryCache(data: AcpRegistry): Promise<void> {
   await ensureAgentsDirectory();
 
   const previousCache = await readRegistryCache();
   await invalidateChangedIcons(previousCache?.data ?? null, data);
 
-  const payload: AgentRegistryCache = {
+  const payload: AcpRegistryCache = {
     fetchedAt: Date.now(),
     data,
   };
@@ -46,13 +46,13 @@ async function writeRegistryCache(data: AgentRegistry): Promise<void> {
   await fs.writeFile(getRegistryCachePath(), JSON.stringify(payload, null, 2), "utf8");
 }
 
-async function fetchRegistryFromNetwork(): Promise<AgentRegistry> {
+async function fetchRegistryFromNetwork(): Promise<AcpRegistry> {
   const response = await net.fetch(REGISTRY_URL);
   if (!response.ok) {
     throw new Error(`获取 Agent registry 失败: ${response.status} ${response.statusText}`);
   }
 
-  const data = (await response.json()) as AgentRegistry;
+  const data = (await response.json()) as AcpRegistry;
   if (!Array.isArray(data.agents)) {
     throw new Error("Agent registry 数据格式无效");
   }
@@ -61,8 +61,8 @@ async function fetchRegistryFromNetwork(): Promise<AgentRegistry> {
 }
 
 async function refreshRegistryInternal(
-  onUpdated?: (registry: AgentRegistry) => void
-): Promise<AgentRegistry> {
+  onUpdated?: (registry: AcpRegistry) => void
+): Promise<AcpRegistry> {
   if (refreshPromise) {
     return refreshPromise;
   }
@@ -83,9 +83,9 @@ async function refreshRegistryInternal(
 
 export async function getRegistry(
   options: {
-    onUpdated?: (registry: AgentRegistry) => void;
+    onUpdated?: (registry: AcpRegistry) => void;
   } = {}
-): Promise<AgentRegistry> {
+): Promise<AcpRegistry> {
   const cache = await readRegistryCache();
 
   if (cache && !isRegistryCacheExpired(cache)) {
@@ -94,7 +94,7 @@ export async function getRegistry(
 
   if (cache) {
     void refreshRegistryInternal(options.onUpdated).catch((error) => {
-      logger.warn("[agents] background registry refresh failed", error);
+      logger.warn("[acp] background registry refresh failed", error);
     });
     return cache.data;
   }
@@ -104,8 +104,8 @@ export async function getRegistry(
 
 export async function refreshRegistry(
   options: {
-    onUpdated?: (registry: AgentRegistry) => void;
+    onUpdated?: (registry: AcpRegistry) => void;
   } = {}
-): Promise<AgentRegistry> {
+): Promise<AcpRegistry> {
   return refreshRegistryInternal(options.onUpdated);
 }

@@ -1,10 +1,4 @@
-# agent-registry-cache Specification
-
-## Purpose
-
-管理 ACP registry 数据与 agent 图标的本地缓存，减少网络请求，保证离线可用性。
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Registry 数据本地缓存
 

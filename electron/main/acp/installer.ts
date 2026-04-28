@@ -4,11 +4,11 @@ import { basename, dirname, extname, join, relative } from "path";
 import { tmpdir } from "os";
 import { net } from "electron";
 import type {
-  AgentEntry,
-  InstallMethod,
-  InstallProgress,
-  InstalledAgentRecord,
-} from "@shared/types/agents";
+  AcpAgentEntry,
+  AcpInstallMethod,
+  AcpInstallProgress,
+  AcpInstalledRecord,
+} from "@shared/types/acp-agent";
 import { getDataSubPath } from "@main/utils/paths";
 import {
   createAgentError,
@@ -20,7 +20,7 @@ import {
   writeInstalledRecords,
 } from "./detector";
 
-type ProgressHandler = (progress: InstallProgress) => void;
+type ProgressHandler = (progress: AcpInstallProgress) => void;
 
 interface CommandExecutionResult {
   stdout: string;
@@ -70,17 +70,17 @@ async function runStreamingCommand(
   });
 }
 
-async function upsertInstalledRecord(agentId: string, record: InstalledAgentRecord): Promise<void> {
+async function upsertInstalledRecord(agentId: string, record: AcpInstalledRecord): Promise<void> {
   const records = await readInstalledRecords();
   records[agentId] = record;
   await writeInstalledRecords(records);
 }
 
 async function finalizeInstallRecord(
-  agent: AgentEntry,
-  installMethod: InstallMethod,
+  agent: AcpAgentEntry,
+  installMethod: AcpInstallMethod,
   installPath?: string
-): Promise<InstalledAgentRecord> {
+): Promise<AcpInstalledRecord> {
   const detected = await detectAgentInstallation(agent, {
     managedBy: "fyllocode",
     installMethod,
@@ -89,7 +89,7 @@ async function finalizeInstallRecord(
     installedAt: Date.now(),
   });
 
-  const record: InstalledAgentRecord = {
+  const record: AcpInstalledRecord = {
     managedBy: "fyllocode",
     installMethod,
     installPath: detected.installPath ?? installPath,
@@ -102,9 +102,9 @@ async function finalizeInstallRecord(
 }
 
 async function installNpx(
-  agent: AgentEntry,
+  agent: AcpAgentEntry,
   onProgress: ProgressHandler
-): Promise<InstalledAgentRecord> {
+): Promise<AcpInstalledRecord> {
   const distribution = agent.distribution.npx;
   if (!distribution) {
     throw createAgentError("INVALID_DISTRIBUTION", "Agent 缺少 npx 安装信息");
@@ -129,9 +129,9 @@ async function installNpx(
 }
 
 async function installUvx(
-  agent: AgentEntry,
+  agent: AcpAgentEntry,
   onProgress: ProgressHandler
-): Promise<InstalledAgentRecord> {
+): Promise<AcpInstalledRecord> {
   const distribution = agent.distribution.uvx;
   if (!distribution) {
     throw createAgentError("INVALID_DISTRIBUTION", "Agent 缺少 uvx 安装信息");
@@ -271,9 +271,9 @@ async function resolveBinaryExecutablePath(
 }
 
 async function installBinary(
-  agent: AgentEntry,
+  agent: AcpAgentEntry,
   onProgress: ProgressHandler
-): Promise<InstalledAgentRecord> {
+): Promise<AcpInstalledRecord> {
   const binary = resolveBinaryDistribution(agent.distribution.binary);
   if (!binary) {
     throw createAgentError("PLATFORM_UNSUPPORTED", "当前平台不支持此安装方式");
@@ -282,7 +282,7 @@ async function installBinary(
   const tempRoot = await fs.mkdtemp(join(tmpdir(), "fyllocode-agent-"));
   const archivePath = join(tempRoot, `download${getArchiveExtension(binary.archive) || ".bin"}`);
   const extractedDirectory = join(tempRoot, "extracted");
-  const finalDirectory = join(getDataSubPath("agents"), "bin", agent.id);
+  const finalDirectory = join(getDataSubPath("acp"), "bin", agent.id);
 
   try {
     await fs.mkdir(extractedDirectory, { recursive: true });
@@ -315,9 +315,9 @@ async function installBinary(
 }
 
 export async function installAgent(
-  agent: AgentEntry,
+  agent: AcpAgentEntry,
   onProgress: ProgressHandler
-): Promise<InstalledAgentRecord> {
+): Promise<AcpInstalledRecord> {
   if (activeInstallAgentId) {
     throw createAgentError("INSTALL_BUSY", "请等待当前安装完成");
   }

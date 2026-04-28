@@ -1,12 +1,12 @@
 import { promises as fs } from "fs";
 import { join } from "path";
 import { net } from "electron";
-import type { AgentRegistry } from "@shared/types/agents";
+import type { AcpRegistry } from "@shared/types/acp-agent";
 import { getDataSubPath } from "@main/utils/paths";
 import logger from "@main/utils/logger";
 
 function getIconsDirectory(): string {
-  return join(getDataSubPath("agents"), "icons");
+  return join(getDataSubPath("acp"), "icons");
 }
 
 function getIconFilePath(agentId: string): string {
@@ -46,8 +46,8 @@ export async function deleteAgentIcon(agentId: string): Promise<void> {
 }
 
 export async function invalidateChangedIcons(
-  previousRegistry: AgentRegistry | null,
-  nextRegistry: AgentRegistry
+  previousRegistry: AcpRegistry | null,
+  nextRegistry: AcpRegistry
 ): Promise<void> {
   if (!previousRegistry) {
     return;
@@ -68,7 +68,7 @@ export async function invalidateChangedIcons(
   );
 }
 
-export async function getAgentIcons(registry: AgentRegistry): Promise<Record<string, string>> {
+export async function getAgentIcons(registry: AcpRegistry): Promise<Record<string, string>> {
   const icons: Record<string, string> = {};
 
   await Promise.allSettled(
@@ -88,7 +88,7 @@ export async function getAgentIcons(registry: AgentRegistry): Promise<Record<str
         await writeIconToCache(agent.id, downloaded);
         icons[agent.id] = downloaded;
       } catch (error) {
-        logger.warn(`[agents] icon download failed for ${agent.id}`, error);
+        logger.warn(`[acp] icon download failed for ${agent.id}`, error);
       }
     })
   );

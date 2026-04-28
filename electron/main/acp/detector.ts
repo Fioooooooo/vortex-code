@@ -2,14 +2,14 @@ import { spawn } from "child_process";
 import { promises as fs } from "fs";
 import { join } from "path";
 import type {
-  AgentBinaryDistribution,
-  AgentDistribution,
-  AgentEntry,
-  AgentStatus,
-  InstallMethod,
-  InstalledAgentRecord,
-  InstalledAgentsMap,
-} from "@shared/types/agents";
+  AcpAgentBinaryDistribution,
+  AcpAgentDistribution,
+  AcpAgentEntry,
+  AcpAgentStatus,
+  AcpInstallMethod,
+  AcpInstalledMap,
+  AcpInstalledRecord,
+} from "@shared/types/acp-agent";
 import { getDataSubPath } from "@main/utils/paths";
 
 interface CommandResult {
@@ -20,7 +20,7 @@ interface CommandResult {
 
 interface DetectedInstallation {
   installed: boolean;
-  installMethod?: InstallMethod;
+  installMethod?: AcpInstallMethod;
   detectedVersion?: string;
   installPath?: string;
 }
@@ -32,11 +32,11 @@ export function createAgentError(code: string, message: string): Error & { code:
 }
 
 function getInstalledRecordsPath(): string {
-  return join(getDataSubPath("agents"), "installed.json");
+  return join(getDataSubPath("acp"), "installed.json");
 }
 
 async function ensureAgentsDirectory(): Promise<void> {
-  await fs.mkdir(getDataSubPath("agents"), { recursive: true });
+  await fs.mkdir(getDataSubPath("acp"), { recursive: true });
 }
 
 async function pathExists(path: string | undefined): Promise<boolean> {
@@ -52,16 +52,16 @@ async function pathExists(path: string | undefined): Promise<boolean> {
   }
 }
 
-export async function readInstalledRecords(): Promise<InstalledAgentsMap> {
+export async function readInstalledRecords(): Promise<AcpInstalledMap> {
   try {
     const content = await fs.readFile(getInstalledRecordsPath(), "utf8");
-    return JSON.parse(content) as InstalledAgentsMap;
+    return JSON.parse(content) as AcpInstalledMap;
   } catch {
     return {};
   }
 }
 
-export async function writeInstalledRecords(records: InstalledAgentsMap): Promise<void> {
+export async function writeInstalledRecords(records: AcpInstalledMap): Promise<void> {
   await ensureAgentsDirectory();
   await fs.writeFile(getInstalledRecordsPath(), JSON.stringify(records, null, 2), "utf8");
 }
@@ -150,7 +150,7 @@ export function compareVersions(left: string, right: string): number {
   return 0;
 }
 
-function inferInstallMethod(distribution: AgentDistribution): InstallMethod {
+function inferInstallMethod(distribution: AcpAgentDistribution): AcpInstallMethod {
   if (distribution.npx) {
     return "npx";
   }
@@ -161,8 +161,8 @@ function inferInstallMethod(distribution: AgentDistribution): InstallMethod {
 }
 
 export function resolveBinaryDistribution(
-  binaryDistributions: AgentDistribution["binary"]
-): AgentBinaryDistribution | null {
+  binaryDistributions: AcpAgentDistribution["binary"]
+): AcpAgentBinaryDistribution | null {
   if (!binaryDistributions) {
     return null;
   }
@@ -199,7 +199,7 @@ async function tryReadCommandVersion(commandPath: string): Promise<string | unde
   }
 }
 
-async function detectNpxInstallation(agent: AgentEntry): Promise<DetectedInstallation> {
+async function detectNpxInstallation(agent: AcpAgentEntry): Promise<DetectedInstallation> {
   const distribution = agent.distribution.npx;
   if (!distribution) {
     return { installed: false };
@@ -210,13 +210,12 @@ async function detectNpxInstallation(agent: AgentEntry): Promise<DetectedInstall
     return { installed: false, installMethod: "npx" };
   }
 
-  const result = await runCommand(npmPath, [
-    "list",
-    "-g",
-    distribution.package,
-    "--depth=0",
-    "--json",
-  ]);
+  // npm list 只传包名不带版本，避免版本不匹配时误判为未安装
+  const barePackageName = distribution.package
+    .replace(/@[\d].*$/, "")
+    .replace(/(@[^@/]+)@.*$/, "$1");
+
+  const result = await runCommand(npmPath, ["list", "-g", barePackageName, "--depth=0", "--json"]);
 
   let payload: {
     dependencies?: Record<string, { version?: string; path?: string }>;
@@ -229,7 +228,8 @@ async function detectNpxInstallation(agent: AgentEntry): Promise<DetectedInstall
     payload = {};
   }
 
-  const dependency = payload.dependencies?.[distribution.package];
+  // npm list --json 返回的 dependencies key 不含版本号，但 distribution.package 可能带版本后缀（如 @scope/pkg@1.0.0）
+  const dependency = payload.dependencies?.[barePackageName];
 
   if (!dependency) {
     return { installed: false, installMethod: "npx" };
@@ -243,7 +243,7 @@ async function detectNpxInstallation(agent: AgentEntry): Promise<DetectedInstall
   };
 }
 
-async function detectUvxInstallation(agent: AgentEntry): Promise<DetectedInstallation> {
+async function detectUvxInstallation(agent: AcpAgentEntry): Promise<DetectedInstallation> {
   const distribution = agent.distribution.uvx;
   if (!distribution) {
     return { installed: false };
@@ -278,8 +278,8 @@ async function detectUvxInstallation(agent: AgentEntry): Promise<DetectedInstall
 }
 
 async function detectBinaryInstallation(
-  agent: AgentEntry,
-  record?: InstalledAgentRecord
+  agent: AcpAgentEntry,
+  record?: AcpInstalledRecord
 ): Promise<DetectedInstallation> {
   const binary = resolveBinaryDistribution(agent.distribution.binary);
   if (!binary) {
@@ -311,23 +311,36 @@ async function detectBinaryInstallation(
 }
 
 export async function detectAgentInstallation(
-  agent: AgentEntry,
-  record?: InstalledAgentRecord
+  agent: AcpAgentEntry,
+  record?: AcpInstalledRecord
 ): Promise<DetectedInstallation> {
+  let detection: DetectedInstallation;
+
   if (agent.distribution.npx) {
-    return detectNpxInstallation(agent);
+    detection = await detectNpxInstallation(agent);
+  } else if (agent.distribution.uvx) {
+    detection = await detectUvxInstallation(agent);
+  } else {
+    return detectBinaryInstallation(agent, record);
   }
 
-  if (agent.distribution.uvx) {
-    return detectUvxInstallation(agent);
+  // 系统检测失败但 installed.json 有 fyllocode 管理的记录时，信任记录（可能是 npm 环境不一致）
+  // user 管理的记录不做 fallback：检测不到即视为已卸载
+  if (!detection.installed && record?.managedBy === "fyllocode") {
+    return {
+      installed: true,
+      installMethod: record.installMethod,
+      detectedVersion: record.installedVersion,
+      installPath: record.installPath,
+    };
   }
 
-  return detectBinaryInstallation(agent, record);
+  return detection;
 }
 
 export async function detectAgentStatuses(registry: {
-  agents: AgentEntry[];
-}): Promise<AgentStatus[]> {
+  agents: AcpAgentEntry[];
+}): Promise<AcpAgentStatus[]> {
   const records = await readInstalledRecords();
   let shouldPersist = false;
 
@@ -337,13 +350,18 @@ export async function detectAgentStatuses(registry: {
       const detection = await detectAgentInstallation(agent, existingRecord);
 
       if (!detection.installed) {
+        // 检测不到但 installed.json 有记录，说明用户已卸载，清除记录
+        if (existingRecord) {
+          delete records[agent.id];
+          shouldPersist = true;
+        }
         return {
           id: agent.id,
           installed: false,
           managedBy: null,
           updateAvailable: false,
           latestVersion: agent.version,
-        } satisfies AgentStatus;
+        } satisfies AcpAgentStatus;
       }
 
       const managedBy = existingRecord?.managedBy ?? "user";
@@ -353,7 +371,7 @@ export async function detectAgentStatuses(registry: {
         existingRecord?.installMethod ??
         inferInstallMethod(agent.distribution);
       const installPath = detection.installPath ?? existingRecord?.installPath;
-      const nextRecord: InstalledAgentRecord = {
+      const nextRecord: AcpInstalledRecord = {
         managedBy,
         installMethod,
         installPath,
@@ -381,7 +399,7 @@ export async function detectAgentStatuses(registry: {
           ? compareVersions(agent.version, installedVersion) > 0
           : false,
         latestVersion: agent.version,
-      } satisfies AgentStatus;
+      } satisfies AcpAgentStatus;
     })
   );
 

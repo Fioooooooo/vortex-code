@@ -3,7 +3,7 @@ import { ref, computed } from "vue";
 import { storeToRefs } from "pinia";
 import { isReasoningUIPart, isTextUIPart, isToolUIPart } from "ai";
 import { isPartStreaming, isToolStreaming } from "@nuxt/ui/utils/ai";
-import type { AgentType } from "@shared/types/chat";
+import type { ChatAgent } from "@shared/types/chat-agent";
 import { useChatStore } from "@renderer/stores/chat";
 import { useSessionStore } from "@renderer/stores/session";
 import ChatComark from "./ChatComark";
@@ -15,8 +15,8 @@ const sessionStore = useSessionStore();
 const { chatStatus } = storeToRefs(store);
 const { activeSession } = storeToRefs(sessionStore);
 
-const agent = computed<AgentType>({
-  get: () => store.currentAgent.type,
+const agent = computed<ChatAgent["acpAgentId"]>({
+  get: () => store.currentAgent.acpAgentId,
   set: () => {},
 });
 

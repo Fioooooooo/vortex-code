@@ -1,10 +1,4 @@
-# agent-install Specification
-
-## Purpose
-
-管理 CLI agent 的安装流程，支持 npx、uvx、binary 三种分发类型，并维护安装记录。
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Agent 安装状态检测
 

@@ -1,10 +1,4 @@
-# agent-status-panel Specification
-
-## Purpose
-
-TBD - created by archiving change settings-page. Update Purpose after archive.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Agent 卡片列表展示
 

@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
-import { useSettingsStore } from "@renderer/stores/settings";
+import { useAcpAgentsStore } from "@renderer/stores/acp-agents";
 import AgentCard from "./AgentCard.vue";
 
-const store = useSettingsStore();
+const store = useAcpAgentsStore();
 const refreshing = ref(false);
 
-const agents = computed(() => store.agentRegistry?.agents ?? []);
+const agents = computed(() => store.registry?.agents ?? []);
 const currentInstallAgentId = computed(
   () =>
     Object.values(store.installProgress).find(
@@ -19,12 +19,12 @@ const hasRegistryError = computed(
 
 onMounted(async () => {
   await store.loadRegistry();
-  await Promise.all([store.loadIcons(), store.refreshAgentStatus()]);
+  await Promise.all([store.loadIcons(), store.refreshStatus()]);
 });
 
 async function refreshStatuses(): Promise<void> {
   refreshing.value = true;
-  await store.refreshAgentStatus();
+  await store.refreshStatus();
   refreshing.value = false;
 }
 </script>
@@ -40,11 +40,11 @@ async function refreshStatuses(): Promise<void> {
         size="sm"
         variant="outline"
         color="neutral"
+        icon="i-lucide-refresh-cw"
         :loading="refreshing"
         @click="refreshStatuses"
       >
-        <UIcon name="i-lucide-refresh-cw" class="w-4 h-4 mr-1.5" />
-        Refresh
+        刷新
       </UButton>
     </div>
 
@@ -64,8 +64,8 @@ async function refreshStatuses(): Promise<void> {
         v-for="agent in agents"
         :key="agent.id"
         :agent="agent"
-        :icon="store.agentIcons[agent.id]"
-        :agent-status="store.agentStatuses[agent.id]"
+        :icon="store.icons[agent.id]"
+        :agent-status="store.statuses[agent.id]"
         :install-progress="store.installProgress[agent.id]"
         :is-installing="currentInstallAgentId === agent.id"
         :action-disabled="!!currentInstallAgentId && currentInstallAgentId !== agent.id"

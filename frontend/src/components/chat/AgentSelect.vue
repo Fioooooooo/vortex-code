@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import type { AgentType } from "@shared/types/chat";
+import type { ChatAgent } from "@shared/types/chat-agent";
 
 type AgentOption = {
-  value: AgentType;
+  value: ChatAgent["acpAgentId"];
   label: string;
   icon: string;
 };
 
-const agent = defineModel<AgentType>({ required: true });
+const agent = defineModel<ChatAgent["acpAgentId"]>({ required: true });
 
 const agents: AgentOption[] = [
   {
