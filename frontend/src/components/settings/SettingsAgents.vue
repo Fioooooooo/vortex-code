@@ -5,6 +5,13 @@ import AgentCard from "./AgentCard.vue";
 
 const store = useAcpAgentsStore();
 const refreshing = ref(false);
+const searchQuery = ref("");
+const activeTab = ref("all");
+
+const tabs = [
+  { label: "全部", value: "all" },
+  { label: "已安装", value: "installed" },
+];
 
 const agents = computed(() => store.registry?.agents ?? []);
 const currentInstallAgentId = computed(
@@ -16,6 +23,18 @@ const currentInstallAgentId = computed(
 const hasRegistryError = computed(
   () => !store.registryLoading && !agents.value.length && !!store.registryError
 );
+
+const filteredAgents = computed(() => {
+  let result = agents.value;
+  if (activeTab.value === "installed") {
+    result = result.filter((a) => store.statuses[a.id]?.installed);
+  }
+  const q = searchQuery.value.trim().toLowerCase();
+  if (q) {
+    result = result.filter((a) => a.name.toLowerCase().includes(q));
+  }
+  return result;
+});
 
 onMounted(async () => {
   await store.loadRegistry();
@@ -48,6 +67,17 @@ async function refreshStatuses(): Promise<void> {
       </UButton>
     </div>
 
+    <div class="flex items-center gap-3 mb-4">
+      <UInput
+        v-model="searchQuery"
+        size="sm"
+        placeholder="搜索 Agent..."
+        icon="i-lucide-search"
+        class="flex-1"
+      />
+      <UTabs v-model="activeTab" :items="tabs" size="sm" variant="link" value-key="value" />
+    </div>
+
     <div
       v-if="store.registryLoading && !agents.length"
       class="flex items-center justify-center py-16"
@@ -59,18 +89,23 @@ async function refreshStatuses(): Promise<void> {
       <p class="text-sm text-muted">{{ store.registryError }}</p>
     </div>
 
-    <div v-else class="grid grid-cols-2 gap-4">
-      <AgentCard
-        v-for="agent in agents"
-        :key="agent.id"
-        :agent="agent"
-        :icon="store.icons[agent.id]"
-        :agent-status="store.statuses[agent.id]"
-        :install-progress="store.installProgress[agent.id]"
-        :is-installing="currentInstallAgentId === agent.id"
-        :action-disabled="!!currentInstallAgentId && currentInstallAgentId !== agent.id"
-        @install="store.installAgent"
-      />
-    </div>
+    <template v-else>
+      <div v-if="filteredAgents.length" class="grid grid-cols-2 gap-4">
+        <AgentCard
+          v-for="agent in filteredAgents"
+          :key="agent.id"
+          :agent="agent"
+          :icon="store.icons[agent.id]"
+          :agent-status="store.statuses[agent.id]"
+          :install-progress="store.installProgress[agent.id]"
+          :is-installing="currentInstallAgentId === agent.id"
+          :action-disabled="!!currentInstallAgentId && currentInstallAgentId !== agent.id"
+          @install="store.installAgent"
+        />
+      </div>
+      <div v-else class="flex items-center justify-center py-16">
+        <p class="text-sm text-muted">没有匹配的 Agent</p>
+      </div>
+    </template>
   </div>
 </template>
