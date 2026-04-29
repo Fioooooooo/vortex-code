@@ -60,7 +60,7 @@
 
 ### Requirement: 安装 binary 类型 agent
 
-主进程 SHALL 根据当前平台（`process.platform + process.arch`）选择对应 archive，下载到临时文件后解压至 `getDataSubPath('agents')/bin/<agent-id>/`，完成后写入 `installed.json`。
+主进程 SHALL 根据当前平台（`process.platform + process.arch`）选择对应 archive，下载到临时文件后解压至 `getDataSubPath('acp')/bin/<agent-id>/`，完成后写入 `installed.json`。
 
 #### Scenario: 当前平台无对应 binary
 
@@ -70,7 +70,7 @@
 #### Scenario: 下载并安装成功
 
 - **WHEN** 调用 `acp:install`，agent 为 binary 类型，当前平台有对应 entry
-- **THEN** 下载 archive 到临时文件，推送 `{ agentId, status: "downloading" }`；解压到 `getDataSubPath('agents')/bin/<agent-id>/`，推送 `{ agentId, status: "installing" }`；完成后推送 `{ agentId, status: "done" }`，写入 `installed.json`，`installMethod: "binary", installPath: <解压路径>`
+- **THEN** 下载 archive 到临时文件，推送 `{ agentId, status: "downloading" }`；解压到 `getDataSubPath('acp')/bin/<agent-id>/`，推送 `{ agentId, status: "installing" }`；完成后推送 `{ agentId, status: "done" }`，写入 `installed.json`，`installMethod: "binary", installPath: <解压路径>`
 
 #### Scenario: 下载中断
 

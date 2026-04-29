@@ -2,7 +2,6 @@ import { ipcRenderer } from "electron";
 import type { IpcResponse, MessageChunkData } from "@shared/types/ipc";
 import { ChatChannels, ChatStreamChannels } from "@shared/types/channels";
 import type { Session, Message } from "@shared/types/chat";
-
 export interface StreamCallbacks {
   onChunk: (data: MessageChunkData) => void;
   onDone: (data: { totalTokens: number }) => void;
@@ -38,14 +37,19 @@ export const chatApi = {
     return ipcRenderer.invoke(ChatChannels.sendMessage, input);
   },
 
+  persistMessage(sessionId: string, message: Message): Promise<IpcResponse<void>> {
+    return ipcRenderer.invoke(ChatChannels.persistMessage, { sessionId, message });
+  },
+
   streamMessage(
     sessionId: string,
     projectId: string,
+    agentId: string,
     prompt: string,
     callbacks: StreamCallbacks
   ): () => void {
     // Invoke to trigger main to create MessagePort and start streaming
-    ipcRenderer.invoke(ChatStreamChannels.streamMessage, { sessionId, projectId, prompt });
+    ipcRenderer.invoke(ChatStreamChannels.streamMessage, { sessionId, projectId, agentId, prompt });
 
     // Receive the port from main
     ipcRenderer.once(ChatStreamChannels.streamPort, (event) => {

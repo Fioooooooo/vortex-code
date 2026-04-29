@@ -7,7 +7,7 @@ import type { ChatAgent } from "@shared/types/chat-agent";
 import { useChatStore } from "@renderer/stores/chat";
 import { useSessionStore } from "@renderer/stores/session";
 import ChatComark from "./ChatComark";
-import AgentSelect from "./AgentSelect.vue";
+import ChatAgentSelect from "./ChatAgentSelect.vue";
 import { getToolText, getToolSuffix, getToolOutput } from "@renderer/utils/chatTool";
 
 const store = useChatStore();
@@ -117,7 +117,7 @@ function handleSubmit(): void {
           @submit="handleSubmit"
         >
           <template #footer>
-            <AgentSelect v-model="agent" />
+            <ChatAgentSelect v-model="agent" />
 
             <UChatPromptSubmit :status="chatStatus" color="neutral" size="sm" />
           </template>

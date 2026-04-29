@@ -1,13 +1,18 @@
 import { ipcMain, MessageChannelMain } from "electron";
 import { ChatChannels, ChatStreamChannels } from "@shared/types/channels";
 import { wrapHandler } from "./utils";
-import { ClaudeSession } from "../cli/claude/session";
-import { getClaudeSessionId, setClaudeSessionId } from "../cli/claude/session-map";
-import type { SessionEvent } from "../cli/claude/types";
+import { AcpSession } from "../chat-agent/acp-session";
+import { loadSessionMeta, appendMessage } from "../chat-agent/session-store";
+import type { SessionEvent } from "../chat-agent/types";
 import type { MessageChunkData } from "@shared/types/ipc";
+import type { Message } from "@shared/types/chat";
+import logger from "@main/utils/logger";
 
-// Active sessions: fylloSessionId → ClaudeSession
-const activeSessions = new Map<string, ClaudeSession>();
+// Active sessions: fylloSessionId → AcpSession
+const activeSessions = new Map<string, AcpSession>();
+
+// Fallback project path until project persistence is implemented
+const FALLBACK_PROJECT_PATH = "dev-fallback";
 
 export function registerChatHandlers(): void {
   ipcMain.handle(
@@ -60,47 +65,70 @@ export function registerChatHandlers(): void {
       })
   );
 
+  ipcMain.handle(
+    ChatChannels.persistMessage,
+    (_event, input: { sessionId: string; message: Message }) =>
+      wrapHandler(async () => {
+        logger.debug(
+          `[chat] persistMessage sessionId=${input.sessionId} role=${input.message.role} parts=${input.message.parts.length}`
+        );
+        await appendMessage(FALLBACK_PROJECT_PATH, input.sessionId, input.message);
+        logger.debug(`[chat] persistMessage done`);
+      })
+  );
+
   // Streaming: create MessagePort and push chunks via port1
   ipcMain.handle(
     ChatStreamChannels.streamMessage,
-    async (event, input: { sessionId: string; projectId: string; prompt: string }) => {
+    async (
+      event,
+      input: { sessionId: string; projectId: string; agentId: string; prompt: string }
+    ) => {
       const { port1, port2 } = new MessageChannelMain();
-
-      // Transfer port2 to renderer
       event.sender.postMessage(ChatStreamChannels.streamPort, null, [port2]);
 
-      const { sessionId, projectId, prompt } = input;
-
-      // Resolve cwd from projectId — currently TODO (project store not implemented)
-      // Fall back to process.cwd() until project persistence is available
+      const { sessionId, projectId, agentId: inputAgentId, prompt } = input;
       void projectId;
+
       const cwd = process.cwd();
+      const projectPath = FALLBACK_PROJECT_PATH;
 
-      const claudeSessionId = getClaudeSessionId(sessionId);
+      const meta = await loadSessionMeta(projectPath, sessionId);
+      const agentId = inputAgentId || meta?.agentId || "claude-acp";
 
-      const session = new ClaudeSession({ sessionId, prompt, cwd, claudeSessionId });
+      const session = new AcpSession({ fylloSessionId: sessionId, agentId, projectPath, cwd });
       activeSessions.set(sessionId, session);
 
       const sendChunk = (data: MessageChunkData): void => {
         port1.postMessage({ type: "chunk", data });
       };
 
-      session.on("session_id_resolved", (ev: SessionEvent) => {
-        if (ev.type === "session_id_resolved") {
-          setClaudeSessionId(sessionId, ev.claudeSessionId);
-        }
-      });
-
       session.on("event", (ev: SessionEvent) => {
         switch (ev.type) {
+          case "session_id_resolved":
+            // Already persisted inside AcpSession
+            break;
           case "text_delta":
             sendChunk({ kind: "text_delta", text: ev.text });
             break;
-          case "message_upsert":
-            sendChunk({ kind: "message_upsert", message: ev.message });
+          case "tool_call_start":
+            sendChunk({
+              kind: "tool_call_start",
+              toolCallId: ev.toolCallId,
+              toolName: ev.toolName,
+              toolKind: ev.kind,
+            });
             break;
-          case "message_patch":
-            sendChunk({ kind: "message_patch", id: ev.id, parts: ev.parts });
+          case "tool_call_update":
+            sendChunk({
+              kind: "tool_call_update",
+              toolCallId: ev.toolCallId,
+              status: ev.status,
+              input: ev.input
+                ? (JSON.parse(JSON.stringify(ev.input)) as Record<string, unknown>)
+                : undefined,
+              content: ev.content,
+            });
             break;
           case "done":
             port1.postMessage({ type: "done", data: { totalTokens: ev.totalTokens } });
@@ -115,29 +143,17 @@ export function registerChatHandlers(): void {
         }
       });
 
-      // Wait for renderer to signal ready before starting, so no chunks are
-      // buffered in the port queue before onmessage is registered.
+      // Wait for renderer to signal ready before starting
       port1.once("message", (msg) => {
         if ((msg.data as { type: string }).type === "ready") {
-          try {
-            session.start();
-          } catch (err: unknown) {
-            const e = err as Error & { code?: string };
-            if (e.code === "ENOENT") {
-              port1.postMessage({
-                type: "error",
-                data: {
-                  code: "CLAUDE_NOT_FOUND",
-                  message:
-                    "claude command not found. Please install Claude CLI and ensure it is in PATH.",
-                },
-              });
-              port1.close();
-              activeSessions.delete(sessionId);
-            } else {
-              throw err;
-            }
-          }
+          session.start(prompt).catch((err: unknown) => {
+            port1.postMessage({
+              type: "error",
+              data: { code: "ACP_ERROR", message: String(err) },
+            });
+            port1.close();
+            activeSessions.delete(sessionId);
+          });
         }
       });
       port1.start();

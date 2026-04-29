@@ -39,9 +39,10 @@ export const chatApi = {
   streamMessage(
     sessionId: string,
     projectId: string,
+    agentId: string,
     prompt: string,
     callbacks: StreamCallbacks
   ): () => void {
-    return window.api.chat.streamMessage(sessionId, projectId, prompt, callbacks);
+    return window.api.chat.streamMessage(sessionId, projectId, agentId, prompt, callbacks);
   },
 };

@@ -1,3 +1,5 @@
+> **DEPRECATED**: 此 capability 已被 `acp-chat-backend` 取代，所有 requirements 已移除。详见 change `acp-agent-chat-integration`。
+
 ### Requirement: Claude CLI 子进程以 stream-json 模式启动
 
 系统 SHALL 通过 `child_process.spawn` 启动本地 `claude` CLI，使用 `--print --output-format stream-json --verbose --include-partial-messages` 参数，将用户 prompt 作为最后一个参数传入，并将 `cwd` 设置为当前项目路径。新会话不携带 `--resume`；已有 Claude sessionId 映射的会话 SHALL 携带 `--resume {claudeSessionId}`。

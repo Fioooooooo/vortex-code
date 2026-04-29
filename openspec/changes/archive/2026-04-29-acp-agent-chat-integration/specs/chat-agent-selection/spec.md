@@ -1,10 +1,4 @@
-# chat-agent-selection Specification
-
-## Purpose
-
-定义 Chat 界面中 agent 选择的数据模型与状态管理规范，将 chat 层的 agent 表示（ChatAgent）与 ACP 层的 agent 注册表（AcpAgentEntry）解耦。
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: ChatAgent 数据模型
 
@@ -30,6 +24,8 @@
 
 - **WHEN** chat store 初始化
 - **THEN** `currentAgent` 为 `ChatAgent` 类型，包含 `id`、`name`、`acpAgentId` 字段
+
+## ADDED Requirements
 
 ### Requirement: ChatAgentSelect 展示已安装 ACP agent 列表
 

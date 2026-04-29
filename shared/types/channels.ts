@@ -6,6 +6,7 @@ export const ChatChannels = {
   updateSession: "chat:updateSession",
   removeSession: "chat:removeSession",
   sendMessage: "chat:sendMessage",
+  persistMessage: "chat:persistMessage",
 } as const;
 
 export const ChatStreamChannels = {

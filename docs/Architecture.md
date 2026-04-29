@@ -81,7 +81,7 @@ IPC 通信：渲染进程通过 `window.electron.ipcRenderer` 调用主进程；
 统一使用 `electron-log` v5，通过 `electron/main/utils/logger.ts` 封装后导出：
 
 ```ts
-import logger from "../utils/logger";
+import logger from "@main/utils/logger";
 
 logger.info("...");
 logger.warn("...");

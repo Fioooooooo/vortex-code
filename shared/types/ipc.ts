@@ -18,8 +18,14 @@ export interface StreamChunkData {
 
 export type MessageChunkData =
   | { kind: "text_delta"; text: string }
-  | { kind: "message_upsert"; message: import("@shared/types/chat").Message }
-  | { kind: "message_patch"; id: string; parts: import("@shared/types/chat").Message["parts"] }
+  | { kind: "tool_call_start"; toolCallId: string; toolName: string; toolKind: string }
+  | {
+      kind: "tool_call_update";
+      toolCallId: string;
+      status: "in_progress" | "completed" | "failed";
+      input?: Record<string, unknown>;
+      content?: string;
+    }
   | { kind: "status"; agentStatus: import("ai").ChatStatus };
 
 // Event push message type for ipcRenderer.on subscriptions
