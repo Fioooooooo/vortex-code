@@ -26,7 +26,8 @@
 #### Scenario: 草稿态首条消息前创建 session
 
 - **WHEN** 渲染进程在草稿态发送第一条消息前调用 `chat:createSession`
-- **THEN** 返回的 `sessionId` 作为该轮首条消息持久化与后续流式会话的唯一 session 标识
+- **THEN** 调用方传入的 `title` 为基于首条用户消息生成的兜底标题
+- **AND** 返回的 `sessionId` 作为该轮首条消息持久化与后续流式会话的唯一 session 标识
 
 ### Requirement: updateSession IPC 更新 session 元数据
 
@@ -61,6 +62,11 @@
 
 - **WHEN** 渲染进程收到 `kind: "session_info_update"` chunk
 - **THEN** 前端 chat store 更新对应 session 的 `title` 字段，UI 实时反映新标题
+
+#### Scenario: Agent 未推送标题时保持调用方初始化标题
+
+- **WHEN** ACP agent 在整轮对话中未推送 `session_info_update`
+- **THEN** 主进程保持 `chat:createSession` 初始写入的 `title` 不变
 
 系统 SHALL 提供 `chat:loadMessages` IPC handler，从磁盘读取指定 session 的历史消息列表。
 

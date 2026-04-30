@@ -13,6 +13,7 @@
 
 - 点击"新建 Session"时进入空白草稿态，而不是立即创建磁盘文件
 - 在草稿态发送第一条消息时，懒创建并持久化 session
+- 即使 ACP agent 没有推送 `session_info_update`，session 列表也能尽快显示有意义的标题
 - 在无 active session 时，agent 选择器仍可工作，并绑定到响应式草稿态 agent
 - 保持已有的真实 session 列表、历史消息加载、重命名、删除、标题推送更新能力
 
@@ -21,6 +22,7 @@
 - 草稿态跨应用重启持久化
 - session 分页 / 搜索 / 归档
 - ACP `session/load` 历史重放
+- 基于模型摘要、关键词提取或异步二次生成的本地标题算法
 
 ## Decisions
 
@@ -62,7 +64,7 @@
 `chatStore.sendMessage` 在发送时分两种情况：
 
 - 若已有 active session：沿用现有流式逻辑
-- 若当前处于草稿态：先调用 `chatApi.createSession({ projectId, title: "New Session", agentId: draftAgentId })` 创建真实 session，并将返回结果插入列表顶部、设为 active，再持久化用户首条消息并开始流式
+- 若当前处于草稿态：先基于首条用户消息生成兜底标题，再调用 `chatApi.createSession({ projectId, title: fallbackTitle, agentId: draftAgentId })` 创建真实 session，并将返回结果插入列表顶部、设为 active，再持久化用户首条消息并开始流式
 
 这意味着 `createSession` IPC 仍然保留，但其触发时机从点击按钮改为首条消息发送前。
 
@@ -73,6 +75,7 @@
 - `projectId`
 - `draftAgentId`
 - 输入内容 `content`
+- 基于该 `content` 计算出的 `fallbackTitle`
 
 后续异步 `createSession`、首条消息持久化、`streamMessage` 均使用这一份快照，避免响应式状态在异步期间变化导致数据串错。
 
@@ -106,7 +109,28 @@
 
 当草稿态被转换为真实 session 时，新 session 的 `agentId` 必须取自当时的 `draftAgentId`。后续该 session 的 agent 选择仍然是 session 级别持久化状态。
 
-### 决策 7：磁盘持久化链路保持不变
+### 决策 7：新 session 标题先用首条消息兜底，再允许 agent 覆盖
+
+由于当前使用的 ACP agent 可能根本不会推送 `session_info_update`，因此新 session 不能长期依赖固定 `"New Session"` 作为默认标题。系统需要在首条消息发送前同步生成一个本地兜底标题：
+
+- 对首条用户消息执行 `trim()`
+- 将所有连续空白（含换行）压缩成单个空格
+- 取规范化结果的前 30 个字符作为标题
+
+该兜底标题在 `createSession` 时写入磁盘并立即显示在 session 列表中。
+
+后续若 agent 推送 `session_info_update` 且包含非空 `title`：
+
+- 仍然以 agent 推送值为准
+- 覆盖当前 session 标题
+- 同步写回磁盘元数据
+
+这保证了：
+
+- agent 支持标题推送时，最终仍显示 agent 生成的标题
+- agent 不支持标题推送时，用户也不会长期看到 `"New Session"`
+
+### 决策 8：磁盘持久化链路保持不变
 
 以下既有设计保持不变：
 
@@ -115,12 +139,13 @@
 - `session_info_update` 仍然通过主进程持久化标题并推送给前端
 - 前端仍通过 `chatApi.*` 调用 IPC，不直接依赖 `window.api.chat.*`
 
-### 决策 8：草稿态不持久化
+### 决策 9：草稿态不持久化
 
 未发送首条消息的草稿态不会写入磁盘，也不会在应用重启后恢复。这是有意为之，因为草稿态的语义是"尚未开始的会话"，不是历史记录。
 
 ## Risks / Trade-offs
 
 - **发送路径更复杂**：`sendMessage` 现在需要处理"无 active session 时先创建 session"的分支，失败时必须避免把消息只留在内存里而没有会话
+- **标题质量有限**：首条消息截断只能保证"可用"，不能保证像模型摘要那样精炼；这是为了换取同步、确定、零额外依赖的兜底行为
 - **草稿态与安装状态耦合**：如果 agent 安装状态变化，`draftAgentId` 可能失效，需要在 store 中做回退或清空
 - **草稿不持久化**：用户点击"新建 Session"但不发送消息，退出应用后该草稿不会保留；这是与"不产生空白 session 文件"之间的权衡

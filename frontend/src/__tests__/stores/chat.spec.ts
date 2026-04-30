@@ -5,7 +5,7 @@ import { useAcpAgentsStore } from "@renderer/stores/acp-agents";
 import { useChatStore } from "@renderer/stores/chat";
 import { useProjectStore } from "@renderer/stores/project";
 import { useSessionStore } from "@renderer/stores/session";
-import { chatApi } from "@renderer/api/chat";
+import { chatApi, type StreamCallbacks } from "@renderer/api/chat";
 import { projectApi } from "@renderer/api/project";
 import type { AcpRegistry, AcpAgentStatus } from "@shared/types/acp-agent";
 
@@ -80,7 +80,7 @@ describe("useChatStore", () => {
         id: "session-1",
         projectId: "project-1",
         agentId: "claude-code",
-        title: "New Session",
+        title: "hello world",
         status: "ended",
         turnCount: 0,
         createdAt: "2026-04-30T09:00:00.000Z" as unknown as Date,
@@ -117,7 +117,7 @@ describe("useChatStore", () => {
 
     expect(chatApi.createSession).toHaveBeenCalledWith({
       projectId: "project-1",
-      title: "New Session",
+      title: "hello world",
       agentId: "claude-code",
     });
     expect(sessionStore.activeSessionId).toBe("session-1");
@@ -177,5 +177,82 @@ describe("useChatStore", () => {
 
     expect(observedMessageCounts).toContain(1);
     expect(observedMessageCounts.at(-1)).toBe(1);
+  });
+
+  it("uses a normalized truncated first message as fallback session title", async () => {
+    const acpAgentsStore = useAcpAgentsStore();
+    acpAgentsStore.registry = mockRegistry;
+    acpAgentsStore.statuses = mockStatuses;
+
+    const projectStore = useProjectStore();
+    projectStore.currentProject = {
+      id: "project-1",
+      name: "Project 1",
+      path: "/tmp/project-1",
+      createdAt: new Date("2026-04-30T08:00:00.000Z"),
+      lastOpenedAt: new Date("2026-04-30T08:00:00.000Z"),
+    };
+
+    vi.mocked(chatApi.createSession).mockResolvedValueOnce({
+      ok: true,
+      data: {
+        id: "session-2",
+        projectId: "project-1",
+        agentId: "claude-code",
+        title: "hello world this message is in",
+        status: "ended",
+        turnCount: 0,
+        createdAt: "2026-04-30T09:00:00.000Z" as unknown as Date,
+        updatedAt: "2026-04-30T09:00:00.000Z" as unknown as Date,
+        messages: [],
+      },
+    });
+
+    const sessionStore = useSessionStore();
+    sessionStore.beginDraftSession();
+
+    const chatStore = useChatStore();
+    await chatStore.sendMessage("  hello\n\nworld   this message is intentionally long  ");
+
+    expect(chatApi.createSession).toHaveBeenCalledWith({
+      projectId: "project-1",
+      title: "hello world this message is in",
+      agentId: "claude-code",
+    });
+    expect(sessionStore.activeSession?.title).toBe("hello world this message is in");
+  });
+
+  it("allows session_info_update to override the fallback title", async () => {
+    const acpAgentsStore = useAcpAgentsStore();
+    acpAgentsStore.registry = mockRegistry;
+    acpAgentsStore.statuses = mockStatuses;
+
+    const projectStore = useProjectStore();
+    projectStore.currentProject = {
+      id: "project-1",
+      name: "Project 1",
+      path: "/tmp/project-1",
+      createdAt: new Date("2026-04-30T08:00:00.000Z"),
+      lastOpenedAt: new Date("2026-04-30T08:00:00.000Z"),
+    };
+
+    let callbacks: StreamCallbacks | null = null;
+    vi.mocked(chatApi.streamMessage).mockImplementation(
+      (_sessionId, _projectId, _agentId, _prompt, nextCallbacks) => {
+        callbacks = nextCallbacks;
+        return () => {};
+      }
+    );
+
+    const sessionStore = useSessionStore();
+    sessionStore.beginDraftSession();
+
+    const chatStore = useChatStore();
+    await chatStore.sendMessage("hello world");
+
+    expect(sessionStore.activeSession?.title).toBe("hello world");
+    expect(callbacks).not.toBeNull();
+    callbacks!.onChunk({ kind: "session_info_update", title: "Agent Generated Title" });
+    expect(sessionStore.activeSession?.title).toBe("Agent Generated Title");
   });
 });

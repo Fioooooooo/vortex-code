@@ -43,6 +43,8 @@
 - [x] 5.9 确保首条消息创建路径中的 `turnCount`、`createdAt`、`updatedAt` 不会因为 create/send 双路径而重复推进
 - [x] 5.10 确保 `persistMessage`、`streamMessage`、`session_info_update` 后续链路全部绑定到新建出来的同一个 `sessionId`
 - [x] 5.11 处理草稿态 `createSession` 失败：不新增 session 条目、不写入消息文件、UI 维持草稿态而不是半创建状态
+- [x] 5.12 为未实现 `session_info_update` 的 ACP agent 增加标题兜底策略：草稿态首条消息创建 session 时，使用首条用户消息去首尾空白、压缩连续空白后的前 30 个字符作为初始标题
+- [x] 5.13 确保后续若收到 `session_info_update`，agent 推送标题仍可覆盖本地兜底标题
 
 ## 6. 验证
 
@@ -53,3 +55,4 @@
 - [ ] 6.5 验证草稿态发送首条消息后才生成 `.json` 与 `.messages.jsonl`，并自动插入列表顶部
 - [ ] 6.6 验证切换 session 后历史消息正确加载，agent 选择器在 active session 与草稿态之间切换正确
 - [ ] 6.7 验证重命名、删除、`session_info_update` 标题更新、以及流式进行中 agent 选择器禁用行为
+- [ ] 6.8 验证在 ACP agent 未推送 `session_info_update` 时，新 session 标题默认显示首条用户消息截断值；若后续收到推送，标题可被覆盖

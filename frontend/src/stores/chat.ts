@@ -7,6 +7,9 @@ import { chatApi } from "@renderer/api/chat";
 import { useProjectStore } from "./project";
 import { useSessionStore } from "./session";
 
+const DEFAULT_SESSION_TITLE = "New Session";
+const FALLBACK_SESSION_TITLE_MAX_LENGTH = 30;
+
 function buildUserMessage(sessionId: string, content: string): Message {
   return {
     id: generateId(),
@@ -14,6 +17,15 @@ function buildUserMessage(sessionId: string, content: string): Message {
     parts: [{ type: "text", text: content }],
     metadata: { sessionId, createdAt: new Date() },
   };
+}
+
+function buildFallbackSessionTitle(content: string): string {
+  const normalized = content.trim().replace(/\s+/g, " ");
+  if (!normalized) {
+    return DEFAULT_SESSION_TITLE;
+  }
+
+  return Array.from(normalized).slice(0, FALLBACK_SESSION_TITLE_MAX_LENGTH).join("");
 }
 
 export const useChatStore = defineStore("chat", () => {
@@ -213,12 +225,13 @@ export const useChatStore = defineStore("chat", () => {
       }
 
       chatStatus.value = "submitted";
+      const fallbackTitleSnapshot = buildFallbackSessionTitle(prompt);
 
       try {
         const createdSession = await sessionStore.createSession({
           projectId: projectIdSnapshot,
           agentId: draftAgentIdSnapshot,
-          title: "New Session",
+          title: fallbackTitleSnapshot,
         });
         activeSession = sessionStore.activeSession ?? createdSession;
       } catch (error: unknown) {

@@ -59,7 +59,7 @@
 #### Scenario: 草稿态首条消息创建新 session
 
 - **WHEN** 用户在草稿态发送第一条消息
-- **THEN** 系统创建新的 session 元数据文件，标题初始化为 `"New Session"`
+- **THEN** 系统创建新的 session 元数据文件，标题初始化为基于首条用户消息生成的兜底标题
 - **AND** 新 session 插入 session 列表顶部并设为当前选中项
 - **AND** 首条用户消息写入该 session 的消息文件
 
@@ -81,14 +81,19 @@
 - **AND** 磁盘上不生成新的 session 或消息文件
 - **AND** 系统保持在草稿态，而不是进入半创建的会话状态
 
-### Requirement: Session 标题由 Agent 推送更新
+### Requirement: Session 标题具备本地兜底与 Agent 覆盖能力
 
-系统 SHALL 在真实 session 创建后将标题初始化为 `"New Session"`。当 ACP agent 在对话过程中推送 `session_info_update` 事件且包含 `title` 字段时，系统 SHALL 更新 session 标题并持久化到磁盘。
+系统 SHALL 在真实 session 创建时，使用首条用户消息生成本地兜底标题；当 ACP agent 在对话过程中推送 `session_info_update` 事件且包含 `title` 字段时，系统 SHALL 用该值覆盖当前标题并持久化到磁盘。
 
-#### Scenario: 新 session 默认标题
+#### Scenario: 新 session 使用首条消息兜底标题
 
 - **WHEN** 用户在草稿态发送第一条消息并创建 session
-- **THEN** session 标题初始显示为 `"New Session"`
+- **THEN** session 标题初始显示为对首条消息执行去首尾空白、压缩连续空白后的前 30 个字符
+
+#### Scenario: Agent 未推送标题时保留兜底标题
+
+- **WHEN** 新 session 创建后，ACP agent 未推送任何 `session_info_update`
+- **THEN** session 标题保持为首条消息生成的兜底标题
 
 #### Scenario: Agent 推送标题后更新
 
