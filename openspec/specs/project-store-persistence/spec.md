@@ -17,6 +17,12 @@
 - **AND** 读取每个子目录下的 `meta.json`
 - **AND** 返回解析后的 project 列表，按 lastOpenedAt 降序排列
 
+#### Scenario: persisted projects 在 app 启动阶段预热
+
+- **WHEN** 前端应用完成启动并执行 bootstrap
+- **THEN** persisted projects 列表在 bootstrap 阶段通过 `project:list` 预热到 `project` store
+- **AND** 不依赖页面 mounted 或 store 模块初始化时的隐式自启动
+
 #### Scenario: 按 ID 获取 project
 
 - **WHEN** 前端调用 `project:getById` 并传入有效 encodedPath（即 id）

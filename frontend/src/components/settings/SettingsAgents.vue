@@ -21,7 +21,10 @@ const currentInstallAgentId = computed(
     )?.agentId ?? null
 );
 const hasRegistryError = computed(
-  () => !store.registryLoading && !agents.value.length && !!store.registryError
+  () =>
+    !store.registryLoading &&
+    !agents.value.length &&
+    !!(store.initializationError || store.registryError)
 );
 
 const filteredAgents = computed(() => {
@@ -36,15 +39,19 @@ const filteredAgents = computed(() => {
   return result;
 });
 
-onMounted(async () => {
-  await store.loadRegistry();
-  await Promise.all([store.loadIcons(), store.refreshStatus()]);
+onMounted(() => {
+  if (!store.initialized && !store.initializing) {
+    void store.ensureInitialized();
+  }
 });
 
 async function refreshStatuses(): Promise<void> {
   refreshing.value = true;
-  await store.refreshStatus();
-  refreshing.value = false;
+  try {
+    await store.refreshAll();
+  } finally {
+    refreshing.value = false;
+  }
 }
 </script>
 

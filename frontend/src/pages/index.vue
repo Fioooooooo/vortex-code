@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, watchEffect } from "vue";
+import { watchEffect } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import WelcomeView from "@renderer/components/WelcomeView.vue";
 import { useProjectStore } from "@renderer/stores/project";
@@ -18,9 +18,7 @@ watchEffect(() => {
   }
 });
 
-onMounted(() => {
-  void projectStore.ensureLoaded();
-
+watchEffect(() => {
   if (projectStore.hasCurrentProject && route.path === "/") {
     void router.replace("/chat");
   }

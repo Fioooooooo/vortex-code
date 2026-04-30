@@ -55,6 +55,10 @@ describe("useAcpAgentsStore", () => {
       ok: true,
       data: mockRegistry,
     });
+    vi.mocked(acpAgentsApi.refreshRegistry).mockResolvedValue({
+      ok: true,
+      data: mockRegistry,
+    });
     vi.mocked(acpAgentsApi.getIcons).mockResolvedValue({
       ok: true,
       data: { "claude-code": "data:image/png;base64,abc" },
@@ -86,6 +90,41 @@ describe("useAcpAgentsStore", () => {
     expect(store.statuses["claude-code"]).toEqual(mockStatuses[0]);
     expect(acpAgentsApi.onRegistryUpdated).toHaveBeenCalledTimes(1);
     expect(acpAgentsApi.onInstallProgress).toHaveBeenCalledTimes(1);
+  });
+
+  it("initializes ACP agent data only once when called concurrently", async () => {
+    const store = useAcpAgentsStore();
+
+    await Promise.all([store.ensureInitialized(), store.ensureInitialized()]);
+
+    expect(acpAgentsApi.getRegistry).toHaveBeenCalledTimes(1);
+    expect(acpAgentsApi.getIcons).toHaveBeenCalledTimes(1);
+    expect(acpAgentsApi.detectStatus).toHaveBeenCalledTimes(1);
+    expect(store.initialized).toBe(true);
+    expect(store.initializing).toBe(false);
+  });
+
+  it("refreshes registry, icons and statuses through refreshAll", async () => {
+    const store = useAcpAgentsStore();
+
+    await store.refreshAll();
+
+    expect(acpAgentsApi.refreshRegistry).toHaveBeenCalledTimes(1);
+    expect(acpAgentsApi.getIcons).toHaveBeenCalledTimes(1);
+    expect(acpAgentsApi.detectStatus).toHaveBeenCalledTimes(1);
+    expect(store.registry).toEqual(mockRegistry);
+    expect(store.statuses["claude-code"]).toEqual(mockStatuses[0]);
+  });
+
+  it("tracks initializationError and does not mark initialized on failure", async () => {
+    vi.mocked(acpAgentsApi.getRegistry).mockRejectedValueOnce(new Error("network failed"));
+    const store = useAcpAgentsStore();
+
+    await expect(store.ensureInitialized()).rejects.toThrow("network failed");
+
+    expect(store.initialized).toBe(false);
+    expect(store.initializing).toBe(false);
+    expect(store.initializationError).toBe("network failed");
   });
 
   it("marks install progress as done after a successful install", async () => {

@@ -10,6 +10,9 @@ export const useAcpAgentsStore = defineStore("acp-agents", () => {
   const installProgress = ref<Record<string, AcpInstallProgress>>({});
   const registryLoading = ref(false);
   const registryError = ref<string | null>(null);
+  const initialized = ref(false);
+  const initializing = ref(false);
+  const initializationError = ref<string | null>(null);
   const installedAgentIds = computed<string[]>(() => {
     const installed = new Set(
       Object.values(statuses.value)
@@ -35,6 +38,7 @@ export const useAcpAgentsStore = defineStore("acp-agents", () => {
 
   let stopRegistryUpdatedListener: (() => void) | null = null;
   let stopInstallProgressListener: (() => void) | null = null;
+  let initPromise: Promise<void> | null = null;
 
   function mapStatuses(items: AcpAgentStatus[]): Record<string, AcpAgentStatus> {
     return items.reduce<Record<string, AcpAgentStatus>>((acc, status) => {
@@ -82,16 +86,17 @@ export const useAcpAgentsStore = defineStore("acp-agents", () => {
   async function loadRegistry(): Promise<void> {
     ensureAgentListeners();
     registryLoading.value = true;
-
-    const response = await acpAgentsApi.getRegistry();
-    if (response.ok) {
-      registry.value = response.data;
-      registryError.value = null;
-    } else if (!registry.value) {
-      registryError.value = response.error.message;
+    try {
+      const response = await acpAgentsApi.getRegistry();
+      if (response.ok) {
+        registry.value = response.data;
+        registryError.value = null;
+      } else if (!registry.value) {
+        registryError.value = response.error.message;
+      }
+    } finally {
+      registryLoading.value = false;
     }
-
-    registryLoading.value = false;
   }
 
   async function loadIcons(): Promise<void> {
@@ -115,6 +120,62 @@ export const useAcpAgentsStore = defineStore("acp-agents", () => {
     }
 
     statuses.value = mapStatuses(response.data);
+  }
+
+  async function ensureInitialized(): Promise<void> {
+    ensureAgentListeners();
+
+    if (initialized.value) {
+      return;
+    }
+
+    if (initPromise) {
+      return initPromise;
+    }
+
+    initializing.value = true;
+    initializationError.value = null;
+    initPromise = (async () => {
+      await loadRegistry();
+      await Promise.all([loadIcons(), refreshStatus()]);
+      initialized.value = true;
+    })();
+
+    try {
+      await initPromise;
+    } catch (error) {
+      initializationError.value = error instanceof Error ? error.message : String(error);
+      initialized.value = false;
+      throw error;
+    } finally {
+      initPromise = null;
+      initializing.value = false;
+    }
+  }
+
+  async function refreshAll(): Promise<void> {
+    ensureAgentListeners();
+
+    registryLoading.value = true;
+    initializationError.value = null;
+    try {
+      const response = await acpAgentsApi.refreshRegistry();
+      if (response.ok) {
+        registry.value = response.data;
+        registryError.value = null;
+      } else if (!registry.value) {
+        registryError.value = response.error.message;
+      }
+
+      await Promise.all([loadIcons(), refreshStatus()]);
+      initialized.value = true;
+    } catch (error) {
+      initializationError.value = error instanceof Error ? error.message : String(error);
+      initialized.value = false;
+      throw error;
+    } finally {
+      registryLoading.value = false;
+    }
   }
 
   async function installAgent(agentId: string): Promise<void> {
@@ -150,11 +211,16 @@ export const useAcpAgentsStore = defineStore("acp-agents", () => {
     installProgress,
     registryLoading,
     registryError,
+    initialized,
+    initializing,
+    initializationError,
     installedAgentIds,
     ensureAgentListeners,
     isInstalledAgent,
     resolveInstalledAgent,
     getAgentLabel,
+    ensureInitialized,
+    refreshAll,
     loadRegistry,
     loadIcons,
     refreshStatus,

@@ -150,3 +150,53 @@ logger.error("...");
 - 嵌套路由通过目录结构实现：`pages/parent.vue` + `pages/parent/child.vue`
 - 动态路由参数：`[id].vue`
 - 路由类型由 `vue-router/auto` 自动生成到 `typed-router.d.ts`，提交到版本控制
+
+## 启动预热（Bootstrap）
+
+前端应用使用统一的 bootstrap 入口处理“应用启动后、但不阻塞主流程”的数据预热与初始化任务。
+
+### 设计原则
+
+- app 必须先完成 `mount("#app")`，bootstrap 不得阻塞主界面渲染
+- 启动任务统一在 `frontend/src/bootstrap/` 下定义与注册
+- 页面组件不应承担全局首次初始化职责，只消费 store 状态；必要时可做轻量兜底
+- 单个 bootstrap 任务失败不得影响其他任务，也不得阻塞应用主流程
+
+### 目录与职责
+
+```text
+frontend/src/bootstrap/
+├── core.ts            # bootstrap 核心：任务注册、runner、上下文类型
+├── register.ts        # 内置 bootstrap 任务集中注册入口
+└── tasks/
+    ├── acp-agents.ts  # ACP agent 数据预热
+    └── projects.ts    # persisted projects 数据预热
+```
+
+### 启动顺序
+
+1. `frontend/src/main.ts` 创建 app、pinia、router
+2. app 完成 `mount("#app")`
+3. 调用 `registerBootstrapTasks()` 注册核心任务
+4. 以 fire-and-forget 方式调用 `runBootstrapTasks({ pinia, router })`
+5. runner 使用并发失败隔离方式执行所有任务
+
+### Store 约束
+
+- bootstrap 任务应优先调用 store 暴露的语义化 action，例如：
+  - `useAcpAgentsStore().ensureInitialized()`
+  - `useProjectStore().ensureLoaded()`
+- store 自己负责：
+  - 初始化去重
+  - loading 状态回收
+  - 错误状态建模
+- 不允许由 page/store 模块初始化分散触发全局首次加载
+
+### 当前核心任务
+
+- `acp-agents`
+  - 预热 ACP registry、icons、installation status
+  - 供 `ChatAgentSelect`、settings agents 面板、session draft agent 解析使用
+- `projects`
+  - 预热 persisted projects 列表
+  - 供 WelcomeView、AppHeader、ProjectSwitcher 等入口使用

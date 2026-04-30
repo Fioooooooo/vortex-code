@@ -61,6 +61,28 @@ describe("useProjectStore", () => {
     expect(store.isLoaded).toBe(true);
   });
 
+  it("deduplicates concurrent ensureLoaded calls", async () => {
+    vi.mocked(projectApi.list).mockResolvedValue({
+      ok: true,
+      data: [
+        {
+          id: "a",
+          name: "Project A",
+          path: "/tmp/a",
+          createdAt: "2026-04-19T08:00:00.000Z" as unknown as Date,
+          lastOpenedAt: "2026-04-30T08:00:00.000Z" as unknown as Date,
+        },
+      ],
+    });
+
+    const store = useProjectStore();
+    await Promise.all([store.ensureLoaded(), store.ensureLoaded()]);
+
+    expect(projectApi.list).toHaveBeenCalledTimes(1);
+    expect(store.isLoaded).toBe(true);
+    expect(store.projects).toHaveLength(1);
+  });
+
   it("does not activate a recent project when the project path is missing", async () => {
     vi.mocked(projectApi.getById).mockResolvedValue({
       ok: true,

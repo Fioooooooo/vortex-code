@@ -243,11 +243,6 @@ export const useProjectStore = defineStore("project", () => {
       useSessionStore().clearSessions();
     }
   }
-
-  void ensureLoaded().catch((error: unknown) => {
-    console.error("Failed to load persisted projects:", error);
-  });
-
   return {
     projects,
     recentProjects,

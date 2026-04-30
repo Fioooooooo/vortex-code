@@ -6,8 +6,14 @@ import ui from "@nuxt/ui/vue-plugin";
 import "./config/auto-icon";
 import { router } from "./config/auto-routes";
 
+import { registerBootstrapTasks, runBootstrapTasks } from "./bootstrap";
+
 import App from "./App.vue";
 
 const pinia = createPinia();
+const app = createApp(App);
 
-createApp(App).use(pinia).use(router).use(ui).mount("#app");
+app.use(pinia).use(router).use(ui).mount("#app");
+
+registerBootstrapTasks();
+void runBootstrapTasks({ pinia, router });
