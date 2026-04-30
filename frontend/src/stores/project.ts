@@ -1,184 +1,259 @@
 import { computed, ref } from "vue";
 import { defineStore } from "pinia";
-import type {
-  CreateProjectForm,
-  ProjectInfo,
-  ProjectSummary,
-  RecentProject,
-} from "@shared/types/project";
+import { useToast } from "@nuxt/ui/composables";
+import { projectApi } from "@renderer/api/project";
+import { useSessionStore } from "./session";
+import type { CreateProjectForm, ProjectInfo, RecentProject } from "@shared/types/project";
 
-function generateMockRecentProjects(): RecentProject[] {
-  const now = new Date();
-  return [
-    {
-      id: "project-1",
-      name: "FylloCode-frontend",
-      path: "~/projects/FylloCode-frontend",
-      lastOpenedAt: new Date(now.getTime() - 2 * 60 * 60 * 1000),
-    },
-    {
-      id: "project-2",
-      name: "design-system",
-      path: "~/work/design-system",
-      lastOpenedAt: new Date(now.getTime() - 5 * 60 * 60 * 1000),
-    },
-    {
-      id: "project-3",
-      name: "api-gateway",
-      path: "~/projects/api-gateway",
-      lastOpenedAt: new Date(now.getTime() - 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "project-4",
-      name: "mobile-app-react-native",
-      path: "~/projects/mobile-app",
-      lastOpenedAt: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000),
-    },
-  ];
+function normalizeProject(project: ProjectInfo): ProjectInfo {
+  return {
+    ...project,
+    createdAt: new Date(project.createdAt),
+    lastOpenedAt: new Date(project.lastOpenedAt),
+    pathMissing: project.pathMissing,
+  };
 }
 
-function generateMockProjectSummaries(): ProjectSummary[] {
-  return [
-    {
-      id: "project-1",
-      name: "FylloCode-frontend",
-      path: "~/projects/FylloCode-frontend",
-      lastOpenedAt: new Date(),
-      agent: { id: "agent-1", name: "Claude Code", type: "claude-code" },
-    },
-    {
-      id: "project-2",
-      name: "design-system",
-      path: "~/work/design-system",
-      lastOpenedAt: new Date(),
-      agent: { id: "agent-2", name: "Codex", type: "codex" },
-    },
-    {
-      id: "project-3",
-      name: "api-gateway",
-      path: "~/projects/api-gateway",
-      lastOpenedAt: new Date(),
-      agent: { id: "agent-3", name: "Claude Code", type: "claude-code" },
-    },
-  ];
+function toRecentProject(project: ProjectInfo): RecentProject {
+  return {
+    id: project.id,
+    name: project.name,
+    path: project.path,
+    createdAt: project.createdAt,
+    lastOpenedAt: project.lastOpenedAt,
+    pathMissing: project.pathMissing,
+  };
+}
+
+function sortByLastOpened<T extends Pick<ProjectInfo, "lastOpenedAt">>(projects: T[]): T[] {
+  return [...projects].sort((a, b) => b.lastOpenedAt.getTime() - a.lastOpenedAt.getTime());
 }
 
 export const useProjectStore = defineStore("project", () => {
-  const recentProjects = ref<RecentProject[]>(generateMockRecentProjects());
-  const projects = ref<ProjectSummary[]>(generateMockProjectSummaries());
+  const toast = useToast();
+
+  const projects = ref<ProjectInfo[]>([]);
   const currentProject = ref<ProjectInfo | null>(null);
+  const isLoaded = ref(false);
+  const defaultProjectPath = ref("");
+  let loadPromise: Promise<void> | null = null;
+  let defaultPathPromise: Promise<string> | null = null;
   const hasCurrentProject = computed(() => currentProject.value !== null);
+  const recentProjects = computed<RecentProject[]>(() =>
+    sortByLastOpened(projects.value)
+      .slice(0, 10)
+      .map((project) => toRecentProject(project))
+  );
 
   function setCurrentProject(project: ProjectInfo | null): void {
     currentProject.value = project;
   }
 
-  function upsertProject(project: ProjectInfo): void {
-    const existingProject = projects.value.find((item) => item.id === project.id);
-    if (existingProject) {
-      existingProject.name = project.name;
-      existingProject.path = project.path;
-      existingProject.lastOpenedAt = project.lastOpenedAt;
-    } else {
-      projects.value.unshift({
-        ...project,
-        agent: { id: `agent-${project.id}`, name: "Claude Code", type: "claude-code" },
-      });
-    }
+  function replaceProjects(items: ProjectInfo[]): void {
+    projects.value = sortByLastOpened(items.map(normalizeProject));
   }
 
-  function upsertRecentProject(project: ProjectInfo): void {
-    const existingProject = recentProjects.value.find((item) => item.id === project.id);
-    if (existingProject) {
-      existingProject.name = project.name;
-      existingProject.path = project.path;
-      existingProject.lastOpenedAt = project.lastOpenedAt;
-      recentProjects.value = [
-        existingProject,
-        ...recentProjects.value.filter((item) => item.id !== project.id),
-      ];
-      return;
+  function upsertProject(project: ProjectInfo): void {
+    const normalized = normalizeProject(project);
+    const index = projects.value.findIndex((item) => item.id === normalized.id);
+
+    if (index === -1) {
+      projects.value.unshift(normalized);
+    } else {
+      projects.value.splice(index, 1, {
+        ...projects.value[index],
+        ...normalized,
+      });
     }
 
-    recentProjects.value.unshift({
-      id: project.id,
-      name: project.name,
-      path: project.path,
-      lastOpenedAt: project.lastOpenedAt,
-    });
+    projects.value = sortByLastOpened(projects.value);
   }
 
   function activateProject(project: ProjectInfo): ProjectInfo {
-    setCurrentProject(project);
-    upsertProject(project);
-    upsertRecentProject(project);
-    return project;
+    const sessionStore = useSessionStore();
+    const normalized = normalizeProject(project);
+    setCurrentProject(normalized);
+    upsertProject(normalized);
+    sessionStore.bindSessionsToProject(normalized.id);
+    return normalized;
   }
 
   function clearCurrentProject(): void {
     currentProject.value = null;
   }
 
-  async function openFolder(): Promise<ProjectInfo> {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const project: ProjectInfo = {
-          id: `folder-${Date.now()}`,
-          name: "opened-folder",
-          path: "/home/user/projects/opened-folder",
-          lastOpenedAt: new Date(),
-        };
-        resolve(activateProject(project));
-      }, 500);
+  function notifyMissingProject(project: Pick<ProjectInfo, "name" | "path">): void {
+    toast.add({
+      title: "项目目录不存在",
+      description: `${project.name}: ${project.path}`,
+      color: "error",
     });
+  }
+
+  async function loadProjects(): Promise<void> {
+    if (loadPromise) {
+      return loadPromise;
+    }
+
+    loadPromise = (async () => {
+      const result = await projectApi.list();
+      if (!result.ok) {
+        throw new Error(result.error.message);
+      }
+
+      replaceProjects(result.data);
+      isLoaded.value = true;
+    })();
+
+    try {
+      await loadPromise;
+    } finally {
+      loadPromise = null;
+    }
+  }
+
+  async function ensureLoaded(): Promise<void> {
+    if (isLoaded.value) {
+      return;
+    }
+
+    await loadProjects();
+  }
+
+  async function ensureDefaultPath(): Promise<string> {
+    if (defaultProjectPath.value) {
+      return defaultProjectPath.value;
+    }
+
+    if (defaultPathPromise) {
+      return defaultPathPromise;
+    }
+
+    defaultPathPromise = (async () => {
+      const result = await projectApi.getDefaultPath();
+      if (!result.ok) {
+        throw new Error(result.error.message);
+      }
+
+      defaultProjectPath.value = result.data;
+      return defaultProjectPath.value;
+    })();
+
+    try {
+      return await defaultPathPromise;
+    } finally {
+      defaultPathPromise = null;
+    }
+  }
+
+  async function openFolder(): Promise<ProjectInfo | null> {
+    const result = await projectApi.openFolder();
+    if (!result.ok) {
+      throw new Error(result.error.message);
+    }
+
+    if (!result.data) {
+      return null;
+    }
+
+    const project = normalizeProject(result.data);
+    if (project.pathMissing) {
+      notifyMissingProject(project);
+      return null;
+    }
+
+    return activateProject(project);
   }
 
   async function createProject(form: CreateProjectForm): Promise<ProjectInfo> {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const project: ProjectInfo = {
-          id: `project-${Date.now()}`,
-          name: form.name,
-          path: `${form.path}/${form.name}`,
-          lastOpenedAt: new Date(),
-        };
-        resolve(activateProject(project));
-      }, 800);
-    });
+    const result = await projectApi.create(form);
+    if (!result.ok) {
+      throw new Error(result.error.message);
+    }
+
+    return activateProject(result.data);
   }
 
-  function openRecentProject(project: RecentProject): ProjectInfo {
-    return activateProject({
-      id: project.id,
-      name: project.name,
-      path: project.path,
+  async function openRecentProject(project: RecentProject): Promise<ProjectInfo | null> {
+    const result = await projectApi.getById(project.id);
+    if (!result.ok) {
+      throw new Error(result.error.message);
+    }
+
+    if (!result.data) {
+      return null;
+    }
+
+    const nextProject = normalizeProject(result.data);
+    if (nextProject.pathMissing) {
+      notifyMissingProject(nextProject);
+      return null;
+    }
+
+    const updated = await projectApi.update(nextProject.id, {
       lastOpenedAt: new Date(),
     });
+    if (!updated.ok) {
+      throw new Error(updated.error.message);
+    }
+
+    return activateProject(updated.data);
   }
 
-  function switchProject(projectId: string): void {
-    const project = projects.value.find((item) => item.id === projectId);
-    if (!project) return;
+  async function switchProject(projectId: string): Promise<ProjectInfo | null> {
+    const result = await projectApi.getById(projectId);
+    if (!result.ok) {
+      throw new Error(result.error.message);
+    }
 
-    activateProject({
-      id: project.id,
-      name: project.name,
-      path: project.path,
+    if (!result.data) {
+      return null;
+    }
+
+    const project = normalizeProject(result.data);
+    if (project.pathMissing) {
+      notifyMissingProject(project);
+      return null;
+    }
+
+    const updated = await projectApi.update(project.id, {
       lastOpenedAt: new Date(),
     });
+    if (!updated.ok) {
+      throw new Error(updated.error.message);
+    }
+
+    return activateProject(updated.data);
   }
 
-  function removeRecentProject(projectId: string): void {
-    recentProjects.value = recentProjects.value.filter((project) => project.id !== projectId);
+  async function removeRecentProject(projectId: string): Promise<void> {
+    const result = await projectApi.remove(projectId);
+    if (!result.ok) {
+      throw new Error(result.error.message);
+    }
+
+    projects.value = projects.value.filter((project) => project.id !== projectId);
+    if (currentProject.value?.id === projectId) {
+      currentProject.value = null;
+    }
   }
+
+  void ensureLoaded().catch((error: unknown) => {
+    console.error("Failed to load persisted projects:", error);
+  });
 
   return {
     projects,
     recentProjects,
     currentProject,
     hasCurrentProject,
+    isLoaded,
+    defaultProjectPath,
     setCurrentProject,
     clearCurrentProject,
+    loadProjects,
+    ensureLoaded,
+    ensureDefaultPath,
     openFolder,
     createProject,
     openRecentProject,

@@ -1,13 +1,17 @@
 import type { IpcResponse } from "@shared/types/ipc";
-import type { ProjectInfo, ProjectSummary, CreateProjectForm } from "@shared/types/project";
+import type { ProjectInfo, CreateProjectForm } from "@shared/types/project";
 
 export const projectApi = {
-  list(): Promise<IpcResponse<ProjectSummary[]>> {
+  list(): Promise<IpcResponse<ProjectInfo[]>> {
     return window.api.project.list();
   },
 
   getById(id: string): Promise<IpcResponse<ProjectInfo | null>> {
     return window.api.project.getById(id);
+  },
+
+  getDefaultPath(): Promise<IpcResponse<string>> {
+    return window.api.project.getDefaultPath();
   },
 
   create(input: CreateProjectForm): Promise<IpcResponse<ProjectInfo>> {
@@ -22,7 +26,7 @@ export const projectApi = {
     return window.api.project.remove(id);
   },
 
-  setActive(id: string): Promise<IpcResponse<ProjectInfo>> {
-    return window.api.project.setActive(id);
+  openFolder(): Promise<IpcResponse<ProjectInfo | null>> {
+    return window.api.project.openFolder();
   },
 };

@@ -1,15 +1,19 @@
 import { ipcRenderer } from "electron";
 import type { IpcResponse } from "@shared/types/ipc";
 import { ProjectChannels } from "@shared/types/channels";
-import type { ProjectInfo, ProjectSummary, CreateProjectForm } from "@shared/types/project";
+import type { ProjectInfo, CreateProjectForm } from "@shared/types/project";
 
 export const projectApi = {
-  list(): Promise<IpcResponse<ProjectSummary[]>> {
+  list(): Promise<IpcResponse<ProjectInfo[]>> {
     return ipcRenderer.invoke(ProjectChannels.list);
   },
 
   getById(id: string): Promise<IpcResponse<ProjectInfo | null>> {
     return ipcRenderer.invoke(ProjectChannels.getById, { id });
+  },
+
+  getDefaultPath(): Promise<IpcResponse<string>> {
+    return ipcRenderer.invoke(ProjectChannels.getDefaultPath);
   },
 
   create(input: CreateProjectForm): Promise<IpcResponse<ProjectInfo>> {
@@ -24,7 +28,7 @@ export const projectApi = {
     return ipcRenderer.invoke(ProjectChannels.remove, { id });
   },
 
-  setActive(id: string): Promise<IpcResponse<ProjectInfo>> {
-    return ipcRenderer.invoke(ProjectChannels.setActive, { id });
+  openFolder(): Promise<IpcResponse<ProjectInfo | null>> {
+    return ipcRenderer.invoke(ProjectChannels.openFolder);
   },
 };

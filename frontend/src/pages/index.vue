@@ -19,6 +19,8 @@ watchEffect(() => {
 });
 
 onMounted(() => {
+  void projectStore.ensureLoaded();
+
   if (projectStore.hasCurrentProject && route.path === "/") {
     void router.replace("/chat");
   }

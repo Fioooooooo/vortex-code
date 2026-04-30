@@ -6,8 +6,10 @@ const router = useRouter();
 const projectStore = useProjectStore();
 
 async function switchProject(projectId: string): Promise<void> {
-  projectStore.switchProject(projectId);
-  await router.push("/chat");
+  const project = await projectStore.switchProject(projectId);
+  if (project) {
+    await router.push("/chat");
+  }
 }
 
 function createNewProject(): void {
@@ -33,9 +35,6 @@ function openProjectSettings(): void {
           <UIcon name="i-lucide-folder" class="w-4 h-4 text-muted shrink-0" />
           <span class="text-sm truncate">{{ project.name }}</span>
         </div>
-        <UBadge size="xs" variant="subtle" color="primary" class="text-[10px] shrink-0">
-          {{ project.agent.name }}
-        </UBadge>
       </div>
     </div>
 

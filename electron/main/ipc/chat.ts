@@ -3,6 +3,7 @@ import { ChatChannels, ChatStreamChannels } from "@shared/types/channels";
 import { wrapHandler } from "./utils";
 import { AcpSession } from "../chat-agent/acp-session";
 import { loadSessionMeta, appendMessage } from "../chat-agent/session-store";
+import { loadProject } from "@main/services/project-store";
 import type { SessionEvent } from "../chat-agent/types";
 import type { MessageChunkData } from "@shared/types/ipc";
 import type { Message } from "@shared/types/chat";
@@ -11,8 +12,16 @@ import logger from "@main/utils/logger";
 // Active sessions: fylloSessionId → AcpSession
 const activeSessions = new Map<string, AcpSession>();
 
-// Fallback project path until project persistence is implemented
-const FALLBACK_PROJECT_PATH = "dev-fallback";
+async function resolveProjectPath(projectId: string): Promise<string> {
+  const project = await loadProject(projectId);
+  if (!project) {
+    const error = new Error(`Project not found: ${projectId}`);
+    (error as Error & { code?: string }).code = "PROJECT_NOT_FOUND";
+    throw error;
+  }
+
+  return project.path;
+}
 
 export function registerChatHandlers(): void {
   ipcMain.handle(
@@ -67,12 +76,13 @@ export function registerChatHandlers(): void {
 
   ipcMain.handle(
     ChatChannels.persistMessage,
-    (_event, input: { sessionId: string; message: Message }) =>
+    (_event, input: { sessionId: string; projectId: string; message: Message }) =>
       wrapHandler(async () => {
         logger.debug(
           `[chat] persistMessage sessionId=${input.sessionId} role=${input.message.role} parts=${input.message.parts.length}`
         );
-        await appendMessage(FALLBACK_PROJECT_PATH, input.sessionId, input.message);
+        const projectPath = await resolveProjectPath(input.projectId);
+        await appendMessage(projectPath, input.sessionId, input.message);
         logger.debug(`[chat] persistMessage done`);
       })
   );
@@ -88,10 +98,9 @@ export function registerChatHandlers(): void {
       event.sender.postMessage(ChatStreamChannels.streamPort, null, [port2]);
 
       const { sessionId, projectId, agentId: inputAgentId, prompt } = input;
-      void projectId;
 
       const cwd = process.cwd();
-      const projectPath = FALLBACK_PROJECT_PATH;
+      const projectPath = await resolveProjectPath(projectId);
 
       const meta = await loadSessionMeta(projectPath, sessionId);
       const agentId = inputAgentId || meta?.agentId || "claude-acp";

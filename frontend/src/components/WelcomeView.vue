@@ -14,8 +14,10 @@ const welcomeStore = useWelcomeStore();
 const recentProjects = computed(() => projectStore.recentProjects);
 
 async function handleOpenFolder(): Promise<void> {
-  await projectStore.openFolder();
-  await router.push("/chat");
+  const project = await projectStore.openFolder();
+  if (project) {
+    await router.push("/chat");
+  }
 }
 
 function handleCreateProject(): void {
@@ -23,12 +25,14 @@ function handleCreateProject(): void {
 }
 
 async function handleOpenRecent(project: RecentProject): Promise<void> {
-  projectStore.openRecentProject(project);
-  await router.push("/chat");
+  const openedProject = await projectStore.openRecentProject(project);
+  if (openedProject) {
+    await router.push("/chat");
+  }
 }
 
-function handleRemove(projectId: string): void {
-  projectStore.removeRecentProject(projectId);
+async function handleRemove(projectId: string): Promise<void> {
+  await projectStore.removeRecentProject(projectId);
 }
 
 function formatTime(date: Date): string {
@@ -45,7 +49,7 @@ function formatTime(date: Date): string {
           <UIcon name="i-lucide-code-2" class="w-8 h-8 text-white" />
         </div>
         <h1 class="text-3xl font-bold text-highlighted">FylloCode</h1>
-        <p class="text-muted mt-1">Autonomous Coding Pipeline</p>
+        <p class="text-muted mt-1">面向开发者的自主编码工作台</p>
       </div>
 
       <!-- Action Buttons -->
@@ -57,7 +61,7 @@ function formatTime(date: Date): string {
           class="flex-1 justify-center"
           @click="handleOpenFolder"
         >
-          Open Folder
+          打开文件夹
         </UButton>
         <UButton
           icon="i-lucide-plus"
@@ -67,19 +71,17 @@ function formatTime(date: Date): string {
           class="flex-1 justify-center"
           @click="handleCreateProject"
         >
-          Create Project
+          创建项目
         </UButton>
       </div>
 
       <!-- Recent Projects -->
       <div class="w-full">
-        <h2 class="text-sm font-semibold text-muted uppercase tracking-wider mb-3">
-          Recent Projects
-        </h2>
+        <h2 class="text-sm font-semibold text-muted uppercase tracking-wider mb-3">最近项目</h2>
 
         <!-- Empty State -->
         <div v-if="recentProjects.length === 0" class="text-center text-muted py-8">
-          No recent projects. Open a folder or create a new project to get started.
+          暂无最近项目
         </div>
 
         <!-- Project List -->

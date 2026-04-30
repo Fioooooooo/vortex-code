@@ -1,3 +1,5 @@
+## MODIFIED Requirements
+
 ### Requirement: 显示最近项目列表
 
 系统 SHALL 在欢迎页显示最近打开的项目列表，数据从持久化 project 列表派生。
@@ -12,15 +14,14 @@
 
 ### Requirement: 点击最近项目可打开
 
-系统 SHALL 在用户点击最近项目条目时，先检测项目目录是否存在，再将所选项目写入统一的当前项目上下文并进入 `/workspace`。
+系统 SHALL 在用户点击最近项目条目时，调用 `project:setActive` IPC 更新持久化的 active project，将所选项目写入统一的当前项目上下文并进入 `/workspace`。
 
 #### Scenario: 用户点击最近项目
 
 - **WHEN** 用户点击最近项目列表条目
-- **THEN** 系统调用 `project:getById` 获取持久化 project 元数据
-- **AND** 若目录存在，当前项目上下文更新为该项目
+- **THEN** 系统调用 `project:setActive` 更新持久化 active project
+- **AND** 当前项目上下文更新为该项目
 - **AND** 系统进入 `/workspace`
-- **AND** 若目录不存在，显示提示告知用户目录不存在，不切换当前项目，不自动移除该记录
 
 ### Requirement: 最近项目条目可从历史记录中移除
 

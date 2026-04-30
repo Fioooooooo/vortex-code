@@ -18,10 +18,11 @@ export const ChatStreamChannels = {
 export const ProjectChannels = {
   list: "project:list",
   getById: "project:getById",
+  getDefaultPath: "project:getDefaultPath",
   create: "project:create",
   update: "project:update",
   remove: "project:remove",
-  setActive: "project:setActive",
+  openFolder: "project:openFolder",
 } as const;
 
 export const NetChannels = {

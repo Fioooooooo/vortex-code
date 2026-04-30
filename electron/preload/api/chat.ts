@@ -37,8 +37,12 @@ export const chatApi = {
     return ipcRenderer.invoke(ChatChannels.sendMessage, input);
   },
 
-  persistMessage(sessionId: string, message: Message): Promise<IpcResponse<void>> {
-    return ipcRenderer.invoke(ChatChannels.persistMessage, { sessionId, message });
+  persistMessage(
+    sessionId: string,
+    projectId: string,
+    message: Message
+  ): Promise<IpcResponse<void>> {
+    return ipcRenderer.invoke(ChatChannels.persistMessage, { sessionId, projectId, message });
   },
 
   streamMessage(
@@ -49,7 +53,14 @@ export const chatApi = {
     callbacks: StreamCallbacks
   ): () => void {
     // Invoke to trigger main to create MessagePort and start streaming
-    ipcRenderer.invoke(ChatStreamChannels.streamMessage, { sessionId, projectId, agentId, prompt });
+    void ipcRenderer
+      .invoke(ChatStreamChannels.streamMessage, { sessionId, projectId, agentId, prompt })
+      .catch((error: unknown) => {
+        callbacks.onError({
+          code: "STREAM_INIT_FAILED",
+          message: error instanceof Error ? error.message : String(error),
+        });
+      });
 
     // Receive the port from main
     ipcRenderer.once(ChatStreamChannels.streamPort, (event) => {

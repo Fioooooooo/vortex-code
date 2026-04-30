@@ -1,6 +1,7 @@
 import { promises as fs } from "fs";
 import { join } from "path";
 import { getDataSubPath } from "@main/utils/paths";
+import { encodeProjectPath } from "@main/services/project-store";
 import type { MessageMeta } from "@shared/types/chat";
 import type { UIMessage } from "ai";
 
@@ -12,10 +13,6 @@ export interface SessionMeta {
   turnCount: number;
   createdAt: string;
   updatedAt: string;
-}
-
-function encodeProjectPath(projectPath: string): string {
-  return projectPath.replace(/^\//, "").replace(/\//g, "-");
 }
 
 function sessionDir(projectPath: string): string {

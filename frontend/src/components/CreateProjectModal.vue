@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useProjectStore } from "@renderer/stores/project";
 import { useWelcomeStore } from "@renderer/stores/welcome";
@@ -11,7 +11,7 @@ const welcomeStore = useWelcomeStore();
 
 const form = ref<CreateProjectForm>({
   name: "",
-  path: "~/projects",
+  path: "",
   template: "empty",
   gitUrl: "",
 });
@@ -28,8 +28,23 @@ const isGitSelected = computed(() => form.value.template === "git");
 const isValid = computed(() => {
   if (!form.value.name.trim()) return false;
   if (isGitSelected.value && !form.value.gitUrl?.trim()) return false;
+  if (!form.value.path.trim()) return false;
   return true;
 });
+
+watch(
+  () => welcomeStore.showCreateProjectModal,
+  (isOpen) => {
+    if (!isOpen) return;
+
+    void projectStore.ensureDefaultPath().then((defaultPath) => {
+      if (!form.value.path.trim()) {
+        form.value.path = defaultPath;
+      }
+    });
+  },
+  { immediate: true }
+);
 
 function handleClose(): void {
   welcomeStore.toggleCreateProjectModal(false);
@@ -53,7 +68,7 @@ async function handleSubmit(): Promise<void> {
 function resetForm(): void {
   form.value = {
     name: "",
-    path: "~/projects",
+    path: projectStore.defaultProjectPath,
     template: "empty",
     gitUrl: "",
   };

@@ -1,6 +1,7 @@
 import { ref, computed } from "vue";
 import { defineStore } from "pinia";
 import type { Session, Message } from "@shared/types/chat";
+import { useProjectStore } from "./project";
 
 function generateMockMessages(sessionId: string): Message[] {
   const now = new Date();
@@ -80,10 +81,16 @@ export const useSessionStore = defineStore("session", () => {
   );
 
   function createSession(): Session {
+    const projectStore = useProjectStore();
+    const projectId = projectStore.currentProject?.id;
+    if (!projectId) {
+      throw new Error("Cannot create session without an active project");
+    }
+
     const id = `session-${Date.now()}`;
     const session: Session = {
       id,
-      projectId: "project-1",
+      projectId,
       title: "New Session",
       status: "running",
       turnCount: 0,
@@ -94,6 +101,13 @@ export const useSessionStore = defineStore("session", () => {
     sessions.value.unshift(session);
     activeSessionId.value = id;
     return session;
+  }
+
+  function bindSessionsToProject(projectId: string): void {
+    sessions.value = sessions.value.map((session) => ({
+      ...session,
+      projectId,
+    }));
   }
 
   function selectSession(sessionId: string): void {
@@ -123,6 +137,7 @@ export const useSessionStore = defineStore("session", () => {
     activeSessionId,
     activeSession,
     createSession,
+    bindSessionsToProject,
     selectSession,
     renameSession,
     deleteSession,

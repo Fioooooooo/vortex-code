@@ -31,9 +31,3 @@ export interface TokenUsage {
 }
 
 export type ProjectAgent = ChatAgent;
-
-export interface ProjectSummary {
-  id: string;
-  name: string;
-  agent: ProjectAgent;
-}

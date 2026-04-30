@@ -38,14 +38,15 @@
 
 ### Project（`window.api.project`）
 
-| Channel             | 常量                        | 类型   |
-| ------------------- | --------------------------- | ------ |
-| `project:list`      | `ProjectChannels.list`      | handle |
-| `project:getById`   | `ProjectChannels.getById`   | handle |
-| `project:create`    | `ProjectChannels.create`    | handle |
-| `project:update`    | `ProjectChannels.update`    | handle |
-| `project:remove`    | `ProjectChannels.remove`    | handle |
-| `project:setActive` | `ProjectChannels.setActive` | handle |
+| Channel                  | 常量                             | 类型   |
+| ------------------------ | -------------------------------- | ------ |
+| `project:list`           | `ProjectChannels.list`           | handle |
+| `project:getById`        | `ProjectChannels.getById`        | handle |
+| `project:getDefaultPath` | `ProjectChannels.getDefaultPath` | handle |
+| `project:create`         | `ProjectChannels.create`         | handle |
+| `project:update`         | `ProjectChannels.update`         | handle |
+| `project:remove`         | `ProjectChannels.remove`         | handle |
+| `project:openFolder`     | `ProjectChannels.openFolder`     | handle |
 
 ### Pipeline（`window.api.pipeline`）
 
