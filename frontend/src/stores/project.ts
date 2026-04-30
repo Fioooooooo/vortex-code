@@ -45,8 +45,14 @@ export const useProjectStore = defineStore("project", () => {
       .map((project) => toRecentProject(project))
   );
 
-  function setCurrentProject(project: ProjectInfo | null): void {
+  async function setCurrentProject(project: ProjectInfo | null): Promise<void> {
+    const sessionStore = useSessionStore();
     currentProject.value = project;
+    sessionStore.clearSessions();
+
+    if (project) {
+      await sessionStore.loadSessions(project.id);
+    }
   }
 
   function replaceProjects(items: ProjectInfo[]): void {
@@ -69,17 +75,16 @@ export const useProjectStore = defineStore("project", () => {
     projects.value = sortByLastOpened(projects.value);
   }
 
-  function activateProject(project: ProjectInfo): ProjectInfo {
-    const sessionStore = useSessionStore();
+  async function activateProject(project: ProjectInfo): Promise<ProjectInfo> {
     const normalized = normalizeProject(project);
-    setCurrentProject(normalized);
     upsertProject(normalized);
-    sessionStore.bindSessionsToProject(normalized.id);
+    await setCurrentProject(normalized);
     return normalized;
   }
 
   function clearCurrentProject(): void {
     currentProject.value = null;
+    useSessionStore().clearSessions();
   }
 
   function notifyMissingProject(project: Pick<ProjectInfo, "name" | "path">): void {
@@ -162,7 +167,7 @@ export const useProjectStore = defineStore("project", () => {
       return null;
     }
 
-    return activateProject(project);
+    return await activateProject(project);
   }
 
   async function createProject(form: CreateProjectForm): Promise<ProjectInfo> {
@@ -171,7 +176,7 @@ export const useProjectStore = defineStore("project", () => {
       throw new Error(result.error.message);
     }
 
-    return activateProject(result.data);
+    return await activateProject(result.data);
   }
 
   async function openRecentProject(project: RecentProject): Promise<ProjectInfo | null> {
@@ -197,7 +202,7 @@ export const useProjectStore = defineStore("project", () => {
       throw new Error(updated.error.message);
     }
 
-    return activateProject(updated.data);
+    return await activateProject(updated.data);
   }
 
   async function switchProject(projectId: string): Promise<ProjectInfo | null> {
@@ -223,7 +228,7 @@ export const useProjectStore = defineStore("project", () => {
       throw new Error(updated.error.message);
     }
 
-    return activateProject(updated.data);
+    return await activateProject(updated.data);
   }
 
   async function removeRecentProject(projectId: string): Promise<void> {
@@ -235,6 +240,7 @@ export const useProjectStore = defineStore("project", () => {
     projects.value = projects.value.filter((project) => project.id !== projectId);
     if (currentProject.value?.id === projectId) {
       currentProject.value = null;
+      useSessionStore().clearSessions();
     }
   }
 

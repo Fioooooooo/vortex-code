@@ -100,4 +100,16 @@ describe("useAcpAgentsStore", () => {
       status: "done",
     });
   });
+
+  it("resolves the preferred installed agent and falls back to the first installed one", async () => {
+    const store = useAcpAgentsStore();
+
+    await store.loadRegistry();
+    await store.refreshStatus();
+
+    expect(store.installedAgentIds).toEqual(["claude-code"]);
+    expect(store.resolveInstalledAgent("claude-code")).toBe("claude-code");
+    expect(store.resolveInstalledAgent("missing-agent")).toBe("claude-code");
+    expect(store.resolveInstalledAgent(null)).toBe("claude-code");
+  });
 });

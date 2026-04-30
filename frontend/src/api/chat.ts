@@ -1,6 +1,8 @@
 import type { IpcResponse, MessageChunkData } from "@shared/types/ipc";
 import type { Session, Message } from "@shared/types/chat";
 
+type SessionPatch = Partial<Pick<Session, "title" | "agentId">>;
+
 export interface StreamCallbacks {
   onChunk: (data: MessageChunkData) => void;
   onDone: (data: { totalTokens: number }) => void;
@@ -20,20 +22,36 @@ export const chatApi = {
     return window.api.chat.getSession(id);
   },
 
-  createSession(input: { projectId: string; title: string }): Promise<IpcResponse<Session>> {
+  createSession(input: {
+    projectId: string;
+    title: string;
+    agentId?: string;
+  }): Promise<IpcResponse<Session>> {
     return window.api.chat.createSession(input);
   },
 
-  updateSession(id: string, patch: Partial<Session>): Promise<IpcResponse<Session>> {
-    return window.api.chat.updateSession(id, patch);
+  updateSession(id: string, patch: SessionPatch, projectId: string): Promise<IpcResponse<Session>> {
+    return window.api.chat.updateSession(id, patch, projectId);
   },
 
-  removeSession(id: string): Promise<IpcResponse<void>> {
-    return window.api.chat.removeSession(id);
+  removeSession(id: string, projectId: string): Promise<IpcResponse<void>> {
+    return window.api.chat.removeSession(id, projectId);
+  },
+
+  loadMessages(sessionId: string, projectId: string): Promise<IpcResponse<Message[]>> {
+    return window.api.chat.loadMessages(sessionId, projectId);
   },
 
   sendMessage(input: { sessionId: string; content: string }): Promise<IpcResponse<Message>> {
     return window.api.chat.sendMessage(input);
+  },
+
+  persistMessage(
+    sessionId: string,
+    projectId: string,
+    message: Message
+  ): Promise<IpcResponse<void>> {
+    return window.api.chat.persistMessage(sessionId, projectId, message);
   },
 
   streamMessage(

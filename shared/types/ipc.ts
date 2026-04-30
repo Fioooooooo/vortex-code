@@ -18,7 +18,7 @@ export interface StreamChunkData {
 
 export type MessageChunkData =
   | { kind: "text_delta"; text: string }
-  | { kind: "tool_call_start"; toolCallId: string; toolName: string; toolKind: string }
+  | { kind: "tool_call_start"; toolCallId: string; title: string; toolKind: string }
   | {
       kind: "tool_call_update";
       toolCallId: string;
@@ -26,6 +26,7 @@ export type MessageChunkData =
       input?: Record<string, unknown>;
       content?: string;
     }
+  | { kind: "session_info_update"; title: string }
   | { kind: "status"; agentStatus: import("ai").ChatStatus };
 
 // Event push message type for ipcRenderer.on subscriptions

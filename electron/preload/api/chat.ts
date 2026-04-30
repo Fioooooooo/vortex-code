@@ -2,6 +2,8 @@ import { ipcRenderer } from "electron";
 import type { IpcResponse, MessageChunkData } from "@shared/types/ipc";
 import { ChatChannels, ChatStreamChannels } from "@shared/types/channels";
 import type { Session, Message } from "@shared/types/chat";
+
+type SessionPatch = Partial<Pick<Session, "title" | "agentId">>;
 export interface StreamCallbacks {
   onChunk: (data: MessageChunkData) => void;
   onDone: (data: { totalTokens: number }) => void;
@@ -21,16 +23,24 @@ export const chatApi = {
     return ipcRenderer.invoke(ChatChannels.getSession, { id });
   },
 
-  createSession(input: { projectId: string; title: string }): Promise<IpcResponse<Session>> {
+  createSession(input: {
+    projectId: string;
+    title: string;
+    agentId?: string;
+  }): Promise<IpcResponse<Session>> {
     return ipcRenderer.invoke(ChatChannels.createSession, input);
   },
 
-  updateSession(id: string, patch: Partial<Session>): Promise<IpcResponse<Session>> {
-    return ipcRenderer.invoke(ChatChannels.updateSession, { id, patch });
+  updateSession(id: string, patch: SessionPatch, projectId: string): Promise<IpcResponse<Session>> {
+    return ipcRenderer.invoke(ChatChannels.updateSession, { id, patch, projectId });
   },
 
-  removeSession(id: string): Promise<IpcResponse<void>> {
-    return ipcRenderer.invoke(ChatChannels.removeSession, { id });
+  removeSession(id: string, projectId: string): Promise<IpcResponse<void>> {
+    return ipcRenderer.invoke(ChatChannels.removeSession, { id, projectId });
+  },
+
+  loadMessages(sessionId: string, projectId: string): Promise<IpcResponse<Message[]>> {
+    return ipcRenderer.invoke(ChatChannels.loadMessages, { sessionId, projectId });
   },
 
   sendMessage(input: { sessionId: string; content: string }): Promise<IpcResponse<Message>> {

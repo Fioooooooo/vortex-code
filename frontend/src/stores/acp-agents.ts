@@ -1,4 +1,4 @@
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { defineStore } from "pinia";
 import { acpAgentsApi } from "@renderer/api/acp-agents";
 import type { AcpAgentStatus, AcpInstallProgress, AcpRegistry } from "@shared/types/acp-agent";
@@ -10,6 +10,28 @@ export const useAcpAgentsStore = defineStore("acp-agents", () => {
   const installProgress = ref<Record<string, AcpInstallProgress>>({});
   const registryLoading = ref(false);
   const registryError = ref<string | null>(null);
+  const installedAgentIds = computed<string[]>(() => {
+    const installed = new Set(
+      Object.values(statuses.value)
+        .filter((status) => status.installed)
+        .map((status) => status.id)
+    );
+
+    if (installed.size === 0) {
+      return [];
+    }
+
+    const orderedFromRegistry =
+      registry.value?.agents.flatMap((agent) => (installed.has(agent.id) ? [agent.id] : [])) ?? [];
+
+    for (const agentId of Object.keys(statuses.value)) {
+      if (installed.has(agentId) && !orderedFromRegistry.includes(agentId)) {
+        orderedFromRegistry.push(agentId);
+      }
+    }
+
+    return orderedFromRegistry;
+  });
 
   let stopRegistryUpdatedListener: (() => void) | null = null;
   let stopInstallProgressListener: (() => void) | null = null;
@@ -39,6 +61,22 @@ export const useAcpAgentsStore = defineStore("acp-agents", () => {
         };
       });
     }
+  }
+
+  function isInstalledAgent(agentId: string | null | undefined): agentId is string {
+    return agentId != null && statuses.value[agentId]?.installed === true;
+  }
+
+  function resolveInstalledAgent(preferredAgentId?: string | null): string | null {
+    if (isInstalledAgent(preferredAgentId)) {
+      return preferredAgentId;
+    }
+
+    return installedAgentIds.value[0] ?? null;
+  }
+
+  function getAgentLabel(agentId: string): string {
+    return registry.value?.agents.find((agent) => agent.id === agentId)?.name ?? agentId;
   }
 
   async function loadRegistry(): Promise<void> {
@@ -112,7 +150,11 @@ export const useAcpAgentsStore = defineStore("acp-agents", () => {
     installProgress,
     registryLoading,
     registryError,
+    installedAgentIds,
     ensureAgentListeners,
+    isInstalledAgent,
+    resolveInstalledAgent,
+    getAgentLabel,
     loadRegistry,
     loadIcons,
     refreshStatus,

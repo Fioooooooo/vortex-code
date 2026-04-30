@@ -15,6 +15,7 @@ export type Message = UIMessage<MessageMeta>;
 export interface Session {
   id: string;
   projectId: string;
+  agentId: string;
   title: string;
   status: "running" | "ended";
   turnCount: number;

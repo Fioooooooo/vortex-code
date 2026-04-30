@@ -16,13 +16,21 @@ const menuItems = computed(() => [
   {
     label: "重命名",
     icon: "i-lucide-pencil",
-    onSelect: () => handleRename(),
+    onSelect: (): void => {
+      void handleRename().catch((error: unknown) => {
+        console.error("Failed to rename session:", error);
+      });
+    },
   },
   {
     label: "删除",
     icon: "i-lucide-trash-2",
     color: "error" as const,
-    onSelect: () => handleDelete(),
+    onSelect: (): void => {
+      void handleDelete().catch((error: unknown) => {
+        console.error("Failed to delete session:", error);
+      });
+    },
   },
 ]);
 
@@ -44,20 +52,20 @@ function formatTime(date: Date): string {
   }
 }
 
-function handleSelect(): void {
-  sessionStore.selectSession(session.value.id);
+async function handleSelect(): Promise<void> {
+  await sessionStore.selectSession(session.value.id);
 }
 
-function handleRename(): void {
+async function handleRename(): Promise<void> {
   const newTitle = prompt("Rename session:", session.value.title);
   if (newTitle && newTitle.trim()) {
-    sessionStore.renameSession(session.value.id, newTitle.trim());
+    await sessionStore.renameSession(session.value.id, newTitle.trim());
   }
 }
 
-function handleDelete(): void {
+async function handleDelete(): Promise<void> {
   if (confirm("Are you sure you want to delete this session?")) {
-    sessionStore.deleteSession(session.value.id);
+    await sessionStore.deleteSession(session.value.id);
   }
 }
 </script>
@@ -66,7 +74,11 @@ function handleDelete(): void {
   <div
     class="group relative flex items-start gap-2.5 px-3 py-2.5 cursor-pointer transition-colors border-b border-default/50 last:border-b-0"
     :class="active ? 'bg-primary/5' : 'hover:bg-muted/50'"
-    @click="handleSelect"
+    @click="
+      void handleSelect().catch((error: unknown) => {
+        console.error('Failed to select session:', error);
+      })
+    "
   >
     <div class="mt-1.5 shrink-0">
       <span

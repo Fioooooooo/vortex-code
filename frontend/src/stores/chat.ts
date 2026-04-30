@@ -1,17 +1,23 @@
 import { ref } from "vue";
 import { defineStore } from "pinia";
-import type { DynamicToolUIPart } from "ai";
-import type { ChatAgent } from "@shared/types/chat-agent";
-import type { ChatStatus, TokenUsage, ModeType, Message } from "@shared/types/chat";
-import { useSessionStore } from "./session";
+import { generateId, type DynamicToolUIPart } from "ai";
+import { useToast } from "@nuxt/ui/composables";
+import type { ChatStatus, Message, ModeType, Session, TokenUsage } from "@shared/types/chat";
+import { chatApi } from "@renderer/api/chat";
 import { useProjectStore } from "./project";
+import { useSessionStore } from "./session";
+
+function buildUserMessage(sessionId: string, content: string): Message {
+  return {
+    id: generateId(),
+    role: "user",
+    parts: [{ type: "text", text: content }],
+    metadata: { sessionId, createdAt: new Date() },
+  };
+}
 
 export const useChatStore = defineStore("chat", () => {
-  const currentAgent = ref<ChatAgent>({
-    id: "claude-acp",
-    name: "Claude Code",
-    acpAgentId: "claude-acp",
-  });
+  const toast = useToast();
   const chatStatus = ref<ChatStatus>("ready");
   const mode = ref<ModeType>("manual");
   const tokenUsage = ref<TokenUsage>({
@@ -21,95 +27,100 @@ export const useChatStore = defineStore("chat", () => {
     estimatedCost: "$0.64",
   });
 
-  function sendMessage(content: string): void {
-    const sessionStore = useSessionStore();
-    const projectStore = useProjectStore();
-    const session = sessionStore.activeSession;
-    const projectId = projectStore.currentProject?.id ?? session?.projectId;
-    if (!session || !projectId) return;
-
-    const userMsg: Message = {
-      id: `msg-${Date.now()}-user`,
-      role: "user",
-      parts: [{ type: "text", text: content }],
-      metadata: { sessionId: session.id, createdAt: new Date() },
-    };
-    session.messages.push(userMsg);
+  function queueUserMessage(
+    session: Session,
+    content: string,
+    sessionStore: ReturnType<typeof useSessionStore>
+  ): Message {
+    const userMessage = buildUserMessage(session.id, content);
+    session.messages.push(userMessage);
     session.turnCount++;
     session.updatedAt = new Date();
-    chatStatus.value = "submitted";
+    session.status = "running";
+    sessionStore.sortSessions();
+    return userMessage;
+  }
 
-    // Persist user message immediately, before assistant reply arrives
-    window.api.chat
-      .persistMessage(session.id, projectId, JSON.parse(JSON.stringify(userMsg)) as Message)
+  function persistMessage(sessionId: string, projectId: string, message: Message): void {
+    void chatApi
+      .persistMessage(sessionId, projectId, JSON.parse(JSON.stringify(message)) as Message)
       .catch((err: unknown) => {
-        console.error("Failed to persist user message:", err);
+        console.error("Failed to persist message:", err);
       });
+  }
 
+  function streamSessionMessage(
+    activeSession: Session,
+    projectId: string,
+    prompt: string,
+    sessionStore: ReturnType<typeof useSessionStore>
+  ): void {
     let activeAssistantId: string | null = null;
-    // Index of the text part currently being streamed into; reset after each tool_call_start
-    let activeTextPartIdx: number = -1;
+    let activeTextPartIdx = -1;
 
     function ensureAssistantMessage(): Message {
       if (activeAssistantId) {
-        const existing = session!.messages.find((m) => m.id === activeAssistantId);
+        const existing = activeSession.messages.find((message) => message.id === activeAssistantId);
         if (existing) return existing;
       }
-      const msg: Message = {
-        id: crypto.randomUUID(),
+
+      const message: Message = {
+        id: generateId(),
         role: "assistant",
         parts: [],
-        metadata: { sessionId: session!.id, createdAt: new Date() },
+        metadata: { sessionId: activeSession.id, createdAt: new Date() },
       };
-      session!.messages.push(msg);
-      activeAssistantId = msg.id;
+      activeSession.messages.push(message);
+      activeAssistantId = message.id;
       activeTextPartIdx = -1;
-      return msg;
+      return message;
     }
 
-    window.api.chat.streamMessage(session.id, projectId, currentAgent.value.acpAgentId, content, {
+    chatApi.streamMessage(activeSession.id, projectId, activeSession.agentId, prompt, {
       onChunk(data) {
         if (chatStatus.value === "submitted") {
           chatStatus.value = "streaming";
         }
 
         if (data.kind === "text_delta") {
-          const msg = ensureAssistantMessage();
-          const existingPart = activeTextPartIdx >= 0 ? msg.parts[activeTextPartIdx] : null;
+          const message = ensureAssistantMessage();
+          const existingPart = activeTextPartIdx >= 0 ? message.parts[activeTextPartIdx] : null;
           if (existingPart && existingPart.type === "text") {
             existingPart.text += data.text;
           } else {
-            msg.parts.push({ type: "text", text: data.text });
-            activeTextPartIdx = msg.parts.length - 1;
+            message.parts.push({ type: "text", text: data.text });
+            activeTextPartIdx = message.parts.length - 1;
           }
         } else if (data.kind === "tool_call_start") {
-          const msg = ensureAssistantMessage();
+          const message = ensureAssistantMessage();
           const part: DynamicToolUIPart = {
             type: "dynamic-tool",
             toolCallId: data.toolCallId,
-            toolName: data.toolName,
+            toolName: data.title,
             state: "input-available",
             input: {},
           };
-          msg.parts.push(part);
-          // Next text_delta should create a new text part after this tool
+          message.parts.push(part);
           activeTextPartIdx = -1;
         } else if (data.kind === "tool_call_update") {
           if (!activeAssistantId) return;
-          const msg = session!.messages.find((m) => m.id === activeAssistantId);
-          if (!msg) return;
-          const idx = msg.parts.findIndex(
-            (p) => p.type === "dynamic-tool" && p.toolCallId === data.toolCallId
+
+          const message = activeSession.messages.find((item) => item.id === activeAssistantId);
+          if (!message) return;
+
+          const idx = message.parts.findIndex(
+            (part) => part.type === "dynamic-tool" && part.toolCallId === data.toolCallId
           );
           if (idx === -1) return;
-          const prev = msg.parts[idx] as DynamicToolUIPart;
+
+          const prev = message.parts[idx] as DynamicToolUIPart;
           const description =
             typeof data.input?.description === "string" ? data.input.description : undefined;
 
           if (data.status === "in_progress") {
             const needsUpdate = data.input || data.content;
             if (needsUpdate) {
-              msg.parts.splice(idx, 1, {
+              message.parts.splice(idx, 1, {
                 type: "dynamic-tool",
                 toolCallId: prev.toolCallId,
                 toolName: prev.toolName,
@@ -128,8 +139,12 @@ export const useChatStore = defineStore("chat", () => {
               input: prev.input,
               output: data.content ?? "",
             };
-            msg.parts.splice(idx, 1, updated);
+            message.parts.splice(idx, 1, updated);
           }
+        } else if (data.kind === "session_info_update") {
+          activeSession.title = data.title;
+          activeSession.updatedAt = new Date();
+          sessionStore.sortSessions();
         }
       },
       onDone(done) {
@@ -142,37 +157,85 @@ export const useChatStore = defineStore("chat", () => {
           output: tokenUsage.value.output + done.totalTokens,
           total: tokenUsage.value.total + done.totalTokens,
         };
-        session!.updatedAt = new Date();
+        activeSession.updatedAt = new Date();
+        activeSession.status = "ended";
+        sessionStore.sortSessions();
 
-        // Persist the completed assistant message
-        if (finishedId) {
-          const msg = session!.messages.find((m) => m.id === finishedId);
-          console.log(
-            "[chat] onDone persist finishedId=",
-            finishedId,
-            "msg=",
-            msg?.role,
-            "parts=",
-            msg?.parts.length
-          );
-          if (msg) {
-            // Deep-clone through JSON to strip any non-serializable values before IPC transfer
-            const serializable = JSON.parse(JSON.stringify(msg)) as Message;
-            window.api.chat
-              .persistMessage(session!.id, projectId, serializable)
-              .catch((err: unknown) => {
-                console.error("Failed to persist message:", err);
-              });
-          }
+        if (!finishedId) {
+          return;
         }
+
+        const message = activeSession.messages.find((item) => item.id === finishedId);
+        if (!message) {
+          return;
+        }
+
+        persistMessage(activeSession.id, projectId, message);
       },
       onError(err) {
         activeAssistantId = null;
         activeTextPartIdx = -1;
         chatStatus.value = "error";
+        activeSession.status = "ended";
+        activeSession.updatedAt = new Date();
+        sessionStore.sortSessions();
         console.error("Stream error:", err.code, err.message);
       },
     });
+  }
+
+  async function sendMessage(content: string): Promise<void> {
+    const prompt = content.trim();
+    if (!prompt) {
+      return;
+    }
+
+    const sessionStore = useSessionStore();
+    const projectStore = useProjectStore();
+    const currentSession = sessionStore.activeSession;
+    const projectIdSnapshot = projectStore.currentProject?.id ?? currentSession?.projectId;
+
+    if (!projectIdSnapshot) {
+      return;
+    }
+
+    let activeSession = currentSession;
+
+    if (!activeSession) {
+      const draftAgentIdSnapshot = sessionStore.draftAgentId;
+      if (!draftAgentIdSnapshot) {
+        toast.add({
+          title: "暂无可用 Agent",
+          description: "请先安装 Agent 后再开始新会话",
+          color: "error",
+        });
+        return;
+      }
+
+      chatStatus.value = "submitted";
+
+      try {
+        const createdSession = await sessionStore.createSession({
+          projectId: projectIdSnapshot,
+          agentId: draftAgentIdSnapshot,
+          title: "New Session",
+        });
+        activeSession = sessionStore.activeSession ?? createdSession;
+      } catch (error: unknown) {
+        chatStatus.value = "ready";
+        toast.add({
+          title: "创建会话失败",
+          description: error instanceof Error ? error.message : String(error),
+          color: "error",
+        });
+        return;
+      }
+    }
+
+    const userMessage = queueUserMessage(activeSession, prompt, sessionStore);
+    chatStatus.value = "submitted";
+    persistMessage(activeSession.id, projectIdSnapshot, userMessage);
+    streamSessionMessage(activeSession, projectIdSnapshot, prompt, sessionStore);
   }
 
   function setMode(newMode: ModeType): void {
@@ -180,7 +243,6 @@ export const useChatStore = defineStore("chat", () => {
   }
 
   return {
-    currentAgent,
     chatStatus,
     mode,
     tokenUsage,

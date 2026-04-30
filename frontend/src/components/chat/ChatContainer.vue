@@ -3,7 +3,6 @@ import { ref, computed } from "vue";
 import { storeToRefs } from "pinia";
 import { isReasoningUIPart, isTextUIPart, isToolUIPart } from "ai";
 import { isPartStreaming, isToolStreaming } from "@nuxt/ui/utils/ai";
-import type { ChatAgent } from "@shared/types/chat-agent";
 import { useChatStore } from "@renderer/stores/chat";
 import { useSessionStore } from "@renderer/stores/session";
 import ChatComark from "./ChatComark";
@@ -13,22 +12,35 @@ import { getToolText, getToolSuffix, getToolOutput } from "@renderer/utils/chatT
 const store = useChatStore();
 const sessionStore = useSessionStore();
 const { chatStatus } = storeToRefs(store);
-const { activeSession } = storeToRefs(sessionStore);
+const { activeSession, draftAgentId } = storeToRefs(sessionStore);
 
-const agent = computed<ChatAgent["acpAgentId"]>({
-  get: () => store.currentAgent.acpAgentId,
-  set: () => {},
+const agent = computed<string | undefined>({
+  get: () => activeSession.value?.agentId ?? draftAgentId.value ?? undefined,
+  set: (agentId) => {
+    if (!agentId) {
+      return;
+    }
+
+    if (activeSession.value) {
+      void sessionStore.setSessionAgent(agentId).catch((error: unknown) => {
+        console.error("Failed to update session agent:", error);
+      });
+      return;
+    }
+
+    sessionStore.setDraftAgent(agentId);
+  },
 });
 
 const input = ref("");
 
 const messages = computed(() => activeSession.value?.messages ?? []);
 
-function handleSubmit(): void {
+async function handleSubmit(): Promise<void> {
   const text = input.value.trim();
   if (!text) return;
   input.value = "";
-  store.sendMessage(text);
+  await store.sendMessage(text);
 }
 </script>
 

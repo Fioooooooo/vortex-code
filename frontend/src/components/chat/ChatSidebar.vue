@@ -7,6 +7,10 @@ const sessionStore = useSessionStore();
 
 const sessions = computed(() => sessionStore.sessions);
 const searchQuery = ref("");
+
+function handleCreateSession(): void {
+  sessionStore.beginDraftSession();
+}
 </script>
 
 <template>
@@ -25,7 +29,7 @@ const searchQuery = ref("");
         variant="subtle"
         size="sm"
         class="shrink-0"
-        @click="sessionStore.createSession()"
+        @click="handleCreateSession"
       >
         <UIcon name="i-lucide-plus" class="w-4 h-4" />
       </UButton>

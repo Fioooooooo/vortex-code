@@ -13,11 +13,11 @@ export function mapSessionUpdate(update: SessionUpdate): SessionEvent | null {
 
     case "tool_call": {
       const meta = update._meta as { claudeCode?: { toolName?: string } } | null | undefined;
-      const toolName = meta?.claudeCode?.toolName ?? update.title;
+      const title = meta?.claudeCode?.toolName ?? update.title;
       const event: SessionEvent = {
         type: "tool_call_start",
         toolCallId: update.toolCallId,
-        toolName,
+        title,
         kind: update.kind ?? "other",
       };
       logger.debug(`[acp-mapper] → ${JSON.stringify(event)}`);
@@ -46,6 +46,18 @@ export function mapSessionUpdate(update: SessionUpdate): SessionEvent | null {
         status,
         input: rawInput,
         content,
+      };
+      logger.debug(`[acp-mapper] → ${JSON.stringify(event)}`);
+      return event;
+    }
+
+    case "session_info_update": {
+      const title = typeof update.title === "string" ? update.title.trim() : "";
+      if (!title) return null;
+
+      const event: SessionEvent = {
+        type: "session_info_update",
+        title,
       };
       logger.debug(`[acp-mapper] → ${JSON.stringify(event)}`);
       return event;

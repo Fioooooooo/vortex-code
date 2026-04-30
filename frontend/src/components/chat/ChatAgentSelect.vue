@@ -1,37 +1,36 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { storeToRefs } from "pinia";
-import type { ChatAgent } from "@shared/types/chat-agent";
 import { useAcpAgentsStore } from "@renderer/stores/acp-agents";
-import { useSessionStore } from "@renderer/stores/session";
+import { useChatStore } from "@renderer/stores/chat";
 
-const agent = defineModel<ChatAgent["acpAgentId"]>({ required: true });
+const agent = defineModel<string | undefined>();
 
 const acpAgentsStore = useAcpAgentsStore();
-const sessionStore = useSessionStore();
+const chatStore = useChatStore();
 const { statuses, icons } = storeToRefs(acpAgentsStore);
-const { activeSession } = storeToRefs(sessionStore);
+const { chatStatus } = storeToRefs(chatStore);
 
-const disabled = computed(() => (activeSession.value?.turnCount ?? 0) === 0);
+const disabled = computed(() => chatStatus.value === "streaming");
 
 const installedAgents = computed(() =>
   Object.entries(statuses.value)
     .filter(([, s]) => s.installed)
     .map(([id]) => ({
       value: id,
-      label: id,
+      label: acpAgentsStore.getAgentLabel(id),
       icon: icons.value[id] ? undefined : "i-lucide-cpu",
       avatar: icons.value[id] ? { src: icons.value[id] } : undefined,
     }))
 );
 
 const currentIcon = computed(() => {
-  if (icons.value[agent.value]) return undefined;
+  if (agent.value && icons.value[agent.value]) return undefined;
   return "i-lucide-cpu";
 });
 
 const currentAvatar = computed(() => {
-  if (icons.value[agent.value]) return { src: icons.value[agent.value] };
+  if (agent.value && icons.value[agent.value]) return { src: icons.value[agent.value] };
   return undefined;
 });
 </script>
