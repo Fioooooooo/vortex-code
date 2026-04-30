@@ -24,10 +24,7 @@ const isUserManagedUpdate = computed(
 const hasError = computed(() => props.installProgress?.status === "error");
 const progressMessage = computed(() => props.installProgress?.message ?? "正在处理...");
 const detectedVersion = computed(() => props.agentStatus?.detectedVersion ?? props.agent.version);
-const versionLabel = computed(() => {
-  if (props.agentStatus?.installed) return `v${detectedVersion.value}`;
-  return `v${props.agent.version}`;
-});
+const versionLabel = computed(() => `v${props.agent.version}`);
 
 function requestInstall(): void {
   if (isUserManagedUpdate.value) {
@@ -49,19 +46,10 @@ function confirmTakeoverInstall(): void {
     <div class="flex flex-col gap-3 p-4">
       <div class="flex items-center gap-3">
         <div class="relative shrink-0">
-          <div
-            class="w-8 h-8 rounded-lg bg-white flex items-center justify-center overflow-hidden border border-default"
-          >
+          <div class="w-8 h-8 rounded-lg bg-white flex items-center justify-center overflow-hidden">
             <img v-if="icon" :src="icon" :alt="agent.name" class="w-full h-full object-cover" />
             <UIcon v-else name="i-lucide-terminal" class="w-4 h-4 text-muted" />
           </div>
-          <UBadge
-            v-if="canUpdate"
-            color="error"
-            variant="solid"
-            size="sm"
-            class="absolute -top-0.5 -right-0.5 w-2 h-2 p-0 rounded-full"
-          />
         </div>
         <div class="flex-1 min-w-0">
           <p class="text-sm font-medium text-highlighted truncate">{{ agent.name }}</p>
