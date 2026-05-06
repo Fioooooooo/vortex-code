@@ -147,7 +147,7 @@ function parseWorkflowYaml(yaml: string, fallbackName: string): Omit<WorkflowTem
   };
 }
 
-async function resolveProjectWorkflowDirectory(projectId?: string): Promise<string | null> {
+export async function resolveProjectWorkflowDirectory(projectId?: string): Promise<string | null> {
   if (!projectId) {
     return null;
   }
@@ -160,7 +160,7 @@ async function resolveProjectWorkflowDirectory(projectId?: string): Promise<stri
   return join(getDataSubPath("projects"), encodeProjectPath(project.path), "workflows");
 }
 
-async function readWorkflowDirectory(
+export async function readWorkflowDirectory(
   directory: string,
   source: WorkflowSource
 ): Promise<WorkflowTemplate[]> {

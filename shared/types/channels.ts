@@ -29,6 +29,12 @@ export const ProjectChannels = {
 export const ProposalChannels = {
   list: "proposal:list",
   readFile: "proposal:readFile",
+  apply: "proposal:apply",
+  stageStream: "proposal:stageStream",
+  stageStreamPort: "proposal:stageStream:port",
+  stageStreamCancel: "proposal:stageStream:cancel",
+  loadRun: "proposal:loadRun",
+  loadRunMessages: "proposal:loadRunMessages",
 } as const;
 
 export const NetChannels = {

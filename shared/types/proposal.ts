@@ -1,3 +1,5 @@
+import type { WorkflowStage } from "./workflow";
+
 export type ProposalStatus = "creating" | "draft" | "applying" | "archived";
 
 export interface ProposalMeta {
@@ -9,4 +11,16 @@ export interface ProposalMeta {
   doneTasks: number;
   hasDesign: boolean;
   date: string;
+}
+
+export interface ApplyRunMeta {
+  runId: string;
+  changeId: string;
+  workflowId: string;
+  stages: WorkflowStage[];
+  currentStageIndex: number;
+  stageAcpSessionIds: Record<number, string>;
+  status: "running" | "done" | "error";
+  startedAt: string;
+  updatedAt: string;
 }
