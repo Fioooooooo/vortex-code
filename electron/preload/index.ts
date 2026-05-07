@@ -1,5 +1,6 @@
 import { contextBridge } from "electron";
 import { electronAPI } from "@electron-toolkit/preload";
+import log from "electron-log/renderer";
 import { chatApi } from "./api/chat";
 import { projectApi } from "./api/project";
 import { proposalApi } from "./api/proposal";
@@ -27,7 +28,7 @@ if (process.contextIsolated) {
     contextBridge.exposeInMainWorld("electron", electronAPI);
     contextBridge.exposeInMainWorld("api", api);
   } catch (error) {
-    console.error(error);
+    log.error("[preload] failed to expose contextBridge APIs", error);
   }
 } else {
   // @ts-ignore (define in dts)
