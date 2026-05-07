@@ -77,6 +77,21 @@
 - **WHEN** `proposal.status === "applying"`
 - **THEN** "开始实现"按钮不显示（已有实现：`v-if="proposal.status === 'draft'"`）
 
+### Requirement: 详情页提供 archive 入口
+
+详情页 SHALL 在 `status === "applying"` 且 apply run 已完成时显示"归档"按钮；点击后触发归档流程。
+
+#### Scenario: apply run completed
+
+- **WHEN** proposal.status 为 `applying` 且 apply run 的状态为 `done`
+- **THEN** header 显示"归档"按钮
+- **AND** 点击按钮触发 archive IPC
+
+#### Scenario: apply run still running
+
+- **WHEN** proposal.status 为 `applying` 但 apply run 的状态不是 `done`
+- **THEN** header 不显示"归档"按钮
+
 ### Requirement: SidePanel 展示 apply run 的实时日志
 
 详情页 SidePanel SHALL 展示来自 `useProposalRunStore` 的 `UIMessage[]`，复用 chat 页面的 markdown 渲染组件（`ChatContainer` 或其子组件）渲染消息内容。
