@@ -1,16 +1,20 @@
 import { promises as fs } from "fs";
-import { app } from "electron";
 import { join } from "path";
 import { is } from "@electron-toolkit/utils";
 import { getDataSubPath } from "@main/infra/paths";
 import logger from "@main/infra/logger";
 
+/**
+ * Location of the read-only, app-shipped workflow templates.
+ *
+ * - Dev: `resources/workflows/built-in/` inside the repo.
+ * - Prod: `process.resourcesPath/workflows/built-in/`, which is where
+ *   electron-builder places everything under `resources/**` (see
+ *   electron-builder.yml).
+ */
 export function getBuiltInWorkflowDirectory(): string {
-  if (is.dev) {
-    return join(process.cwd(), "electron", "main", "workflows", "built-in");
-  }
-
-  return join(app.getAppPath(), "electron", "main", "workflows", "built-in");
+  const base = is.dev ? join(process.cwd(), "resources") : process.resourcesPath;
+  return join(base, "workflows", "built-in");
 }
 
 export function getUserWorkflowDirectory(): string {

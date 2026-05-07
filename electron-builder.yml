@@ -6,7 +6,6 @@ files:
   - "!**/*"
   - "out/**"
   - "resources/**"
-  - "electron/main/workflows/built-in/**"
   - "package.json"
 asarUnpack:
   - resources/**
