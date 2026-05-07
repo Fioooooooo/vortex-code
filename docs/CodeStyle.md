@@ -70,16 +70,19 @@ pnpm typecheck # TypeScript 类型检查
 
 ## Vue 组件规范
 
+组件的架构约束（props/emits 类型化、script 语言、逻辑抽离方式、store / api 分层、路由、样式、图标等）在 [RendererProcess](./RendererProcess.md) 中定义。本节只保留影响代码风格的格式层规则：
+
+- 必须使用 `<script setup lang="ts">`（ESLint `vue/block-lang` 已启用，缺 `lang` 会报错）。
+- `<script>` 在 `<template>` 之前。
+- 组件文件名 PascalCase；页面组件名不强制多词（ESLint 已关闭 `vue/multi-word-component-names`）。
+
 ```vue
-<!-- 必须：script 在前，带 lang="ts" -->
 <script setup lang="ts">
-// Props 必须带类型
+// Props / Emits 必须带类型声明
 const props = defineProps<{
   title: string;
   count?: number;
 }>();
-
-// Emits 必须带类型
 const emit = defineEmits<{
   change: [value: string];
   close: [];

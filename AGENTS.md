@@ -56,6 +56,7 @@ pnpm test:coverage    # 生成覆盖率报告
 
 - **架构文档** - [Architecture](./docs/Architecture.md)
 - **主进程分层** - [MainProcess](./docs/MainProcess.md)
+- **渲染进程分层** - [RendererProcess](./docs/RendererProcess.md)
 - **数据模型** - [DataModel](./docs/DataModel.md)
 - **IPC 通信** - [IPC](./docs/IPC.md)
 - **测试规范** - [Testing](./docs/Testing.md)
