@@ -5,6 +5,7 @@ import { is } from "@electron-toolkit/utils";
 type SubPath =
   | "projects"
   | "settings"
+  | "window-state"
   | "sessions"
   | "integrations"
   | "acp"
