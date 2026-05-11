@@ -1,4 +1,4 @@
-# app-shell-routing Specification
+# app-shell-routing 规范
 
 ## Purpose
 
@@ -6,58 +6,58 @@
 
 ## Requirements
 
-### Requirement: Non-welcome pages share a route-level app shell
+### 要求：非欢迎页共享路由级应用外壳
 
-The system SHALL provide a route-level parent page for all application pages, and that parent page SHALL render a shared application shell layout with dedicated header, side navigation, and main content regions.
+系统 SHALL 为所有应用页面提供路由级父页面，该父页面 SHALL 渲染带有专用 header、侧边导航和主内容区域的共享应用外壳布局。
 
-#### Scenario: Shared shell wraps application pages
+#### 场景：共享外壳包裹应用页面
 
-- **WHEN** the user navigates to `/chat`, `/workflow`, `/integration`, `/proposal`, `/proposal/:id`, or `/settings`
-- **THEN** the route is rendered inside the shared application shell
-- **AND** the page-specific content is rendered in the shell's main region
+- **WHEN** 用户导航到 `/chat`、`/workflow`、`/integration`、`/proposal`、`/proposal/:id` 或 `/settings`
+- **THEN** 路由在共享应用外壳内渲染
+- **AND** 页面专属内容在外壳主区域渲染
 
-### Requirement: Root application entry redirects by current project context
+### 要求：根路径入口根据当前项目上下文重定向
 
-The system SHALL resolve access to `/` by checking the current project context and keeping the user on `/` (which renders WelcomeView) when no project is selected, or redirecting to `/chat` when a project is already selected.
+系统 SHALL 通过检查当前项目上下文来解析对 `/` 的访问：无项目时保持在 `/`（渲染 WelcomeView），已有项目时重定向到 ActivityBar 注册表声明的默认应用页。
 
-#### Scenario: No project stays on root
+#### 场景：无项目时停留在根路径
 
-- **WHEN** the user navigates to `/` and there is no current project
-- **THEN** the application stays on `/` and renders the WelcomeView inside the shared shell
+- **WHEN** 用户导航到 `/` 且无当前项目
+- **THEN** 应用停留在 `/` 并在共享外壳内渲染 WelcomeView
 
-#### Scenario: Current project redirects to chat
+#### 场景：有当前项目时重定向到默认应用页
 
-- **WHEN** the user navigates to `/` and a current project exists
-- **THEN** the application redirects to `/chat`
+- **WHEN** 用户导航到 `/` 且存在当前项目
+- **THEN** 应用重定向到 ActivityBar 注册表声明的默认应用页（即 `isDefault: true` 的条目所对应的 `path`）
 
-### Requirement: Application pages require a current project
+### 要求：应用页面需要当前项目
 
-The system SHALL prevent access to project-scoped application routes when no current project is selected by rendering WelcomeView instead.
+系统 SHALL 在无当前项目时阻止访问项目作用域的应用路由，改为渲染 WelcomeView。
 
-#### Scenario: Project-scoped route without project
+#### 场景：无项目时访问项目作用域路由
 
-- **WHEN** the user navigates directly to `/chat`, `/workflow`, `/integration`, `/proposal`, or `/proposal/:id` without a current project
-- **THEN** the application renders the WelcomeView in the main content region
+- **WHEN** 用户在无当前项目的情况下直接导航到 `/chat`、`/workflow`、`/integration`、`/proposal` 或 `/proposal/:id`
+- **THEN** 应用在主内容区域渲染 WelcomeView
 
-### Requirement: Integration page is a project-scoped application route
+### 要求：集成页面为项目作用域应用路由
 
-The system SHALL treat `/integration` as a project-scoped application route protected by the same access constraints as other application pages.
+系统 SHALL 将 `/integration` 作为项目作用域应用路由，与其他应用页面受相同的访问约束保护。
 
-#### Scenario: Integration route requires project
+#### 场景：集成路由需要项目
 
-- **WHEN** the user navigates directly to `/integration` without a current project
-- **THEN** the application renders the WelcomeView in the main content region
+- **WHEN** 用户在无当前项目的情况下直接导航到 `/integration`
+- **THEN** 应用在主内容区域渲染 WelcomeView
 
-### Requirement: Settings route 与 Activity Bar 高亮
+### 要求：设置路由与 Activity Bar 高亮
 
 Activity Bar SHALL 包含齿轮图标入口，点击后路由跳转至 `/settings`。当当前路由为 `/settings` 时，Activity Bar 中齿轮图标 SHALL 显示高亮激活状态。
 
-#### Scenario: 点击 Activity Bar 齿轮图标
+#### 场景：点击 Activity Bar 齿轮图标
 
 - **WHEN** 用户点击 Activity Bar 中的齿轮图标
 - **THEN** 路由跳转至 `/settings`，齿轮图标高亮
 
-#### Scenario: 离开 Settings 页面
+#### 场景：离开 Settings 页面
 
 - **WHEN** 用户导航至其他页面
 - **THEN** 齿轮图标高亮状态取消

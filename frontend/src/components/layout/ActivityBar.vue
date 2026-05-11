@@ -1,42 +1,23 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { useRoute, type RouteLocationRaw } from "vue-router";
+import { useRoute } from "vue-router";
 import { useProjectStore } from "@renderer/stores/project";
-
-interface NavItem {
-  id: string;
-  icon: string;
-  label: string;
-  to: RouteLocationRaw;
-}
+import { activityBarItems } from "@renderer/config/activity-bar";
 
 const route = useRoute();
 const projectStore = useProjectStore();
 
 const hasProject = computed(() => projectStore.hasCurrentProject);
 
-const items: NavItem[] = [
-  { id: "task", icon: "i-lucide-list-checks", label: "任务", to: "/task" },
-  { id: "chat", icon: "i-lucide-message-circle-more", label: "对话", to: "/chat" },
-  { id: "proposal", icon: "i-lucide-file-pen", label: "提案", to: "/proposal" },
-  { id: "workflow", icon: "i-lucide-workflow", label: "工作流", to: "/workflow" },
-  { id: "cron", icon: "i-lucide-calendar-days", label: "定时任务", to: "/cron" },
-  { id: "integration", icon: "i-lucide-plug", label: "集成", to: "/integration" },
-];
-
-const bottomItems: NavItem[] = [
-  { id: "setting", icon: "i-lucide-settings", label: "设置", to: "/settings" },
-];
+const items = computed(() => activityBarItems.filter((i) => i.group === "top"));
+const bottomItems = computed(() => activityBarItems.filter((i) => i.group === "bottom"));
 
 const activeItem = computed(() => {
-  if (route.path.startsWith("/task")) return "task";
-  if (route.path.startsWith("/proposal")) return "proposal";
-  if (route.path.startsWith("/workflow")) return "workflow";
-  if (route.path.startsWith("/cron")) return "cron";
-  if (route.path.startsWith("/integration")) return "integration";
-  if (route.path.startsWith("/settings")) return "setting";
-  if (route.path.startsWith("/chat")) return "chat";
-  return "chat";
+  const matches = activityBarItems.filter((i) => route.path.startsWith(i.path));
+  if (matches.length === 0) return null;
+  // longest prefix wins (e.g. /proposal vs /proposal/:id)
+  matches.sort((a, b) => b.path.length - a.path.length);
+  return matches[0].id;
 });
 </script>
 
@@ -53,7 +34,7 @@ const activeItem = computed(() => {
           class="w-9 h-9 justify-center p-0"
           :color="activeItem === item.id ? 'primary' : 'neutral'"
           :disabled="!hasProject"
-          :to="hasProject ? item.to : undefined"
+          :to="hasProject ? item.path : undefined"
         >
           <UIcon :name="item.icon" class="w-5 h-5" />
         </UButton>
@@ -71,7 +52,7 @@ const activeItem = computed(() => {
           size="sm"
           class="w-9 h-9 justify-center p-0"
           :color="activeItem === item.id ? 'primary' : 'neutral'"
-          :to="item.to"
+          :to="item.path"
         >
           <UIcon :name="item.icon" class="w-5 h-5" />
         </UButton>

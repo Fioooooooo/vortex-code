@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { useRouter } from "vue-router";
 import { useProjectStore } from "@renderer/stores/project";
+import { useDefaultAppRoute } from "@renderer/composables/useDefaultAppRoute";
 import { useColorMode } from "@vueuse/core";
 import type { RecentProject } from "@shared/types/project";
 
-const router = useRouter();
+const { goToDefault } = useDefaultAppRoute();
 const projectStore = useProjectStore();
 const colorMode = useColorMode();
 
@@ -26,7 +26,7 @@ const dropdownItems = computed(() => {
       onSelect: async () => {
         const project = await projectStore.openFolder();
         if (project) {
-          await router.push("/task");
+          await goToDefault();
         }
       },
     },

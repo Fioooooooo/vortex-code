@@ -8,13 +8,17 @@ import { vi } from "vitest";
 // ─────────────────────────────────────────────
 const mockToast = { add: vi.fn() };
 const buttonStub = {
-  template: "<button @click=\"$emit('click')\"><slot /></button>",
+  template:
+    "<button :data-color=\"color || 'neutral'\" @click=\"$emit('click')\"><slot /></button>",
   props: ["loading", "icon", "color", "variant", "size"],
 };
 const dropdownMenuStub = {
   template:
     '<div><slot /><button v-for="item in items" :key="item.label" type="button" :data-test="`dropdown-item-${item.label}`" @click="item.onSelect?.()">{{ item.label }}</button></div>',
   props: ["items"],
+};
+const tooltipStub = {
+  template: "<div><slot /></div>",
 };
 
 vi.mock("@nuxt/ui/composables", () => ({
@@ -38,8 +42,8 @@ config.global.stubs = {
   Button: buttonStub,
   UDropdownMenu: dropdownMenuStub,
   DropdownMenu: dropdownMenuStub,
-  UTooltip: true,
-  Tooltip: true,
+  UTooltip: tooltipStub,
+  Tooltip: tooltipStub,
   UBadge: true,
   UInput: {
     template:

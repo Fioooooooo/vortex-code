@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { useRouter } from "vue-router";
 import { useProjectStore } from "@renderer/stores/project";
+import { useDefaultAppRoute } from "@renderer/composables/useDefaultAppRoute";
 import ProjectList from "@renderer/components/welcome/ProjectList.vue";
 import type { RecentProject } from "@shared/types/project";
 
-const router = useRouter();
+const { goToDefault } = useDefaultAppRoute();
 const projectStore = useProjectStore();
 
 const iconUrl = `${import.meta.env.BASE_URL}icon.svg`;
@@ -12,14 +12,14 @@ const iconUrl = `${import.meta.env.BASE_URL}icon.svg`;
 async function handleOpenFolder(): Promise<void> {
   const project = await projectStore.openFolder();
   if (project) {
-    await router.push("/task");
+    await goToDefault();
   }
 }
 
 async function handleOpenRecent(project: RecentProject): Promise<void> {
   const openedProject = await projectStore.openRecentProject(project);
   if (openedProject) {
-    await router.push("/task");
+    await goToDefault();
   }
 }
 
