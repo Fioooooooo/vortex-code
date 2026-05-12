@@ -21,7 +21,7 @@ function metaPath(projectPath: string, sessionId: string): string {
   return join(sessionsDir(projectPath), `${sessionId}.json`);
 }
 
-function messagesPath(projectPath: string, sessionId: string): string {
+export function sessionMessagesPath(projectPath: string, sessionId: string): string {
   return join(sessionsDir(projectPath), `${sessionId}.messages.jsonl`);
 }
 
@@ -103,7 +103,7 @@ export async function listSessionMetas(projectPath: string): Promise<SessionMeta
 export async function deleteSession(projectPath: string, sessionId: string): Promise<void> {
   await Promise.allSettled([
     fs.unlink(metaPath(projectPath, sessionId)),
-    fs.unlink(messagesPath(projectPath, sessionId)),
+    fs.unlink(sessionMessagesPath(projectPath, sessionId)),
   ]);
 }
 
@@ -114,7 +114,7 @@ export async function appendMessage(
 ): Promise<void> {
   await ensureDir(sessionsDir(projectPath));
   const line = JSON.stringify(message) + "\n";
-  await fs.appendFile(messagesPath(projectPath, sessionId), line, "utf8");
+  await fs.appendFile(sessionMessagesPath(projectPath, sessionId), line, "utf8");
 }
 
 export async function loadMessages(
@@ -122,7 +122,7 @@ export async function loadMessages(
   sessionId: string
 ): Promise<UIMessage<MessageMeta>[]> {
   try {
-    const content = await fs.readFile(messagesPath(projectPath, sessionId), "utf8");
+    const content = await fs.readFile(sessionMessagesPath(projectPath, sessionId), "utf8");
     return content
       .split("\n")
       .filter((line) => line.trim())

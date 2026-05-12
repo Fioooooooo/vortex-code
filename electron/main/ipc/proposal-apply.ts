@@ -26,11 +26,13 @@ import { toMessageChunk } from "@main/services/chat/session-event-mapper";
 import {
   appendArchiveMessage,
   appendApplyRunMessage,
+  archiveMessagesPath,
   loadArchiveMessages,
   loadArchiveRunMeta,
   loadApplyRunMessages,
   loadApplyRunMeta,
   saveArchiveRunMeta,
+  stageMessagesPath,
 } from "@main/infra/storage/apply-run-store";
 import { buildStagePrompt } from "@main/services/proposal/stage-prompts";
 import {
@@ -47,6 +49,7 @@ import { validate } from "./_kit/schema";
 import { ipcError } from "./_kit/errors";
 import { makeStreamChannel } from "./_kit/stream-channel";
 import logger from "@main/infra/logger";
+import { prependReminderToLastUserMessage } from "@main/infra/storage/message-reminder-store";
 
 function mapAcpErrorCode(raw: string): IpcErrorCode {
   if (raw === IpcErrorCodes.ACP_NOT_READY) return IpcErrorCodes.ACP_NOT_READY;
@@ -115,6 +118,18 @@ export function registerProposalApplyHandlers(): void {
           agentId,
           projectPath,
           cwd: projectPath,
+          owner: "apply",
+          reminderContext: {
+            changeId: form.changeId,
+            stageIndex: form.stageIndex,
+            runId: form.runId,
+          },
+          onReminderInjected: async (reminderPart) => {
+            await prependReminderToLastUserMessage(
+              stageMessagesPath(projectPath, form.changeId, form.stageIndex),
+              reminderPart
+            );
+          },
         });
 
         sessionRegistry.register("apply", form.runId, session);
@@ -284,6 +299,17 @@ export function registerProposalApplyHandlers(): void {
           agentId: sessionMeta.agentId,
           projectPath,
           cwd: projectPath,
+          owner: "archive",
+          reminderContext: {
+            changeId: form.changeId,
+            runId: archiveRunId,
+          },
+          onReminderInjected: async (reminderPart) => {
+            await prependReminderToLastUserMessage(
+              archiveMessagesPath(projectPath, form.changeId),
+              reminderPart
+            );
+          },
         });
         sessionRegistry.register("archive", sessionKey, session);
 

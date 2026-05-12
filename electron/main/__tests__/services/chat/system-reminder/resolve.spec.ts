@@ -1,0 +1,105 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const logger = vi.hoisted(() => ({
+  warn: vi.fn(),
+}));
+
+vi.mock("@main/infra/logger", () => ({
+  default: logger,
+}));
+
+describe("resolveSystemReminder", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("returns null for unknown owners", async () => {
+    const { resolveSystemReminder } = await import("@main/services/chat/system-reminder");
+
+    await expect(
+      resolveSystemReminder({
+        owner: "unknown" as never,
+        projectPath: "/tmp/project",
+        cwd: "/tmp/project",
+        fylloSessionId: "session-1",
+        agentId: "claude-acp",
+      })
+    ).resolves.toBeNull();
+  });
+
+  it("returns null for unsupported agents", async () => {
+    const { resolveSystemReminder } = await import("@main/services/chat/system-reminder");
+
+    await expect(
+      resolveSystemReminder({
+        owner: "chat",
+        projectPath: "/tmp/project",
+        cwd: "/tmp/project",
+        fylloSessionId: "session-1",
+        agentId: "other-agent",
+      })
+    ).resolves.toBeNull();
+  });
+
+  it("wraps the rendered reminder for the default agent", async () => {
+    const { resolveSystemReminder } = await import("@main/services/chat/system-reminder");
+
+    const reminder = await resolveSystemReminder({
+      owner: "apply",
+      projectPath: "/tmp/project",
+      cwd: "/tmp/project",
+      fylloSessionId: "session-1",
+      agentId: "claude-acp",
+      changeId: "change-1",
+      stageIndex: 2,
+      runId: "run-1",
+    });
+
+    expect(reminder).toEqual({
+      type: "text",
+      text: expect.stringContaining("change-1"),
+    });
+    expect(reminder?.text.trim().startsWith("<system-reminder>")).toBe(true);
+    expect(reminder?.text.trim().endsWith("</system-reminder>")).toBe(true);
+    expect(reminder?.text).toContain("Current stage index: 2");
+    expect(reminder?.text).toContain("Run id: run-1");
+  });
+
+  it("returns null and logs a warning when a variable contains angle brackets", async () => {
+    const { resolveSystemReminder } = await import("@main/services/chat/system-reminder");
+
+    await expect(
+      resolveSystemReminder({
+        owner: "chat",
+        projectPath: "/tmp/<project>",
+        cwd: "/tmp/project",
+        fylloSessionId: "session-1",
+        agentId: "claude-acp",
+      })
+    ).resolves.toBeNull();
+
+    expect(logger.warn).toHaveBeenCalledWith(
+      "[system-reminder] rejected reminder variable",
+      expect.objectContaining({
+        owner: "chat",
+        field: "projectPath",
+        fylloSessionId: "session-1",
+      })
+    );
+  });
+
+  it("replaces allowed placeholders and preserves unknown placeholders", async () => {
+    const { resolveSystemReminder } = await import("@main/services/chat/system-reminder");
+
+    const reminder = await resolveSystemReminder({
+      owner: "chat",
+      projectPath: "/tmp/project",
+      cwd: "/tmp/project",
+      fylloSessionId: "session-1",
+      agentId: "claude-acp",
+    });
+
+    expect(reminder?.text).toContain("/tmp/project");
+    expect(reminder?.text).toContain("{{unknownField}}");
+  });
+});

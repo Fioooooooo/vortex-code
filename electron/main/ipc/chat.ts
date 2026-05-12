@@ -33,6 +33,8 @@ import {
 } from "@main/services/chat/chat-service";
 import { sessionRegistry } from "@main/services/chat/session-registry";
 import { appendMessage, loadSessionMeta, saveSessionMeta } from "@main/infra/storage/session-store";
+import { sessionMessagesPath } from "@main/infra/storage/session-store";
+import { prependReminderToLastUserMessage } from "@main/infra/storage/message-reminder-store";
 import { toMessageChunk } from "@main/services/chat/session-event-mapper";
 import type { SessionEvent } from "@main/domain/chat/session-events";
 import logger from "@main/infra/logger";
@@ -157,6 +159,13 @@ export function registerChatHandlers(): void {
           agentId,
           projectPath,
           cwd: projectPath,
+          owner: "chat",
+          onReminderInjected: async (reminderPart) => {
+            await prependReminderToLastUserMessage(
+              sessionMessagesPath(projectPath, sessionId),
+              reminderPart
+            );
+          },
         });
         const assembler = new MessageAssembler(sessionId);
         let usageUpdatePersist = Promise.resolve();

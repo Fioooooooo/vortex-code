@@ -6,6 +6,7 @@ import { isReasoningUIPart, isTextUIPart, isToolUIPart } from "ai";
 import { isPartStreaming, isToolStreaming } from "@nuxt/ui/utils/ai";
 import ChatComark from "@renderer/components/chat/ChatComark";
 import { getToolText, getToolSuffix, getToolOutput } from "@renderer/utils/chatTool";
+import { isSystemReminderPart } from "@renderer/utils/system-reminder";
 import { useAcpAgentsStore } from "@renderer/stores/acp-agents";
 import type { ChatStatus, MessageMeta } from "@shared/types/chat";
 
@@ -89,7 +90,10 @@ const assistantAvatar = computed(() => {
               :markdown="part.text"
               :streaming="isPartStreaming(part)"
             />
-            <p v-else-if="message.role === 'user'" class="whitespace-pre-wrap">
+            <p
+              v-else-if="message.role === 'user' && !isSystemReminderPart(part)"
+              class="whitespace-pre-wrap"
+            >
               {{ part.text }}
             </p>
           </template>

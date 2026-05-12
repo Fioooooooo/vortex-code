@@ -36,6 +36,10 @@ const visibleTabs = computed(() =>
 const activeContent = computed(() => {
   return props.tabs.find((tab) => tab.value === props.modelValue)?.content ?? "";
 });
+
+function handleModelValueUpdate(value: unknown): void {
+  emit("update:modelValue", value as MarkdownTabValue);
+}
 </script>
 
 <template>
@@ -48,7 +52,7 @@ const activeContent = computed(() => {
           :items="visibleTabs"
           variant="link"
           value-key="value"
-          @update:model-value="(value) => emit('update:modelValue', value as MarkdownTabValue)"
+          @update:model-value="handleModelValueUpdate"
         />
       </div>
     </div>

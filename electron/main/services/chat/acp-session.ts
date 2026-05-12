@@ -6,12 +6,24 @@ import { getOrStartProcess } from "@main/infra/process/acp-process-pool";
 import type { SessionEvent } from "@main/domain/chat/session-events";
 import logger from "@main/infra/logger";
 import { getBundledMcpServers, toAcpMcpServerEnv } from "@main/infra/mcp/bundled-mcp-servers";
+import type { SessionOwner } from "@main/services/chat/session-registry";
+import type { TextUIPart } from "ai";
+import { resolveSystemReminder } from "@main/services/chat/system-reminder";
+
+interface ReminderContext {
+  changeId?: string;
+  stageIndex?: number;
+  runId?: string;
+}
 
 export interface AcpSessionOpts {
   fylloSessionId: string;
   agentId: string;
   projectPath: string;
   cwd: string;
+  owner: SessionOwner;
+  reminderContext?: ReminderContext;
+  onReminderInjected?: (reminderPart: TextUIPart) => Promise<void>;
 }
 
 export class AcpSession extends EventEmitter {
@@ -47,11 +59,14 @@ export class AcpSession extends EventEmitter {
     // Load persisted acpSessionId
     const meta = await loadSessionMeta(projectPath, fylloSessionId);
     let acpSessionId = meta?.acpSessionId;
+    let createdNewSession = false;
 
     if (acpSessionId) {
       try {
         await connection.resumeSession({ sessionId: acpSessionId, cwd, mcpServers });
       } catch {
+        // TODO(fallback-treatment): add-system-reminder-injection tasks.md 8.1 tracks
+        // resumeSession fallback治理（历史消息回放、sessionId 迁移等） as a separate change.
         logger.warn(
           `[acp-session] resumeSession failed for ${acpSessionId}, falling back to newSession`
         );
@@ -62,6 +77,7 @@ export class AcpSession extends EventEmitter {
     if (!acpSessionId) {
       const res = await connection.newSession({ cwd, mcpServers });
       acpSessionId = res.sessionId;
+      createdNewSession = true;
     }
 
     this.acpSessionId = acpSessionId;
@@ -89,9 +105,32 @@ export class AcpSession extends EventEmitter {
     });
 
     try {
+      let reminderPart: TextUIPart | null = null;
+      if (createdNewSession) {
+        reminderPart = await resolveSystemReminder({
+          owner: this.opts.owner,
+          projectPath,
+          cwd,
+          fylloSessionId,
+          agentId,
+          ...(this.opts.reminderContext ?? {}),
+        });
+      }
+
+      if (reminderPart !== null && this.opts.onReminderInjected) {
+        try {
+          await this.opts.onReminderInjected(reminderPart);
+        } catch (err: unknown) {
+          logger.error("[acp-session] onReminderInjected failed", err);
+        }
+      }
+
       const result = await connection.prompt({
         sessionId: acpSessionId,
-        prompt: [{ type: "text", text: prompt }],
+        prompt:
+          reminderPart === null
+            ? [{ type: "text", text: prompt }]
+            : [reminderPart, { type: "text", text: prompt }],
       });
 
       const totalTokens =

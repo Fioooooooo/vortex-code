@@ -73,6 +73,8 @@ Chat 界面定义了消息流的渲染方式、流式事件组装边界、侧边
 
 渲染端 SHALL 使用 `UIMessage.id` 作为 `v-for :key`；该 id 在流式活跃期间为渲染进程生成的临时 id，在 resume 后为磁盘加载的 id，系统 SHALL NOT 做跨进程 id 匹配。
 
+在 `message.role === 'user'` 的 text part 渲染分支中，系统 SHALL 通过 `isSystemReminderPart(part)` 工具函数识别 system-reminder 内容并**跳过渲染**。识别规则：`part.type === "text"` 且 `part.text` 经过 trim 后以 `<system-reminder>` 开头、以 `</system-reminder>` 结尾。该工具函数位于 `frontend/src/utils/system-reminder.ts`，`UIMessageList.vue` 直接调用。类型 `system-reminder` 的 part 仅在磁盘与 `UIMessage.parts` 数据中保留，UI 不展示。
+
 #### Scenario: Chat 主区域使用共享组件渲染消息列表并显示 agent 头像
 
 - **WHEN** 用户打开 chat 页面
@@ -87,6 +89,19 @@ Chat 界面定义了消息流的渲染方式、流式事件组装边界、侧边
 - **AND** SidePanel 外壳（stage 进度条、关闭按钮、空态、流式指示器）保持现状
 - **AND** 消息列表渲染通路与 chat 一致，能显示 text part 与 dynamic-tool part
 - **AND** assistant 不显示头像（与变更前行为一致）
+
+#### Scenario: user 消息中的 system-reminder part 不在 UI 展示
+
+- **WHEN** user 消息的 `parts` 首位为 system-reminder text part（`part.text` 经 trim 后以 `<system-reminder>` 开头并以 `</system-reminder>` 结尾）
+- **THEN** `UIMessageList.vue` 的 `message.role === 'user'` 分支跳过该 part 的渲染
+- **AND** 同条 user 消息的其余 text part 正常渲染
+- **AND** 数据层 `message.parts` 不做修改
+
+#### Scenario: user 消息仅含 system-reminder 时不输出可见文本
+
+- **WHEN** user 消息的 `parts` 全部为 system-reminder text part（理论上不会发生的退化场景）
+- **THEN** 该消息气泡不渲染任何 text 内容
+- **AND** 不抛错、不影响其他消息渲染
 
 ### Requirement: 渲染进程 UIMessage 组装逻辑抽为共享 composable
 

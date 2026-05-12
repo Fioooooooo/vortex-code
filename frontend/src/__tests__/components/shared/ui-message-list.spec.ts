@@ -14,6 +14,15 @@ function textMessage(): UIMessage<MessageMeta> {
   };
 }
 
+function userMessage(parts: UIMessage<MessageMeta>["parts"]): UIMessage<MessageMeta> {
+  return {
+    id: "user-message-1",
+    role: "user",
+    parts,
+    metadata: { sessionId: "session-1", createdAt: new Date("2026-05-08T00:00:00.000Z") },
+  };
+}
+
 function toolMessage(): UIMessage<MessageMeta> {
   return {
     id: "message-2",
@@ -96,5 +105,38 @@ describe("UIMessageList", () => {
 
     expect(wrapper.find('[data-test="chat-messages"]').attributes("data-status")).toBe("streaming");
     expect(wrapper.text()).toBe("");
+  });
+
+  it("hides reminder parts in user messages but keeps normal text", () => {
+    const wrapper = mountList([
+      userMessage([
+        { type: "text", text: "<system-reminder>\nbody\n</system-reminder>" },
+        { type: "text", text: "visible user text" },
+      ]),
+    ]);
+
+    expect(wrapper.text()).toContain("visible user text");
+    expect(wrapper.text()).not.toContain("system-reminder");
+  });
+
+  it("does not crash when a user message only contains a reminder", () => {
+    const wrapper = mountList([
+      userMessage([{ type: "text", text: "<system-reminder>\nbody\n</system-reminder>" }]),
+    ]);
+
+    expect(wrapper.text()).toBe("");
+  });
+
+  it("does not filter assistant text that only looks like a reminder", () => {
+    const wrapper = mountList([
+      {
+        id: "assistant-reminder-like",
+        role: "assistant",
+        parts: [{ type: "text", text: "<system-reminder>\nassistant output\n</system-reminder>" }],
+        metadata: { sessionId: "session-1", createdAt: new Date("2026-05-08T00:00:00.000Z") },
+      },
+    ]);
+
+    expect(wrapper.text()).toContain("assistant output");
   });
 });

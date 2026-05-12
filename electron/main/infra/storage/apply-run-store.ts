@@ -13,7 +13,11 @@ function runMetaPath(projectPath: string, changeId: string): string {
   return join(applyRunDir(projectPath, changeId), "run.json");
 }
 
-function stageMessagesPath(projectPath: string, changeId: string, stageIndex: number): string {
+export function stageMessagesPath(
+  projectPath: string,
+  changeId: string,
+  stageIndex: number
+): string {
   return join(applyRunDir(projectPath, changeId), `stage-${stageIndex}.messages.jsonl`);
 }
 

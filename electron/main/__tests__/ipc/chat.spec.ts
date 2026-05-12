@@ -3,6 +3,7 @@ import { ipcMain } from "electron";
 import { ChatChannels, ChatStreamChannels } from "@shared/types/channels";
 import { IpcErrorCodes } from "@shared/constants/error-codes";
 import type { SessionEvent } from "@main/domain/chat/session-events";
+import type { AcpSessionOpts } from "@main/services/chat/acp-session";
 
 const mocks = vi.hoisted(() => {
   let eventHandler: ((ev: SessionEvent) => void) | null = null;
@@ -16,6 +17,7 @@ const mocks = vi.hoisted(() => {
 
   return {
     appendMessage: vi.fn(),
+    prependReminderToLastUserMessage: vi.fn(),
     persistSessionMessage: vi.fn(),
     resolveProjectPath: vi.fn(),
     loadSessionMeta: vi.fn(),
@@ -52,6 +54,13 @@ vi.mock("@main/infra/storage/session-store", () => ({
   appendMessage: mocks.appendMessage,
   loadSessionMeta: mocks.loadSessionMeta,
   saveSessionMeta: mocks.saveSessionMeta,
+  sessionMessagesPath: vi.fn(
+    (projectPath: string, sessionId: string) => `${projectPath}/${sessionId}.messages.jsonl`
+  ),
+}));
+
+vi.mock("@main/infra/storage/message-reminder-store", () => ({
+  prependReminderToLastUserMessage: mocks.prependReminderToLastUserMessage,
 }));
 
 vi.mock("@main/services/chat/session-registry", () => ({
@@ -257,5 +266,53 @@ describe("registerChatHandlers", () => {
       );
       expect(sink.sendDone).toHaveBeenCalledWith(4);
     });
+  });
+
+  it("passes chat owner and reminder hook without sending sink chunks", async () => {
+    const reminderPart = {
+      type: "text",
+      text: "<system-reminder>\nbody\n</system-reminder>",
+    } as const;
+
+    handler(ChatStreamChannels.streamMessage)(
+      { sender: { postMessage: vi.fn() } },
+      {
+        sessionId: "session-1",
+        projectId: "project-1",
+        agentId: "claude-acp",
+        prompt: "hello",
+      }
+    );
+
+    const sink = {
+      sendChunk: vi.fn(),
+      sendDone: vi.fn(),
+      sendError: vi.fn(),
+    };
+    await mocks.onReady!(sink);
+
+    const acpSessionMock = vi.mocked((await import("@main/services/chat/acp-session")).AcpSession);
+    const opts = acpSessionMock.mock.calls[0]?.[0] as AcpSessionOpts | undefined;
+    expect(opts).toBeDefined();
+    if (!opts?.onReminderInjected) {
+      throw new Error("Expected onReminderInjected hook");
+    }
+
+    expect(opts).toEqual(
+      expect.objectContaining({
+        owner: "chat",
+        projectPath: "/tmp/project",
+      })
+    );
+
+    await opts.onReminderInjected(reminderPart);
+
+    expect(mocks.prependReminderToLastUserMessage).toHaveBeenCalledWith(
+      "/tmp/project/session-1.messages.jsonl",
+      reminderPart
+    );
+    expect(sink.sendChunk).not.toHaveBeenCalledWith(
+      expect.objectContaining({ kind: "user_message" })
+    );
   });
 });

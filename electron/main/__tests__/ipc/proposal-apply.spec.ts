@@ -3,6 +3,7 @@ import { ipcMain } from "electron";
 import { ProposalChannels } from "@shared/types/channels";
 import { IpcErrorCodes } from "@shared/constants/error-codes";
 import type { SessionEvent } from "@main/domain/chat/session-events";
+import type { AcpSessionOpts } from "@main/services/chat/acp-session";
 
 const mocks = vi.hoisted(() => {
   let eventHandler: ((ev: SessionEvent) => void) | null = null;
@@ -17,6 +18,7 @@ const mocks = vi.hoisted(() => {
   return {
     appendApplyRunMessage: vi.fn(),
     appendArchiveMessage: vi.fn(),
+    prependReminderToLastUserMessage: vi.fn(),
     loadApplyRunMeta: vi.fn(),
     loadApplyRunMessages: vi.fn(),
     loadArchiveRunMeta: vi.fn(),
@@ -48,11 +50,22 @@ const mocks = vi.hoisted(() => {
 vi.mock("@main/infra/storage/apply-run-store", () => ({
   appendApplyRunMessage: mocks.appendApplyRunMessage,
   appendArchiveMessage: mocks.appendArchiveMessage,
+  archiveMessagesPath: vi.fn(
+    (projectPath: string, changeId: string) => `${projectPath}/${changeId}/archive.messages.jsonl`
+  ),
   loadApplyRunMeta: mocks.loadApplyRunMeta,
   loadApplyRunMessages: mocks.loadApplyRunMessages,
   loadArchiveRunMeta: mocks.loadArchiveRunMeta,
   loadArchiveMessages: mocks.loadArchiveMessages,
   saveArchiveRunMeta: mocks.saveArchiveRunMeta,
+  stageMessagesPath: vi.fn(
+    (projectPath: string, changeId: string, stageIndex: number) =>
+      `${projectPath}/${changeId}/stage-${stageIndex}.messages.jsonl`
+  ),
+}));
+
+vi.mock("@main/infra/storage/message-reminder-store", () => ({
+  prependReminderToLastUserMessage: mocks.prependReminderToLastUserMessage,
 }));
 
 vi.mock("@main/infra/storage/session-store", () => ({
@@ -249,5 +262,93 @@ describe("registerProposalApplyHandlers", () => {
         { projectId: "project-1", changeId: "change-1" }
       )
     ).resolves.toEqual({ ok: true, data: [{ id: "message-1" }] });
+  });
+
+  it("passes apply owner, reminder context, and hook without extra user chunks", async () => {
+    const reminderPart = {
+      type: "text",
+      text: "<system-reminder>\nbody\n</system-reminder>",
+    } as const;
+
+    handler(ProposalChannels.stageStream)(
+      { sender: { postMessage: vi.fn() } },
+      { runId: "run-1", stageIndex: 0, projectId: "project-1", changeId: "change-1" }
+    );
+
+    const sink = { sendChunk: vi.fn(), sendDone: vi.fn(), sendError: vi.fn() };
+    await mocks.onReady!(sink);
+
+    const acpSessionMock = vi.mocked((await import("@main/services/chat/acp-session")).AcpSession);
+    const opts = acpSessionMock.mock.calls[0]?.[0] as AcpSessionOpts | undefined;
+    expect(opts).toBeDefined();
+    if (!opts?.onReminderInjected) {
+      throw new Error("Expected onReminderInjected hook");
+    }
+
+    expect(opts).toEqual(
+      expect.objectContaining({
+        owner: "apply",
+        reminderContext: {
+          changeId: "change-1",
+          stageIndex: 0,
+          runId: "run-1",
+        },
+      })
+    );
+
+    await opts.onReminderInjected(reminderPart);
+
+    expect(mocks.prependReminderToLastUserMessage).toHaveBeenCalledWith(
+      "/tmp/project/change-1/stage-0.messages.jsonl",
+      reminderPart
+    );
+    expect(
+      sink.sendChunk.mock.calls.filter(([chunk]) => chunk.kind === "user_message")
+    ).toHaveLength(1);
+  });
+
+  it("passes archive owner and hook for archive reminder persistence", async () => {
+    mocks.loadApplyRunMeta.mockResolvedValueOnce({ ...runMeta, status: "done" });
+    const reminderPart = {
+      type: "text",
+      text: "<system-reminder>\nbody\n</system-reminder>",
+    } as const;
+
+    handler(ProposalChannels.archive)(
+      { sender: { postMessage: vi.fn() } },
+      { projectId: "project-1", changeId: "change-1" }
+    );
+
+    const sink = { sendChunk: vi.fn(), sendDone: vi.fn(), sendError: vi.fn() };
+    await mocks.onReady!(sink);
+
+    const calls = vi.mocked((await import("@main/services/chat/acp-session")).AcpSession).mock
+      .calls;
+    const [opts] = calls[calls.length - 1];
+    const typedOpts = opts as AcpSessionOpts | undefined;
+    expect(typedOpts).toBeDefined();
+    if (!typedOpts?.onReminderInjected) {
+      throw new Error("Expected onReminderInjected hook");
+    }
+
+    expect(typedOpts).toEqual(
+      expect.objectContaining({
+        owner: "archive",
+        reminderContext: expect.objectContaining({
+          changeId: "change-1",
+          runId: expect.stringMatching(/^archive-/),
+        }),
+      })
+    );
+
+    await typedOpts.onReminderInjected(reminderPart);
+
+    expect(mocks.prependReminderToLastUserMessage).toHaveBeenCalledWith(
+      "/tmp/project/change-1/archive.messages.jsonl",
+      reminderPart
+    );
+    expect(
+      sink.sendChunk.mock.calls.filter(([chunk]) => chunk.kind === "user_message")
+    ).toHaveLength(1);
   });
 });
