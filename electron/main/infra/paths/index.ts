@@ -1,5 +1,4 @@
 import { app } from "electron";
-import { existsSync } from "fs";
 import { join } from "path";
 import { is } from "@electron-toolkit/utils";
 
@@ -39,19 +38,23 @@ export function getLogsPath(): string {
   return app.getPath("logs");
 }
 
+/**
+ * 获取资源目录路径
+ *
+ * - 开发环境：项目根目录的 resources，方便访问未打包的资源文件
+ * - 生产环境：使用 Electron 的 resourcesPath，并优先访问 app.asar.unpacked 中的资源，确保可以访问到被 asar 打包的资源文件
+ */
 export function getResourcesPath(): string {
-  const candidates = getResourcesPathCandidates();
-  return candidates.find((candidate) => existsSync(candidate)) ?? candidates[0];
-}
-
-export function getResourcesPathCandidates(): string[] {
   if (is.dev) {
-    return [join(process.cwd(), "resources")];
+    return join(process.cwd(), "resources");
   }
 
-  return [
-    join(process.resourcesPath, "app.asar.unpacked", "resources"),
-    join(app.getAppPath(), "resources"),
-    join(process.resourcesPath, "resources"),
-  ];
+  return join(getAppUnpackedPath(), "resources");
+}
+
+/**
+ * 获取 app.asar.unpacked 目录路径
+ */
+export function getAppUnpackedPath(): string {
+  return join(process.resourcesPath, "app.asar.unpacked");
 }

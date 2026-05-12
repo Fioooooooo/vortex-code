@@ -12,7 +12,6 @@ export function resolveOpenspecCli(projectRoot: string): string {
 
   const candidates = [
     join(projectRoot, "node_modules", "@fission-ai", "openspec", "bin", "openspec.js"),
-    join(__dirname, "../../../node_modules/@fission-ai/openspec/bin/openspec.js"),
     join(
       getResourcesPath(),
       "app.asar.unpacked",
@@ -22,8 +21,6 @@ export function resolveOpenspecCli(projectRoot: string): string {
       "bin",
       "openspec.js"
     ),
-    join(getResourcesPath(), "node_modules", "@fission-ai", "openspec", "bin", "openspec.js"),
-    join(getResourcesPath(), "mcp-servers", "openspec-cli", "index.js"),
   ];
 
   return candidates.find((candidate) => existsSync(candidate)) ?? candidates[0];

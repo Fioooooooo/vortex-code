@@ -1,13 +1,13 @@
 import { join } from "path";
 import { is } from "@electron-toolkit/utils";
-import { getResourcesPath } from "@main/infra/paths";
+import { getAppUnpackedPath } from "@main/infra/paths";
 import type { McpEnvVariable, McpServerSpec } from "@shared/types/mcp";
 
 function resolveBundlePath(): string {
   if (is.dev) {
     return join(process.cwd(), "out", "mcp-servers", "fyllo-specs", "index.js");
   }
-  return join(getResourcesPath(), "mcp-servers", "fyllo-specs", "index.js");
+  return join(getAppUnpackedPath(), "mcp-servers", "fyllo-specs", "index.js");
 }
 
 export function getBundledMcpServers(opts: { projectPath: string }): McpServerSpec[] {

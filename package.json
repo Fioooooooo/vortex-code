@@ -5,6 +5,10 @@
   "main": "./out/main/index.js",
   "author": "example.com",
   "homepage": "https://electron-vite.org",
+  "engines": {
+    "node": ">=22"
+  },
+  "packageManager": "pnpm@10.33.0",
   "scripts": {
     "format": "prettier --write .",
     "lint": "eslint --cache .",
@@ -16,10 +20,10 @@
     "build": "npm run typecheck && electron-vite build",
     "build:mcp-servers": "node scripts/build-mcp-servers.mjs",
     "postinstall": "electron-builder install-app-deps && simple-git-hooks",
-    "build:unpack": "npm run build && electron-builder --dir",
-    "build:win": "npm run build && electron-builder --win",
-    "build:mac": "npm run build && electron-builder --mac",
-    "build:linux": "npm run build && electron-builder --linux",
+    "build:unpack": "npm run build:mcp-servers && npm run build && electron-builder --dir",
+    "build:win": "npm run build:mcp-servers && npm run build && electron-builder --win",
+    "build:mac": "npm run build:mcp-servers && npm run build && electron-builder --mac",
+    "build:linux": "npm run build:mcp-servers && npm run build && electron-builder --linux",
     "icon:build": "node scripts/icon-build.mjs",
     "test": "vitest run",
     "test:watch": "vitest",

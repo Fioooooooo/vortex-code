@@ -1,9 +1,8 @@
 import { mkdirSync, rmSync } from "fs";
 import { join } from "path";
-import { app } from "electron";
 import { is } from "@electron-toolkit/utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { getResourcesPath, getResourcesPathCandidates } from "@main/infra/paths";
+import { getAppUnpackedPath, getResourcesPath } from "@main/infra/paths";
 
 const tempRoot = `/private/tmp/fyllocode-resources-paths-${Math.random().toString(36).slice(2)}`;
 const resourcesPath = join(tempRoot, "FylloCode.app", "Contents", "Resources");
@@ -36,32 +35,23 @@ describe("infra paths resources", () => {
     (is as { dev: boolean }).dev = true;
     setProcessCwd(join(tempRoot, "repo"));
 
-    expect(getResourcesPathCandidates()).toEqual([join(tempRoot, "repo", "resources")]);
     expect(getResourcesPath()).toBe(join(tempRoot, "repo", "resources"));
   });
 
-  it("prefers unpacked packaged resources in production", () => {
+  it("returns the app.asar.unpacked directory in production", () => {
     (is as { dev: boolean }).dev = false;
     setProcessResourcesPath(resourcesPath);
-    vi.mocked(app.getAppPath).mockReturnValue(join(resourcesPath, "app.asar"));
-    const unpackedResources = join(resourcesPath, "app.asar.unpacked", "resources");
-    mkdirSync(unpackedResources, { recursive: true });
+    const unpackedRoot = join(resourcesPath, "app.asar.unpacked");
+    mkdirSync(unpackedRoot, { recursive: true });
 
-    expect(getResourcesPathCandidates()).toEqual([
-      unpackedResources,
-      join(resourcesPath, "app.asar", "resources"),
-      join(resourcesPath, "resources"),
-    ]);
-    expect(getResourcesPath()).toBe(unpackedResources);
+    expect(getAppUnpackedPath()).toBe(unpackedRoot);
+    expect(getResourcesPath()).toBe(join(unpackedRoot, "resources"));
   });
 
-  it("falls back to app.asar resources when unpacked resources do not exist", () => {
+  it("builds the unpacked resources path without probing the filesystem", () => {
     (is as { dev: boolean }).dev = false;
     setProcessResourcesPath(resourcesPath);
-    vi.mocked(app.getAppPath).mockReturnValue(join(resourcesPath, "app.asar"));
-    const asarResources = join(resourcesPath, "app.asar", "resources");
-    mkdirSync(asarResources, { recursive: true });
 
-    expect(getResourcesPath()).toBe(asarResources);
+    expect(getResourcesPath()).toBe(join(resourcesPath, "app.asar.unpacked", "resources"));
   });
 });

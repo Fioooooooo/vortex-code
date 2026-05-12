@@ -11,7 +11,7 @@ asarUnpack:
   - node_modules/@fission-ai/openspec/**
 extraResources:
   - from: out/mcp-servers
-    to: mcp-servers
+    to: app.asar.unpacked/mcp-servers
 win:
   executableName: FylloCode
 nsis:
