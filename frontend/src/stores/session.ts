@@ -1,6 +1,6 @@
 import { computed, ref, watch } from "vue";
 import { defineStore } from "pinia";
-import type { Message, Session, TokenUsage } from "@shared/types/chat";
+import type { AcpAvailableCommand, Message, Session, TokenUsage } from "@shared/types/chat";
 import { chatApi } from "@renderer/api/chat";
 import { useAcpAgentsStore } from "./acp-agents";
 import { useProjectStore } from "./project";
@@ -14,7 +14,10 @@ type SerializedMessage = Omit<Message, "metadata"> & {
   };
 };
 
-type SerializedSession = Omit<Session, "createdAt" | "updatedAt" | "messages" | "tokenUsage"> & {
+type SerializedSession = Omit<
+  Session,
+  "createdAt" | "updatedAt" | "messages" | "tokenUsage" | "availableCommands"
+> & {
   createdAt: SerializableDate;
   updatedAt: SerializableDate;
   tokenUsage?: Partial<TokenUsage>;
@@ -120,6 +123,15 @@ export const useSessionStore = defineStore("session", () => {
     session.createdAt = nextSession.createdAt;
     session.updatedAt = nextSession.updatedAt;
     return session;
+  }
+
+  function setSessionAvailableCommands(sessionId: string, commands: AcpAvailableCommand[]): void {
+    const session = findSession(sessionId);
+    if (!session) {
+      return;
+    }
+
+    session.availableCommands = commands;
   }
 
   async function loadSessions(projectId: string): Promise<void> {
@@ -270,6 +282,7 @@ export const useSessionStore = defineStore("session", () => {
     renameSession,
     deleteSession,
     setSessionAgent,
+    setSessionAvailableCommands,
     setDraftAgent,
     clearSessions,
     sortSessions,

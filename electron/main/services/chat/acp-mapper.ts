@@ -1,14 +1,36 @@
 import type { SessionUpdate } from "@agentclientprotocol/sdk";
 import type { SessionEvent } from "@main/domain/chat/session-events";
+import type { AcpAvailableCommand } from "@shared/types/chat";
 import logger from "@main/infra/logger";
 
+function normalizeAvailableCommands(
+  update: Extract<SessionUpdate, { sessionUpdate: "available_commands_update" }>
+): AcpAvailableCommand[] {
+  return update.availableCommands.map((command) => ({
+    name: command.name,
+    description: command.description,
+    hint:
+      command.input != null && typeof command.input.hint === "string"
+        ? command.input.hint
+        : undefined,
+  }));
+}
+
 export function mapSessionUpdate(update: SessionUpdate): SessionEvent | null {
-  logger.debug(`[acp-mapper] sessionUpdate: ${update.sessionUpdate} ${JSON.stringify(update)}`);
+  logger.debug(`[acp-mapper] ← sessionUpdate: ${update.sessionUpdate} ${JSON.stringify(update)}`);
 
   switch (update.sessionUpdate) {
     case "agent_message_chunk": {
       if (update.content.type !== "text") return null;
       return { type: "text_delta", text: update.content.text };
+    }
+
+    case "agent_thought_chunk": {
+      if (update.content.type !== "text") return null;
+
+      const event: SessionEvent = { type: "reasoning_delta", text: update.content.text };
+      logger.debug(`[acp-mapper] → ${JSON.stringify(event)}`);
+      return event;
     }
 
     case "tool_call": {
@@ -67,6 +89,15 @@ export function mapSessionUpdate(update: SessionUpdate): SessionEvent | null {
       return event;
     }
 
+    case "available_commands_update": {
+      const event: SessionEvent = {
+        type: "available_commands_update",
+        commands: normalizeAvailableCommands(update),
+      };
+      logger.debug(`[acp-mapper] → ${JSON.stringify(event)}`);
+      return event;
+    }
+
     case "session_info_update": {
       const title = typeof update.title === "string" ? update.title.trim() : "";
       if (!title) return null;
@@ -80,7 +111,7 @@ export function mapSessionUpdate(update: SessionUpdate): SessionEvent | null {
     }
 
     default:
-      logger.debug(`[acp-mapper] unhandled sessionUpdate type, skipping.`);
+      logger.debug("[acp-mapper] → unhandled sessionUpdate type, skipping.");
       return null;
   }
 }

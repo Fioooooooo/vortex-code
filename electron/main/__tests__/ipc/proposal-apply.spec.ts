@@ -27,6 +27,8 @@ const mocks = vi.hoisted(() => {
     resolveApplyRunChangeId: vi.fn(),
     updateRunMetaIfCurrent: vi.fn(),
     getCompletedApplyStageIndex: vi.fn(),
+    assemblerApply: vi.fn(),
+    assemblerFlush: vi.fn(),
     register: vi.fn(),
     unregister: vi.fn(),
     cancel: vi.fn(),
@@ -93,6 +95,15 @@ vi.mock("@main/services/chat/acp-session", () => ({
   }),
 }));
 
+vi.mock("@main/services/chat/message-assembler", () => ({
+  MessageAssembler: vi.fn(function () {
+    return {
+      apply: mocks.assemblerApply,
+      flush: mocks.assemblerFlush,
+    };
+  }),
+}));
+
 vi.mock("@main/ipc/_kit/stream-channel", () => ({
   makeStreamChannel: vi.fn((options) => {
     mocks.onReady = options.onReady;
@@ -122,6 +133,7 @@ describe("registerProposalApplyHandlers", () => {
     mocks.loadApplyRunMeta.mockResolvedValue(runMeta);
     mocks.loadSessionMeta.mockResolvedValue({ acpSessionId: "acp-1", agentId: "claude-acp" });
     mocks.getCompletedApplyStageIndex.mockReturnValue(0);
+    mocks.assemblerFlush.mockReturnValue(null);
     const { registerProposalApplyHandlers } = await import("@main/ipc/proposal-apply");
     registerProposalApplyHandlers();
   });
@@ -175,6 +187,15 @@ describe("registerProposalApplyHandlers", () => {
 
   it("persists archive meta, user message, assistant message, and done status", async () => {
     mocks.loadApplyRunMeta.mockResolvedValueOnce({ ...runMeta, status: "done" });
+    mocks.assemblerFlush.mockReturnValueOnce({
+      id: "archive-assistant-1",
+      role: "assistant",
+      parts: [{ type: "text", text: "archive result" }],
+      metadata: {
+        sessionId: "run-1-0",
+        createdAt: new Date("2026-05-08T00:00:00.000Z"),
+      },
+    });
 
     handler(ProposalChannels.archive)(
       { sender: { postMessage: vi.fn() } },
@@ -207,10 +228,7 @@ describe("registerProposalApplyHandlers", () => {
     expect(mocks.appendArchiveMessage).toHaveBeenLastCalledWith(
       "/tmp/project",
       "change-1",
-      expect.objectContaining({
-        role: "assistant",
-        parts: [{ type: "text", text: "archive result" }],
-      })
+      expect.objectContaining({ id: "archive-assistant-1", role: "assistant" })
     );
   });
 
@@ -249,5 +267,91 @@ describe("registerProposalApplyHandlers", () => {
         { projectId: "project-1", changeId: "change-1" }
       )
     ).resolves.toEqual({ ok: true, data: [{ id: "message-1" }] });
+  });
+
+  it("forwards stage reasoning_delta through assembler and sink", async () => {
+    handler(ProposalChannels.stageStream)(
+      { sender: { postMessage: vi.fn() } },
+      { runId: "run-1", stageIndex: 0, projectId: "project-1", changeId: "change-1" }
+    );
+
+    const sink = { sendChunk: vi.fn(), sendDone: vi.fn(), sendError: vi.fn() };
+    await mocks.onReady!(sink);
+    sink.sendChunk.mockClear();
+
+    const event: SessionEvent = { type: "reasoning_delta", text: "thinking" };
+    mocks.eventHandler!(event);
+
+    expect(mocks.assemblerApply).toHaveBeenCalledWith(event);
+    expect(sink.sendChunk).toHaveBeenCalledWith({
+      kind: "reasoning_delta",
+      text: "thinking",
+    });
+  });
+
+  it("ignores stage available_commands_update", async () => {
+    handler(ProposalChannels.stageStream)(
+      { sender: { postMessage: vi.fn() } },
+      { runId: "run-1", stageIndex: 0, projectId: "project-1", changeId: "change-1" }
+    );
+
+    const sink = { sendChunk: vi.fn(), sendDone: vi.fn(), sendError: vi.fn() };
+    await mocks.onReady!(sink);
+    sink.sendChunk.mockClear();
+
+    mocks.eventHandler!({
+      type: "available_commands_update",
+      commands: [{ name: "review", description: "Review code" }],
+    });
+
+    expect(mocks.assemblerApply).not.toHaveBeenCalled();
+    expect(sink.sendChunk).not.toHaveBeenCalled();
+    expect(mocks.appendApplyRunMessage).toHaveBeenCalledTimes(1);
+    expect(mocks.updateRunMetaIfCurrent).not.toHaveBeenCalled();
+  });
+
+  it("forwards archive reasoning_delta through assembler and sink", async () => {
+    mocks.loadApplyRunMeta.mockResolvedValueOnce({ ...runMeta, status: "done" });
+
+    handler(ProposalChannels.archive)(
+      { sender: { postMessage: vi.fn() } },
+      { projectId: "project-1", changeId: "change-1" }
+    );
+
+    const sink = { sendChunk: vi.fn(), sendDone: vi.fn(), sendError: vi.fn() };
+    await mocks.onReady!(sink);
+    sink.sendChunk.mockClear();
+
+    const event: SessionEvent = { type: "reasoning_delta", text: "archive thought" };
+    mocks.eventHandler!(event);
+
+    expect(mocks.assemblerApply).toHaveBeenCalledWith(event);
+    expect(sink.sendChunk).toHaveBeenCalledWith({
+      kind: "reasoning_delta",
+      text: "archive thought",
+    });
+  });
+
+  it("ignores archive available_commands_update", async () => {
+    mocks.loadApplyRunMeta.mockResolvedValueOnce({ ...runMeta, status: "done" });
+
+    handler(ProposalChannels.archive)(
+      { sender: { postMessage: vi.fn() } },
+      { projectId: "project-1", changeId: "change-1" }
+    );
+
+    const sink = { sendChunk: vi.fn(), sendDone: vi.fn(), sendError: vi.fn() };
+    await mocks.onReady!(sink);
+    sink.sendChunk.mockClear();
+
+    mocks.eventHandler!({
+      type: "available_commands_update",
+      commands: [{ name: "review", description: "Review code" }],
+    });
+
+    expect(mocks.assemblerApply).not.toHaveBeenCalled();
+    expect(sink.sendChunk).not.toHaveBeenCalled();
+    expect(mocks.appendArchiveMessage).toHaveBeenCalledTimes(1);
+    expect(mocks.saveArchiveRunMeta).toHaveBeenCalledTimes(1);
   });
 });

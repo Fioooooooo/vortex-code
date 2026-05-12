@@ -134,6 +134,7 @@ export function registerProposalApplyHandlers(): void {
               });
               break;
             case "text_delta":
+            case "reasoning_delta":
             case "tool_call_start":
             case "tool_call_update": {
               assembler.apply(ev);
@@ -141,7 +142,10 @@ export function registerProposalApplyHandlers(): void {
               if (chunk) sink.sendChunk(chunk);
               break;
             }
+            case "available_commands_update":
+              break;
             case "session_info_update":
+            case "usage_update":
               break;
             case "done":
               void (async () => {
@@ -182,6 +186,11 @@ export function registerProposalApplyHandlers(): void {
               sink.sendError(mapAcpErrorCode(ev.code), ev.message);
               sessionRegistry.unregister("apply", form.runId);
               break;
+            default: {
+              const _exhaustive: never = ev;
+              void _exhaustive;
+              throw new Error(`unhandled session event: ${(ev as SessionEvent).type}`);
+            }
           }
         });
 
@@ -288,61 +297,71 @@ export function registerProposalApplyHandlers(): void {
         sessionRegistry.register("archive", sessionKey, session);
 
         session.on("event", (ev: SessionEvent) => {
-          if (
-            ev.type === "text_delta" ||
-            ev.type === "tool_call_start" ||
-            ev.type === "tool_call_update"
-          ) {
-            assembler.apply(ev);
-            const chunk = toMessageChunk(ev);
-            if (chunk) sink.sendChunk(chunk);
-            return;
-          }
-
-          if (ev.type === "session_info_update") {
-            const chunk = toMessageChunk(ev);
-            if (chunk) sink.sendChunk(chunk);
-            return;
-          }
-
-          if (ev.type === "done") {
-            void (async () => {
-              const message = assembler.flush();
-              if (message) {
-                await appendArchiveMessage(projectPath, form.changeId, message);
-              }
-              await saveArchiveRunMeta(projectPath, {
-                ...archiveMeta,
-                status: "done",
-                updatedAt: new Date().toISOString(),
+          switch (ev.type) {
+            case "text_delta":
+            case "reasoning_delta":
+            case "tool_call_start":
+            case "tool_call_update": {
+              assembler.apply(ev);
+              const chunk = toMessageChunk(ev);
+              if (chunk) sink.sendChunk(chunk);
+              break;
+            }
+            case "available_commands_update":
+              break;
+            case "session_info_update": {
+              const chunk = toMessageChunk(ev);
+              if (chunk) sink.sendChunk(chunk);
+              break;
+            }
+            case "done":
+              void (async () => {
+                const message = assembler.flush();
+                if (message) {
+                  await appendArchiveMessage(projectPath, form.changeId, message);
+                }
+                await saveArchiveRunMeta(projectPath, {
+                  ...archiveMeta,
+                  status: "done",
+                  updatedAt: new Date().toISOString(),
+                });
+                sink.sendDone(ev.totalTokens);
+                sessionRegistry.unregister("archive", sessionKey);
+              })().catch((error: unknown) => {
+                logger.error(
+                  "[proposal-archive] failed to persist completed archive message",
+                  error
+                );
+                sink.sendError(
+                  IpcErrorCodes.APPLY_RUN_PERSIST_FAILED,
+                  error instanceof Error ? error.message : String(error)
+                );
+                sessionRegistry.unregister("archive", sessionKey);
               });
-              sink.sendDone(ev.totalTokens);
-              sessionRegistry.unregister("archive", sessionKey);
-            })().catch((error: unknown) => {
-              logger.error("[proposal-archive] failed to persist completed archive message", error);
-              sink.sendError(
-                IpcErrorCodes.APPLY_RUN_PERSIST_FAILED,
-                error instanceof Error ? error.message : String(error)
-              );
-              sessionRegistry.unregister("archive", sessionKey);
-            });
-            return;
-          }
-
-          if (ev.type === "error") {
-            void (async () => {
-              await saveArchiveRunMeta(projectPath, {
-                ...archiveMeta,
-                status: "error",
-                updatedAt: new Date().toISOString(),
+              break;
+            case "error":
+              void (async () => {
+                await saveArchiveRunMeta(projectPath, {
+                  ...archiveMeta,
+                  status: "error",
+                  updatedAt: new Date().toISOString(),
+                });
+                sink.sendError(mapAcpErrorCode(ev.code), ev.message);
+                sessionRegistry.unregister("archive", sessionKey);
+              })().catch((error: unknown) => {
+                logger.error("[proposal-archive] failed to persist archive error status", error);
+                sink.sendError(mapAcpErrorCode(ev.code), ev.message);
+                sessionRegistry.unregister("archive", sessionKey);
               });
-              sink.sendError(mapAcpErrorCode(ev.code), ev.message);
-              sessionRegistry.unregister("archive", sessionKey);
-            })().catch((error: unknown) => {
-              logger.error("[proposal-archive] failed to persist archive error status", error);
-              sink.sendError(mapAcpErrorCode(ev.code), ev.message);
-              sessionRegistry.unregister("archive", sessionKey);
-            });
+              break;
+            case "session_id_resolved":
+            case "usage_update":
+              break;
+            default: {
+              const _exhaustive: never = ev;
+              void _exhaustive;
+              throw new Error(`unhandled session event: ${(ev as SessionEvent).type}`);
+            }
           }
         });
 

@@ -336,4 +336,80 @@ describe("useChatStore", () => {
     expect(sessionStore.activeSession?.messages[1]?.role).toBe("assistant");
     expect(chatApi.persistMessage).toHaveBeenCalledTimes(1);
   });
+
+  it("routes available_commands_update to the session store without touching the assembler path", async () => {
+    const acpAgentsStore = useAcpAgentsStore();
+    acpAgentsStore.registry = mockRegistry;
+    acpAgentsStore.statuses = mockStatuses;
+
+    const projectStore = useProjectStore();
+    projectStore.currentProject = {
+      id: "project-1",
+      name: "Project 1",
+      path: "/tmp/project-1",
+      createdAt: new Date("2026-04-30T08:00:00.000Z"),
+      lastOpenedAt: new Date("2026-04-30T08:00:00.000Z"),
+    };
+
+    let callbacks: StreamCallbacks | null = null;
+    vi.mocked(chatApi.streamMessage).mockImplementation(
+      (_sessionId, _projectId, _agentId, _prompt, nextCallbacks) => {
+        callbacks = nextCallbacks;
+        return () => {};
+      }
+    );
+
+    const sessionStore = useSessionStore();
+    const setSessionAvailableCommandsSpy = vi.spyOn(sessionStore, "setSessionAvailableCommands");
+    sessionStore.beginDraftSession();
+
+    const chatStore = useChatStore();
+    await chatStore.sendMessage("hello world");
+
+    callbacks!.onChunk({
+      kind: "available_commands_update",
+      commands: [{ name: "review", description: "Review code", hint: "path" }],
+    });
+
+    expect(setSessionAvailableCommandsSpy).toHaveBeenCalledWith("session-1", [
+      { name: "review", description: "Review code", hint: "path" },
+    ]);
+    expect(sessionStore.activeSession?.messages).toHaveLength(1);
+  });
+
+  it("routes reasoning_delta through the default assembler path", async () => {
+    const acpAgentsStore = useAcpAgentsStore();
+    acpAgentsStore.registry = mockRegistry;
+    acpAgentsStore.statuses = mockStatuses;
+
+    const projectStore = useProjectStore();
+    projectStore.currentProject = {
+      id: "project-1",
+      name: "Project 1",
+      path: "/tmp/project-1",
+      createdAt: new Date("2026-04-30T08:00:00.000Z"),
+      lastOpenedAt: new Date("2026-04-30T08:00:00.000Z"),
+    };
+
+    let callbacks: StreamCallbacks | null = null;
+    vi.mocked(chatApi.streamMessage).mockImplementation(
+      (_sessionId, _projectId, _agentId, _prompt, nextCallbacks) => {
+        callbacks = nextCallbacks;
+        return () => {};
+      }
+    );
+
+    const sessionStore = useSessionStore();
+    sessionStore.beginDraftSession();
+
+    const chatStore = useChatStore();
+    await chatStore.sendMessage("hello world");
+
+    callbacks!.onChunk({ kind: "reasoning_delta", text: "thinking" });
+
+    expect(sessionStore.activeSession?.messages).toHaveLength(2);
+    expect(sessionStore.activeSession?.messages[1]?.parts).toEqual([
+      { type: "reasoning", text: "thinking" },
+    ]);
+  });
 });

@@ -17,10 +17,12 @@ export function useUIMessageAssembler(
   const messages = initialMessages ?? ref<UIMessage<MessageMeta>[]>([]);
   let activeAssistantId: string | null = null;
   let activeTextPartIdx = -1;
+  let activeReasoningPartIdx = -1;
 
   function resetActive(): void {
     activeAssistantId = null;
     activeTextPartIdx = -1;
+    activeReasoningPartIdx = -1;
   }
 
   function setMessages(nextMessages: UIMessage<MessageMeta>[]): void {
@@ -54,6 +56,7 @@ export function useUIMessageAssembler(
     messages.value.push(message);
     activeAssistantId = message.id;
     activeTextPartIdx = -1;
+    activeReasoningPartIdx = -1;
     return message;
   }
 
@@ -107,41 +110,64 @@ export function useUIMessageAssembler(
   }
 
   function applyChunk(chunk: MessageChunkData): void {
-    if (chunk.kind === "text_delta") {
-      const message = ensureAssistantMessage();
-      const part = activeTextPartIdx >= 0 ? message.parts[activeTextPartIdx] : null;
+    switch (chunk.kind) {
+      case "text_delta": {
+        const message = ensureAssistantMessage();
+        const part = activeTextPartIdx >= 0 ? message.parts[activeTextPartIdx] : null;
 
-      if (part && part.type === "text") {
-        part.text += chunk.text;
-      } else {
-        message.parts.push({ type: "text", text: chunk.text });
-        activeTextPartIdx = message.parts.length - 1;
+        if (part && part.type === "text") {
+          part.text += chunk.text;
+        } else {
+          message.parts.push({ type: "text", text: chunk.text });
+          activeTextPartIdx = message.parts.length - 1;
+        }
+        activeReasoningPartIdx = -1;
+        return;
       }
-      return;
-    }
+      case "reasoning_delta": {
+        const message = ensureAssistantMessage();
+        const part = activeReasoningPartIdx >= 0 ? message.parts[activeReasoningPartIdx] : null;
 
-    if (chunk.kind === "tool_call_start") {
-      const message = ensureAssistantMessage();
-      const part: DynamicToolUIPart = {
-        type: "dynamic-tool",
-        toolCallId: chunk.toolCallId,
-        toolName: chunk.title,
-        state: "input-available",
-        input: {},
-      };
-      message.parts.push(part);
-      activeTextPartIdx = -1;
-      return;
-    }
-
-    if (chunk.kind === "tool_call_update") {
-      applyToolUpdate(chunk);
-      return;
-    }
-
-    if (chunk.kind === "user_message") {
-      messages.value.push(chunk.message);
-      resetActive();
+        if (part && part.type === "reasoning") {
+          part.text += chunk.text;
+        } else {
+          message.parts.push({ type: "reasoning", text: chunk.text });
+          activeReasoningPartIdx = message.parts.length - 1;
+        }
+        activeTextPartIdx = -1;
+        return;
+      }
+      case "tool_call_start": {
+        const message = ensureAssistantMessage();
+        const part: DynamicToolUIPart = {
+          type: "dynamic-tool",
+          toolCallId: chunk.toolCallId,
+          toolName: chunk.title,
+          state: "input-available",
+          input: {},
+        };
+        message.parts.push(part);
+        activeTextPartIdx = -1;
+        activeReasoningPartIdx = -1;
+        return;
+      }
+      case "tool_call_update":
+        applyToolUpdate(chunk);
+        return;
+      case "available_commands_update":
+      case "usage_update":
+      case "session_info_update":
+      case "status":
+        return;
+      case "user_message":
+        messages.value.push(chunk.message);
+        resetActive();
+        return;
+      default: {
+        const _exhaustive: never = chunk;
+        void _exhaustive;
+        throw new Error(`unhandled message chunk: ${(chunk as MessageChunkData).kind}`);
+      }
     }
   }
 

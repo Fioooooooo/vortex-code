@@ -5,6 +5,7 @@ import type { SessionEvent } from "./session-events";
 export class MessageAssembler {
   private currentMessage: UIMessage<MessageMeta> | null = null;
   private activeTextPartIdx = -1;
+  private activeReasoningPartIdx = -1;
 
   constructor(private readonly sessionId: string) {}
 
@@ -20,6 +21,7 @@ export class MessageAssembler {
       metadata: { sessionId: this.sessionId, createdAt: new Date() },
     };
     this.activeTextPartIdx = -1;
+    this.activeReasoningPartIdx = -1;
     return this.currentMessage;
   }
 
@@ -34,6 +36,22 @@ export class MessageAssembler {
         message.parts.push({ type: "text", text: ev.text });
         this.activeTextPartIdx = message.parts.length - 1;
       }
+      this.activeReasoningPartIdx = -1;
+      return;
+    }
+
+    if (ev.type === "reasoning_delta") {
+      const message = this.ensureMessage();
+      const part =
+        this.activeReasoningPartIdx >= 0 ? message.parts[this.activeReasoningPartIdx] : null;
+
+      if (part && part.type === "reasoning") {
+        part.text += ev.text;
+      } else {
+        message.parts.push({ type: "reasoning", text: ev.text });
+        this.activeReasoningPartIdx = message.parts.length - 1;
+      }
+      this.activeTextPartIdx = -1;
       return;
     }
 
@@ -48,6 +66,7 @@ export class MessageAssembler {
       };
       message.parts.push(part);
       this.activeTextPartIdx = -1;
+      this.activeReasoningPartIdx = -1;
       return;
     }
 
@@ -101,6 +120,7 @@ export class MessageAssembler {
     const message = this.currentMessage;
     this.currentMessage = null;
     this.activeTextPartIdx = -1;
+    this.activeReasoningPartIdx = -1;
     return message;
   }
 }

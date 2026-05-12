@@ -1,5 +1,5 @@
 import type { IpcErrorCode } from "../constants/error-codes";
-import type { MessageMeta } from "./chat";
+import type { AcpAvailableCommand, MessageMeta } from "./chat";
 import type { UIMessage, ChatStatus } from "ai";
 
 export interface IpcErrorInfo {
@@ -22,6 +22,7 @@ export interface StreamChunkData {
 
 export type MessageChunkData =
   | { kind: "text_delta"; text: string }
+  | { kind: "reasoning_delta"; text: string }
   | { kind: "tool_call_start"; toolCallId: string; title: string; toolKind: string }
   | {
       kind: "tool_call_update";
@@ -37,6 +38,7 @@ export type MessageChunkData =
       cost?: { amount: number; currency: string };
     }
   | { kind: "session_info_update"; title: string }
+  | { kind: "available_commands_update"; commands: AcpAvailableCommand[] }
   | { kind: "user_message"; message: UIMessage<MessageMeta> }
   | { kind: "status"; agentStatus: ChatStatus };
 

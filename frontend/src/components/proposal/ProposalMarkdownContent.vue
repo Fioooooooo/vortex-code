@@ -24,6 +24,10 @@ const emit = defineEmits<{
   "update:modelValue": [value: MarkdownTabValue];
 }>();
 
+function handleTabChange(value: string | number): void {
+  emit("update:modelValue", value as MarkdownTabValue);
+}
+
 const visibleTabs = computed(() =>
   props.tabs
     .filter((tab) => tab.content !== null)
@@ -48,7 +52,7 @@ const activeContent = computed(() => {
           :items="visibleTabs"
           variant="link"
           value-key="value"
-          @update:model-value="(value) => emit('update:modelValue', value as MarkdownTabValue)"
+          @update:model-value="handleTabChange"
         />
       </div>
     </div>
