@@ -179,6 +179,7 @@ export function registerChatHandlers(): void {
               // Already persisted inside AcpSession.
               break;
             case "text_delta":
+            case "reasoning_delta":
             case "tool_call_start":
             case "tool_call_update": {
               assembler.apply(ev);
@@ -200,6 +201,11 @@ export function registerChatHandlers(): void {
                 .catch((error: unknown) => {
                   logger.error("[chat] failed to persist session usage update", error);
                 });
+              break;
+            }
+            case "available_commands_update": {
+              const chunk = toMessageChunk(ev);
+              if (chunk) sink.sendChunk(chunk);
               break;
             }
             case "session_info_update":
@@ -252,6 +258,11 @@ export function registerChatHandlers(): void {
               sink.sendError(mapAcpErrorCode(ev.code), ev.message);
               sessionRegistry.unregister("chat", sessionId);
               break;
+            default: {
+              const _exhaustive: never = ev;
+              void _exhaustive;
+              throw new Error(`unhandled session event: ${(ev as SessionEvent).type}`);
+            }
           }
         });
 

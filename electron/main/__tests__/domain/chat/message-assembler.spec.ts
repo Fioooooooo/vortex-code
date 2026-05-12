@@ -35,6 +35,57 @@ describe("MessageAssembler", () => {
     expect((msg!.parts[2] as { text: string }).text).toBe("after");
   });
 
+  it("accumulates reasoning_delta events into a single reasoning part", () => {
+    const a = new MessageAssembler("s");
+    a.apply({ type: "reasoning_delta", text: "abc" });
+    a.apply({ type: "reasoning_delta", text: "de" });
+    a.apply({ type: "reasoning_delta", text: "fg" });
+
+    const msg = a.flush()!;
+    expect(msg.parts).toHaveLength(1);
+    expect(msg.parts[0]).toEqual({ type: "reasoning", text: "abcdefg" });
+  });
+
+  it("keeps reasoning and text in separate parts when switching tracks", () => {
+    const a = new MessageAssembler("s");
+    a.apply({ type: "reasoning_delta", text: "r1" });
+    a.apply({ type: "text_delta", text: "t1" });
+    a.apply({ type: "reasoning_delta", text: "r2" });
+
+    const msg = a.flush()!;
+    expect(msg.parts).toEqual([
+      { type: "reasoning", text: "r1" },
+      { type: "text", text: "t1" },
+      { type: "reasoning", text: "r2" },
+    ]);
+  });
+
+  it("starts a fresh reasoning part after a tool call", () => {
+    const a = new MessageAssembler("s");
+    a.apply({ type: "reasoning_delta", text: "before" });
+    a.apply({
+      type: "tool_call_start",
+      toolCallId: "t1",
+      title: "Read",
+      kind: "read",
+    });
+    a.apply({ type: "reasoning_delta", text: "after" });
+
+    const msg = a.flush()!;
+    expect(msg.parts.map((part) => part.type)).toEqual(["reasoning", "dynamic-tool", "reasoning"]);
+    expect(msg.parts[0]).toEqual({ type: "reasoning", text: "before" });
+    expect(msg.parts[2]).toEqual({ type: "reasoning", text: "after" });
+  });
+
+  it("creates an assistant message when reasoning is the first part", () => {
+    const a = new MessageAssembler("s");
+    a.apply({ type: "reasoning_delta", text: "first" });
+
+    const msg = a.flush()!;
+    expect(msg.role).toBe("assistant");
+    expect(msg.parts[0]).toEqual({ type: "reasoning", text: "first" });
+  });
+
   it("tool_call_update with completed status marks the part output-available", () => {
     const a = new MessageAssembler("s");
     a.apply({ type: "tool_call_start", toolCallId: "t1", title: "Read", kind: "read" });
@@ -90,5 +141,14 @@ describe("MessageAssembler", () => {
     expect(second).not.toBeNull();
     expect((second!.parts[0] as { text: string }).text).toBe("second");
     expect(first!.id).not.toBe(second!.id);
+  });
+
+  it("flush resets reasoning state for the next cycle", () => {
+    const a = new MessageAssembler("s");
+    a.apply({ type: "reasoning_delta", text: "first" });
+    expect(a.flush()!.parts).toEqual([{ type: "reasoning", text: "first" }]);
+
+    a.apply({ type: "reasoning_delta", text: "second" });
+    expect(a.flush()!.parts).toEqual([{ type: "reasoning", text: "second" }]);
   });
 });

@@ -66,4 +66,62 @@ describe("useUIMessageAssembler", () => {
     expect(messages.value[2]?.role).toBe("assistant");
     expect(messages.value[2]?.parts).toEqual([{ type: "text", text: "after" }]);
   });
+
+  it("accumulates reasoning deltas into one reasoning part", () => {
+    const messages = ref<UIMessage<MessageMeta>[]>([]);
+    const assembler = useUIMessageAssembler(messages, { sessionId: "session-1" });
+
+    assembler.applyChunk({ kind: "reasoning_delta", text: "think " });
+    assembler.applyChunk({ kind: "reasoning_delta", text: "more" });
+
+    expect(messages.value).toHaveLength(1);
+    expect(messages.value[0]?.parts).toEqual([{ type: "reasoning", text: "think more" }]);
+  });
+
+  it("resets reasoning and text tracks independently", () => {
+    const messages = ref<UIMessage<MessageMeta>[]>([]);
+    const assembler = useUIMessageAssembler(messages);
+
+    assembler.applyChunk({ kind: "reasoning_delta", text: "r1" });
+    assembler.applyChunk({ kind: "text_delta", text: "t1" });
+    assembler.applyChunk({ kind: "reasoning_delta", text: "r2" });
+
+    expect(messages.value[0]?.parts).toEqual([
+      { type: "reasoning", text: "r1" },
+      { type: "text", text: "t1" },
+      { type: "reasoning", text: "r2" },
+    ]);
+  });
+
+  it("resets both active tracks on tool_call_start", () => {
+    const messages = ref<UIMessage<MessageMeta>[]>([]);
+    const assembler = useUIMessageAssembler(messages);
+
+    assembler.applyChunk({ kind: "reasoning_delta", text: "r1" });
+    assembler.applyChunk({
+      kind: "tool_call_start",
+      toolCallId: "tool-1",
+      title: "Read",
+      toolKind: "read",
+    });
+    assembler.applyChunk({ kind: "reasoning_delta", text: "r2" });
+
+    expect(messages.value[0]?.parts.map((part) => part.type)).toEqual([
+      "reasoning",
+      "dynamic-tool",
+      "reasoning",
+    ]);
+  });
+
+  it("ignores available_commands_update chunks", () => {
+    const messages = ref<UIMessage<MessageMeta>[]>([]);
+    const assembler = useUIMessageAssembler(messages);
+
+    assembler.applyChunk({
+      kind: "available_commands_update",
+      commands: [{ name: "review", description: "Review code", hint: "path" }],
+    });
+
+    expect(messages.value).toHaveLength(0);
+  });
 });

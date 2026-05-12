@@ -25,6 +25,8 @@ const mocks = vi.hoisted(() => {
     register: vi.fn(),
     unregister: vi.fn(),
     cancel: vi.fn(),
+    assemblerApply: vi.fn(),
+    assemblerFlush: vi.fn(),
     get eventHandler() {
       return eventHandler;
     },
@@ -83,6 +85,15 @@ vi.mock("@main/services/chat/acp-session", () => ({
   }),
 }));
 
+vi.mock("@main/services/chat/message-assembler", () => ({
+  MessageAssembler: vi.fn(function () {
+    return {
+      apply: mocks.assemblerApply,
+      flush: mocks.assemblerFlush,
+    };
+  }),
+}));
+
 vi.mock("@main/ipc/_kit/stream-channel", () => ({
   makeStreamChannel: vi.fn((options) => {
     mocks.onReady = options.onReady;
@@ -105,6 +116,7 @@ describe("registerChatHandlers", () => {
       createdAt: "2026-05-09T00:00:00.000Z",
       updatedAt: "2026-05-09T00:00:00.000Z",
     });
+    mocks.assemblerFlush.mockReturnValue(null);
     const { registerChatHandlers } = await import("@main/ipc/chat");
     registerChatHandlers();
   });
@@ -139,6 +151,16 @@ describe("registerChatHandlers", () => {
   });
 
   it("persists assembled assistant message before sending done", async () => {
+    mocks.assemblerFlush.mockReturnValueOnce({
+      id: "assistant-message-1",
+      role: "assistant",
+      parts: [{ type: "text", text: "assistant" }],
+      metadata: {
+        sessionId: "session-1",
+        createdAt: new Date("2026-05-09T00:00:00.000Z"),
+      },
+    });
+
     handler(ChatStreamChannels.streamMessage)(
       { sender: { postMessage: vi.fn() } },
       {
@@ -166,10 +188,7 @@ describe("registerChatHandlers", () => {
     expect(mocks.appendMessage).toHaveBeenCalledWith(
       "/tmp/project",
       "session-1",
-      expect.objectContaining({
-        role: "assistant",
-        parts: [{ type: "text", text: "assistant" }],
-      })
+      expect.objectContaining({ id: "assistant-message-1", role: "assistant" })
     );
   });
 
@@ -302,12 +321,39 @@ describe("registerChatHandlers", () => {
     expect(acpSessionMock).not.toHaveBeenCalled();
   });
 
+  it("applies reasoning_delta to the assembler and forwards the chunk", async () => {
+    handler(ChatStreamChannels.streamMessage)(
+      { sender: { postMessage: vi.fn() } },
+      {
+        sessionId: "session-1",
+        projectId: "project-1",
+        agentId: "claude-acp",
+        prompt: "hello",
+      }
+    );
+
+    const sink = {
+      sendChunk: vi.fn(),
+      sendDone: vi.fn(),
+      sendError: vi.fn(),
+    };
+    await mocks.onReady!(sink);
+
+    const event: SessionEvent = { type: "reasoning_delta", text: "thinking" };
+    mocks.eventHandler!(event);
+
+    expect(mocks.assemblerApply).toHaveBeenCalledWith(event);
+    expect(sink.sendChunk).toHaveBeenCalledWith({
+      kind: "reasoning_delta",
+      text: "thinking",
+    });
+  });
+
   it("passes chat owner and reminder hook without sending sink chunks", async () => {
     const reminderPart = {
       type: "text",
       text: "<system-reminder>\nbody\n</system-reminder>",
     } as const;
-
     handler(ChatStreamChannels.streamMessage)(
       { sender: { postMessage: vi.fn() } },
       {
@@ -348,5 +394,37 @@ describe("registerChatHandlers", () => {
     expect(sink.sendChunk).not.toHaveBeenCalledWith(
       expect.objectContaining({ kind: "user_message" })
     );
+  });
+
+  it("forwards available_commands_update without assembler or session meta writes", async () => {
+    handler(ChatStreamChannels.streamMessage)(
+      { sender: { postMessage: vi.fn() } },
+      {
+        sessionId: "session-1",
+        projectId: "project-1",
+        agentId: "claude-acp",
+        prompt: "hello",
+      }
+    );
+
+    const sink = {
+      sendChunk: vi.fn(),
+      sendDone: vi.fn(),
+      sendError: vi.fn(),
+    };
+    await mocks.onReady!(sink);
+
+    const event: SessionEvent = {
+      type: "available_commands_update",
+      commands: [{ name: "review", description: "Review code" }],
+    };
+    mocks.eventHandler!(event);
+
+    expect(mocks.assemblerApply).not.toHaveBeenCalled();
+    expect(mocks.saveSessionMeta).not.toHaveBeenCalled();
+    expect(sink.sendChunk).toHaveBeenCalledWith({
+      kind: "available_commands_update",
+      commands: [{ name: "review", description: "Review code" }],
+    });
   });
 });

@@ -101,4 +101,53 @@ describe("useProposalRunStore", () => {
     expect(store.runMeta?.workflowId).toBe("archive");
     expect(store.messages).toHaveLength(1);
   });
+
+  it("assembles reasoning_delta chunks during stage streaming", async () => {
+    let onChunk: ((chunk: MessageChunkData) => void) | null = null;
+    vi.mocked(proposalApi.apply).mockResolvedValue({
+      ok: true,
+      data: {
+        runId: "run-1",
+        stages: [{ id: "stage-1", name: "Apply", type: "proposal-apply" }],
+      },
+    });
+    vi.mocked(proposalApi.stageStream).mockImplementation((_input, callbacks) => {
+      onChunk = callbacks.onChunk;
+      return () => {};
+    });
+
+    const store = useProposalRunStore();
+    await store.startRun("project-1", "change-1", "workflow-1");
+
+    onChunk!({ kind: "reasoning_delta", text: "think " });
+    onChunk!({ kind: "reasoning_delta", text: "more" });
+
+    expect(store.messages).toHaveLength(1);
+    expect(store.messages[0]?.parts).toEqual([{ type: "reasoning", text: "think more" }]);
+  });
+
+  it("ignores available_commands_update chunks during stage streaming", async () => {
+    let onChunk: ((chunk: MessageChunkData) => void) | null = null;
+    vi.mocked(proposalApi.apply).mockResolvedValue({
+      ok: true,
+      data: {
+        runId: "run-1",
+        stages: [{ id: "stage-1", name: "Apply", type: "proposal-apply" }],
+      },
+    });
+    vi.mocked(proposalApi.stageStream).mockImplementation((_input, callbacks) => {
+      onChunk = callbacks.onChunk;
+      return () => {};
+    });
+
+    const store = useProposalRunStore();
+    await store.startRun("project-1", "change-1", "workflow-1");
+
+    onChunk!({
+      kind: "available_commands_update",
+      commands: [{ name: "review", description: "Review code" }],
+    });
+
+    expect(store.messages).toEqual([]);
+  });
 });

@@ -21,6 +21,12 @@ export interface TokenUsage {
   };
 }
 
+export interface AcpAvailableCommand {
+  name: string;
+  description: string;
+  hint?: string;
+}
+
 export interface Session {
   id: string;
   projectId: string;
@@ -32,6 +38,7 @@ export interface Session {
   createdAt: Date;
   updatedAt: Date;
   messages: Message[];
+  availableCommands?: AcpAvailableCommand[];
 }
 
 export type ProjectAgent = ChatAgent;

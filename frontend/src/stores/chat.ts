@@ -3,6 +3,7 @@ import { defineStore } from "pinia";
 import { generateId } from "ai";
 import { useToast } from "@nuxt/ui/composables";
 import type { ChatStatus, Message, ModeType, Session } from "@shared/types/chat";
+import type { MessageChunkData } from "@shared/types/ipc";
 import { chatApi } from "@renderer/api/chat";
 import { useUIMessageAssembler } from "@renderer/composables/useUIMessageAssembler";
 import { useProjectStore } from "./project";
@@ -83,23 +84,37 @@ export const useChatStore = defineStore("chat", () => {
             chatStatus.value = "streaming";
           }
 
-          if (data.kind === "session_info_update") {
-            activeSession.title = data.title;
-            activeSession.updatedAt = new Date();
-            sessionStore.sortSessions();
-            return;
+          switch (data.kind) {
+            case "session_info_update":
+              activeSession.title = data.title;
+              activeSession.updatedAt = new Date();
+              sessionStore.sortSessions();
+              return;
+            case "usage_update":
+              activeSession.tokenUsage = {
+                used: data.used,
+                size: data.size,
+                cost: data.cost,
+              };
+              return;
+            case "available_commands_update":
+              sessionStore.setSessionAvailableCommands(activeSession.id, data.commands);
+              return;
+            case "user_message":
+            case "status":
+              return;
+            case "text_delta":
+            case "reasoning_delta":
+            case "tool_call_start":
+            case "tool_call_update":
+              assembler.applyChunk(data);
+              return;
+            default: {
+              const _exhaustive: never = data;
+              void _exhaustive;
+              throw new Error(`unhandled stream chunk: ${(data as MessageChunkData).kind}`);
+            }
           }
-
-          if (data.kind === "usage_update") {
-            activeSession.tokenUsage = {
-              used: data.used,
-              size: data.size,
-              cost: data.cost,
-            };
-            return;
-          }
-
-          assembler.applyChunk(data);
         },
         onDone(done) {
           cancelFn.value = null;

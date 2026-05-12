@@ -10,6 +10,11 @@ describe("toMessageChunk", () => {
     expect(toMessageChunk(ev)).toEqual({ kind: "text_delta", text: "hello" });
   });
 
+  it("maps reasoning_delta", () => {
+    const ev: SessionEvent = { type: "reasoning_delta", text: "thinking" };
+    expect(toMessageChunk(ev)).toEqual({ kind: "reasoning_delta", text: "thinking" });
+  });
+
   it("maps tool_call_start preserving kind", () => {
     const ev: SessionEvent = {
       type: "tool_call_start",
@@ -69,6 +74,21 @@ describe("toMessageChunk", () => {
       size: 1000000,
       cost: { amount: 0.145305, currency: "USD" },
     });
+  });
+
+  it("maps available_commands_update without cloning", () => {
+    const commands = [{ name: "review", description: "Review code", hint: "commit sha" }];
+    const ev: SessionEvent = {
+      type: "available_commands_update",
+      commands,
+    };
+
+    const chunk = toMessageChunk(ev);
+    expect(chunk).toEqual({
+      kind: "available_commands_update",
+      commands,
+    });
+    expect(chunk && "commands" in chunk ? chunk.commands : null).toBe(commands);
   });
 
   it("returns null for terminal / internal events", () => {

@@ -11,6 +11,8 @@ export function toMessageChunk(ev: SessionEvent): MessageChunkData | null {
   switch (ev.type) {
     case "text_delta":
       return { kind: "text_delta", text: ev.text };
+    case "reasoning_delta":
+      return { kind: "reasoning_delta", text: ev.text };
     case "tool_call_start":
       return {
         kind: "tool_call_start",
@@ -32,6 +34,8 @@ export function toMessageChunk(ev: SessionEvent): MessageChunkData | null {
       return { kind: "usage_update", used: ev.used, size: ev.size, cost: ev.cost };
     case "session_info_update":
       return { kind: "session_info_update", title: ev.title };
+    case "available_commands_update":
+      return { kind: "available_commands_update", commands: ev.commands };
     case "session_id_resolved":
     case "done":
     case "error":
