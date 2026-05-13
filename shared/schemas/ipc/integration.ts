@@ -16,14 +16,6 @@ export const setProjectConfigInputSchema = z.object({
   overrides: z.record(z.string(), z.unknown()),
 });
 
-export const createCustomInputSchema = z.object({
-  name: z.string().min(1),
-  mcpServerUrl: z.string().min(1),
-  skillConfig: z.string(),
-});
-
-export const removeCustomInputSchema = z.object({ id: z.string().min(1) });
-
 export const yunxiaoSetTokenInputSchema = z.object({ token: z.string().min(1) });
 
 export const yunxiaoSetOrganizationInputSchema = z.object({

@@ -87,9 +87,6 @@
 | `integration:disconnect`         | `IntegrationChannels.disconnect`         | handle |
 | `integration:listProjectConfigs` | `IntegrationChannels.listProjectConfigs` | handle |
 | `integration:setProjectConfig`   | `IntegrationChannels.setProjectConfig`   | handle |
-| `integration:listCustom`         | `IntegrationChannels.listCustom`         | handle |
-| `integration:createCustom`       | `IntegrationChannels.createCustom`       | handle |
-| `integration:removeCustom`       | `IntegrationChannels.removeCustom`       | handle |
 
 ### Settings（`window.api.settings`）
 

@@ -219,14 +219,6 @@ interface ToolConnection {
   connectedAt?;
   credentials?;
 }
-
-interface CustomIntegration {
-  id;
-  name;
-  mcpServerUrl;
-  skillConfig;
-  createdAt;
-}
 ```
 
 **集成分类：** `"project-management" | "source-control" | "ci-cd" | "deployment" | "communication" | "observability"`

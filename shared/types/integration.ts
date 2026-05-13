@@ -73,14 +73,6 @@ export interface ProjectToolConfig {
   overrides: Record<string, unknown>;
 }
 
-export interface CustomIntegration {
-  id: string;
-  name: string;
-  mcpServerUrl: string;
-  skillConfig: string;
-  createdAt: Date;
-}
-
 export interface YunxiaoOrganization {
   id: string;
   name: string;

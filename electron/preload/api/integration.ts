@@ -5,7 +5,6 @@ import type {
   IntegrationTool,
   ToolConnection,
   ProjectToolConfig,
-  CustomIntegration,
   YunxiaoOrganization,
 } from "@shared/types/integration";
 
@@ -50,23 +49,6 @@ export const integrationApi = {
       overrides,
     });
   },
-
-  listCustom(): Promise<IpcResponse<CustomIntegration[]>> {
-    return ipcRenderer.invoke(IntegrationChannels.listCustom);
-  },
-
-  createCustom(input: {
-    name: string;
-    mcpServerUrl: string;
-    skillConfig: string;
-  }): Promise<IpcResponse<CustomIntegration>> {
-    return ipcRenderer.invoke(IntegrationChannels.createCustom, input);
-  },
-
-  removeCustom(id: string): Promise<IpcResponse<void>> {
-    return ipcRenderer.invoke(IntegrationChannels.removeCustom, { id });
-  },
-
   yunxiaoSetToken(token: string): Promise<IpcResponse<YunxiaoOrganization[]>> {
     return ipcRenderer.invoke(IntegrationChannels.yunxiaoSetToken, { token });
   },

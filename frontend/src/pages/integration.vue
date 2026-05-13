@@ -3,7 +3,6 @@ import { onMounted } from "vue";
 import { storeToRefs } from "pinia";
 import SearchFilter from "@renderer/components/integration/SearchFilter.vue";
 import CategorySection from "@renderer/components/integration/CategorySection.vue";
-import CustomIntegrationSection from "@renderer/components/integration/CustomIntegrationSection.vue";
 import { useIntegrationStore } from "@renderer/stores/integration";
 
 const integrationStore = useIntegrationStore();
@@ -34,9 +33,6 @@ const { toolsByCategory, allCategories } = storeToRefs(integrationStore);
           :tools="toolsByCategory.get(category.id) ?? []"
         />
       </div>
-
-      <!-- Custom Integration -->
-      <CustomIntegrationSection />
     </div>
   </div>
 </template>

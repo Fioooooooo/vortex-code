@@ -2,9 +2,7 @@ import { ipcMain } from "electron";
 import { IntegrationChannels } from "@shared/types/channels";
 import {
   connectInputSchema,
-  createCustomInputSchema,
   listProjectConfigsInputSchema,
-  removeCustomInputSchema,
   setProjectConfigInputSchema,
   toolIdInputSchema,
   yunxiaoSetOrganizationInputSchema,
@@ -72,25 +70,6 @@ export function registerIntegrationHandlers(): void {
     wrapHandler(async () => {
       validate(setProjectConfigInputSchema, input);
       return null;
-    })
-  );
-
-  ipcMain.handle(IntegrationChannels.listCustom, () =>
-    wrapHandler(async () => {
-      return [];
-    })
-  );
-
-  ipcMain.handle(IntegrationChannels.createCustom, (_event, input: unknown) =>
-    wrapHandler(async () => {
-      validate(createCustomInputSchema, input);
-      return null;
-    })
-  );
-
-  ipcMain.handle(IntegrationChannels.removeCustom, (_event, input: unknown) =>
-    wrapHandler(async () => {
-      validate(removeCustomInputSchema, input);
     })
   );
 

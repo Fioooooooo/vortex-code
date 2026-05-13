@@ -60,9 +60,6 @@ export const IntegrationChannels = {
   disconnect: "integration:disconnect",
   listProjectConfigs: "integration:listProjectConfigs",
   setProjectConfig: "integration:setProjectConfig",
-  listCustom: "integration:listCustom",
-  createCustom: "integration:createCustom",
-  removeCustom: "integration:removeCustom",
   yunxiaoSetToken: "integration:yunxiao:setToken",
   yunxiaoSetOrganization: "integration:yunxiao:setOrganization",
 } as const;
