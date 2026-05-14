@@ -80,6 +80,12 @@ export const useChatStore = defineStore("chat", () => {
       prompt,
       {
         onChunk(data) {
+          if (data?.kind && data?.kind === "available_commands_update") {
+            // available_commands_update 提前处理，防止意外更新 chatStatus
+            sessionStore.setSessionAvailableCommands(activeSession.id, data.commands);
+            return;
+          }
+
           if (chatStatus.value === "submitted") {
             chatStatus.value = "streaming";
           }
@@ -96,9 +102,6 @@ export const useChatStore = defineStore("chat", () => {
                 size: data.size,
                 cost: data.cost,
               };
-              return;
-            case "available_commands_update":
-              sessionStore.setSessionAvailableCommands(activeSession.id, data.commands);
               return;
             case "user_message":
             case "status":
