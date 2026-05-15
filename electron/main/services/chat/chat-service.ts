@@ -5,11 +5,12 @@ import { IpcErrorCodes } from "@shared/constants/error-codes";
 import { loadProject } from "@main/infra/storage/project-store";
 import {
   appendMessage,
+  createSessionMeta,
   deleteSession as deleteSessionStore,
   listSessionMetas,
   loadMessages,
   loadSessionMeta,
-  saveSessionMeta,
+  patchSessionMeta,
   type SessionMeta,
 } from "@main/infra/storage/session-store";
 import { newSessionId } from "@main/infra/ids";
@@ -63,7 +64,7 @@ export async function createSession(input: {
     createdAt: now.toISOString(),
     updatedAt: now.toISOString(),
   };
-  await saveSessionMeta(projectPath, meta);
+  await createSessionMeta(projectPath, meta);
   return toSession(meta, input.projectId);
 }
 
@@ -78,13 +79,14 @@ export async function updateSession(input: {
     throw ipcError(IpcErrorCodes.CHAT_SESSION_NOT_FOUND, `Session not found: ${input.id}`);
   }
 
-  const nextMeta: SessionMeta = {
-    ...meta,
+  const nextMeta = await patchSessionMeta(projectPath, input.id, {
     title: input.patch.title ?? meta.title,
     agentId: input.patch.agentId ?? meta.agentId,
     updatedAt: new Date().toISOString(),
-  };
-  await saveSessionMeta(projectPath, nextMeta);
+  });
+  if (!nextMeta) {
+    throw ipcError(IpcErrorCodes.CHAT_SESSION_NOT_FOUND, `Session not found: ${input.id}`);
+  }
   return toSession(nextMeta, input.projectId);
 }
 

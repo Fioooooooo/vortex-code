@@ -70,7 +70,7 @@ type MessageChunkData =
 
 `reasoning_delta` 分支 SHALL 由 `acp-mapper` 从 ACP `agent_thought_chunk` 映射产生，经 `session-event-mapper` 透传为 chunk；`chat:stream:message` / `proposal:stageStream` / `proposal:archive` 三处 handler 均 SHALL 将该事件分派到 `MessageAssembler.apply` 与 sink.sendChunk 双通路。
 
-`available_commands_update` 分支 SHALL 由 `acp-mapper` 从 ACP `available_commands_update` 映射产生，经 `session-event-mapper` 透传为 chunk；仅 `chat:stream:message` handler SHALL 将该 chunk 透传到渲染端（绕过 `MessageAssembler`），并同时将 commands 持久化到当前 session meta 的 `available_commands` 字段；`proposal:stageStream` / `proposal:archive` handler SHALL 对该事件显式忽略（不进 assembler、不透传、不写磁盘）。
+`available_commands_update` 分支 SHALL 由 `acp-mapper` 从 ACP `available_commands_update` 映射产生，经 `session-event-mapper` 透传为 chunk；仅 `chat:stream:message` handler SHALL 将该 chunk 透传到渲染端（绕过 `MessageAssembler`），并同时通过 `session-store` 的统一 session meta 更新入口将 commands 持久化到当前 session meta 的 `available_commands` 字段；`proposal:stageStream` / `proposal:archive` handler SHALL 对该事件显式忽略（不进 assembler、不透传、不写磁盘）。
 
 所有消费 `MessageChunkData` 的 switch/分支 SHALL 处理 `reasoning_delta` 与 `available_commands_update` 分支；TypeScript 穷尽检查 SHALL 在编译期发现漏处理。
 
@@ -109,7 +109,7 @@ type MessageChunkData =
 - **WHEN** `chat:stream:message` handler 从 `AcpSession` 收到 `available_commands_update` 事件
 - **THEN** 通过 port1 发送 `{ type: "chunk", data: { kind: "available_commands_update", commands } }`
 - **AND** preload 层调用 `callbacks.onChunk({ kind: "available_commands_update", commands })` 回调
-- **AND** 主进程将 `commands` 写入当前 session meta 的 `available_commands` 字段
+- **AND** 主进程通过 `session-store` 的统一 session meta 更新入口将 `commands` 写入当前 session meta 的 `available_commands` 字段
 - **AND** `commands` 为空数组时仍然发送并持久化（用于传达"agent 明确声明无命令"语义）
 
 #### Scenario: proposal 流不透传 available_commands_update

@@ -34,8 +34,7 @@ import { sessionRegistry } from "@main/services/chat/session-registry";
 import {
   appendMessage,
   loadSessionMeta,
-  saveSessionMeta,
-  type SessionMeta,
+  patchSessionMeta,
 } from "@main/infra/storage/session-store";
 import { sessionMessagesPath } from "@main/infra/storage/session-store";
 import { prependReminderToLastUserMessage } from "@main/infra/storage/message-reminder-store";
@@ -48,20 +47,6 @@ function mapAcpErrorCode(raw: string): IpcErrorCode {
   if (raw === IpcErrorCodes.ACP_EXIT_GIVEUP) return IpcErrorCodes.ACP_EXIT_GIVEUP;
   if (raw === IpcErrorCodes.SPAWN_ERROR) return IpcErrorCodes.SPAWN_ERROR;
   return IpcErrorCodes.ACP_ERROR;
-}
-
-async function updateSessionMeta(
-  projectPath: string,
-  sessionId: string,
-  update: (currentMeta: SessionMeta) => SessionMeta
-): Promise<boolean> {
-  const currentMeta = await loadSessionMeta(projectPath, sessionId);
-  if (!currentMeta) {
-    return false;
-  }
-
-  await saveSessionMeta(projectPath, update(currentMeta));
-  return true;
 }
 
 export function registerChatHandlers(): void {
@@ -170,13 +155,13 @@ export function registerChatHandlers(): void {
         const assembler = new MessageAssembler(sessionId);
         let sessionMetaPersist = Promise.resolve();
         const enqueueSessionMetaPersist = (
-          update: (currentMeta: SessionMeta) => SessionMeta,
+          update: Parameters<typeof patchSessionMeta>[2],
           failureMessage: string
         ): void => {
           sessionMetaPersist = sessionMetaPersist
             .then(async () => {
-              const didUpdate = await updateSessionMeta(projectPath, sessionId, update);
-              if (!didUpdate) {
+              const nextMeta = await patchSessionMeta(projectPath, sessionId, update);
+              if (!nextMeta) {
                 logger.warn(
                   `[chat] skipped session meta update because meta was missing: ${sessionId}`
                 );
@@ -206,15 +191,14 @@ export function registerChatHandlers(): void {
               const chunk = toMessageChunk(ev);
               if (chunk) sink.sendChunk(chunk);
               enqueueSessionMetaPersist(
-                (currentMeta) => ({
-                  ...currentMeta,
+                {
                   tokenUsage: {
                     used: ev.used,
                     size: ev.size,
                     cost: ev.cost,
                   },
                   updatedAt: new Date().toISOString(),
-                }),
+                },
                 "[chat] failed to persist session usage update"
               );
               break;
@@ -223,22 +207,20 @@ export function registerChatHandlers(): void {
               const chunk = toMessageChunk(ev);
               if (chunk) sink.sendChunk(chunk);
               enqueueSessionMetaPersist(
-                (currentMeta) => ({
-                  ...currentMeta,
+                {
                   available_commands: ev.commands,
                   updatedAt: new Date().toISOString(),
-                }),
+                },
                 "[chat] failed to persist session available commands update"
               );
               break;
             }
             case "session_info_update":
               enqueueSessionMetaPersist(
-                (currentMeta) => ({
-                  ...currentMeta,
+                {
                   title: ev.title,
                   updatedAt: new Date().toISOString(),
-                }),
+                },
                 "[chat] failed to persist session title update"
               );
               {
@@ -253,12 +235,11 @@ export function registerChatHandlers(): void {
                   await appendMessage(projectPath, sessionId, message);
                 }
                 await sessionMetaPersist;
-                await updateSessionMeta(projectPath, sessionId, (currentMeta) => ({
-                  ...currentMeta,
+                await patchSessionMeta(projectPath, sessionId, (currentMeta) => ({
                   tokenUsage: {
-                    ...currentMeta.tokenUsage,
                     used: currentMeta.tokenUsage.used + ev.totalTokens,
                     size: currentMeta.tokenUsage.size,
+                    cost: currentMeta.tokenUsage.cost,
                   },
                   updatedAt: new Date().toISOString(),
                 }));

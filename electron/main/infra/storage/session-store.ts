@@ -16,6 +16,14 @@ export interface SessionMeta {
   updatedAt: string;
 }
 
+export type SessionMetaPatch = Partial<
+  Omit<SessionMeta, "sessionId" | "createdAt" | "tokenUsage">
+> & {
+  tokenUsage?: Partial<TokenUsage>;
+};
+
+type SessionMetaRecord = Record<string, unknown>;
+
 const DEFAULT_TOKEN_USAGE: Pick<TokenUsage, "used" | "size"> = { used: 0, size: 0 };
 
 function metaPath(projectPath: string, sessionId: string): string {
@@ -28,6 +36,22 @@ export function sessionMessagesPath(projectPath: string, sessionId: string): str
 
 async function ensureDir(dir: string): Promise<void> {
   await fs.mkdir(dir, { recursive: true });
+}
+
+async function readSessionMetaRecord(
+  projectPath: string,
+  sessionId: string
+): Promise<SessionMetaRecord | null> {
+  try {
+    const content = await fs.readFile(metaPath(projectPath, sessionId), "utf8");
+    const parsed = JSON.parse(content);
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      return parsed as SessionMetaRecord;
+    }
+    return null;
+  } catch {
+    return null;
+  }
 }
 
 function normalizeCost(cost: Partial<TokenUsage["cost"]> | null | undefined): TokenUsage["cost"] {
@@ -49,39 +73,71 @@ function normalizeTokenUsage(tokenUsage: Partial<TokenUsage> | null | undefined)
   };
 }
 
-function normalizeSessionMeta(raw: unknown): SessionMeta {
-  const meta = raw as Omit<SessionMeta, "tokenUsage"> & {
-    tokenUsage?: Partial<TokenUsage>;
-  };
-
+function normalizeSessionMetaRecord(raw: SessionMetaRecord): SessionMetaRecord {
   return {
-    ...meta,
-    tokenUsage: normalizeTokenUsage(meta.tokenUsage),
-    available_commands: Array.isArray(meta.available_commands)
-      ? meta.available_commands
-      : undefined,
+    ...raw,
+    tokenUsage: normalizeTokenUsage(raw.tokenUsage as Partial<TokenUsage> | undefined),
+    available_commands: Array.isArray(raw.available_commands) ? raw.available_commands : undefined,
   };
 }
 
-export async function saveSessionMeta(projectPath: string, meta: SessionMeta): Promise<void> {
+function toSessionMeta(record: SessionMetaRecord): SessionMeta {
+  return normalizeSessionMetaRecord(record) as unknown as SessionMeta;
+}
+
+async function writeSessionMetaRecord(
+  projectPath: string,
+  record: SessionMetaRecord
+): Promise<SessionMetaRecord> {
+  const normalized = normalizeSessionMetaRecord(record);
   await ensureDir(sessionsDir(projectPath));
   await fs.writeFile(
-    metaPath(projectPath, meta.sessionId),
-    JSON.stringify(normalizeSessionMeta(meta), null, 2),
+    metaPath(projectPath, normalized.sessionId as string),
+    JSON.stringify(normalized, null, 2),
     "utf8"
   );
+  return normalized;
+}
+
+function mergeSessionMetaRecord(
+  current: SessionMetaRecord,
+  patch: SessionMetaPatch
+): SessionMetaRecord {
+  const nextTokenUsage =
+    patch.tokenUsage === undefined
+      ? current.tokenUsage
+      : {
+          ...(current.tokenUsage as Record<string, unknown> | undefined),
+          ...patch.tokenUsage,
+        };
+
+  return {
+    ...current,
+    ...patch,
+    sessionId: current.sessionId,
+    createdAt: current.createdAt,
+    tokenUsage: nextTokenUsage,
+  };
+}
+
+export async function createSessionMeta(
+  projectPath: string,
+  meta: SessionMeta
+): Promise<SessionMeta> {
+  await writeSessionMetaRecord(projectPath, meta as unknown as SessionMetaRecord);
+  return meta;
+}
+
+export async function saveSessionMeta(projectPath: string, meta: SessionMeta): Promise<void> {
+  await writeSessionMetaRecord(projectPath, meta as unknown as SessionMetaRecord);
 }
 
 export async function loadSessionMeta(
   projectPath: string,
   sessionId: string
 ): Promise<SessionMeta | null> {
-  try {
-    const content = await fs.readFile(metaPath(projectPath, sessionId), "utf8");
-    return normalizeSessionMeta(JSON.parse(content));
-  } catch {
-    return null;
-  }
+  const record = await readSessionMetaRecord(projectPath, sessionId);
+  return record ? toSessionMeta(record) : null;
 }
 
 export async function listSessionMetas(projectPath: string): Promise<SessionMeta[]> {
@@ -93,7 +149,7 @@ export async function listSessionMetas(projectPath: string): Promise<SessionMeta
       if (!file.endsWith(".json")) continue;
       try {
         const content = await fs.readFile(join(dir, file), "utf8");
-        metas.push(normalizeSessionMeta(JSON.parse(content)));
+        metas.push(toSessionMeta(JSON.parse(content) as SessionMetaRecord));
       } catch {
         // skip malformed files
       }
@@ -102,6 +158,39 @@ export async function listSessionMetas(projectPath: string): Promise<SessionMeta
   } catch {
     return [];
   }
+}
+
+export async function patchSessionMeta(
+  projectPath: string,
+  sessionId: string,
+  patch: SessionMetaPatch | ((currentMeta: SessionMeta) => SessionMetaPatch)
+): Promise<SessionMeta | null> {
+  const currentRecord = await readSessionMetaRecord(projectPath, sessionId);
+  if (!currentRecord) {
+    return null;
+  }
+
+  const currentMeta = toSessionMeta(currentRecord);
+  const nextPatch = typeof patch === "function" ? patch(currentMeta) : patch;
+  return toSessionMeta(
+    await writeSessionMetaRecord(projectPath, mergeSessionMetaRecord(currentRecord, nextPatch))
+  );
+}
+
+export async function upsertSessionMeta(
+  projectPath: string,
+  sessionId: string,
+  create: () => SessionMeta,
+  patch: SessionMetaPatch | ((currentMeta: SessionMeta) => SessionMetaPatch)
+): Promise<SessionMeta> {
+  const currentRecord =
+    (await readSessionMetaRecord(projectPath, sessionId)) ??
+    (create() as unknown as SessionMetaRecord);
+  const currentMeta = toSessionMeta(currentRecord);
+  const nextPatch = typeof patch === "function" ? patch(currentMeta) : patch;
+  return toSessionMeta(
+    await writeSessionMetaRecord(projectPath, mergeSessionMetaRecord(currentRecord, nextPatch))
+  );
 }
 
 export async function deleteSession(projectPath: string, sessionId: string): Promise<void> {

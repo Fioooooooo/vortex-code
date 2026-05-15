@@ -11,7 +11,12 @@ vi.mock("@main/infra/paths", () => ({
   getDataSubPath: vi.fn((subPath: string) => `${tempRoot}/${subPath}`),
 }));
 
-import { loadSessionMeta, saveSessionMeta } from "@main/infra/storage/session-store";
+import {
+  createSessionMeta,
+  loadSessionMeta,
+  patchSessionMeta,
+  saveSessionMeta,
+} from "@main/infra/storage/session-store";
 import { sessionsDir } from "@main/infra/storage/project-paths";
 
 const projectPath = "/tmp/project";
@@ -84,5 +89,77 @@ describe("session-store", () => {
     await expect(loadSessionMeta(projectPath, "session-2")).resolves.toEqual(
       meta({ sessionId: "session-2" })
     );
+  });
+
+  it("patches token usage without dropping available commands", async () => {
+    await createSessionMeta(
+      projectPath,
+      meta({
+        available_commands: [{ name: "review", description: "Review code" }],
+      })
+    );
+
+    await expect(
+      patchSessionMeta(projectPath, "session-1", {
+        tokenUsage: {
+          used: 42,
+          size: 1024,
+          cost: { amount: 1.25, currency: "USD" },
+        },
+      })
+    ).resolves.toEqual(
+      meta({
+        tokenUsage: {
+          used: 42,
+          size: 1024,
+          cost: { amount: 1.25, currency: "USD" },
+        },
+        available_commands: [{ name: "review", description: "Review code" }],
+      })
+    );
+  });
+
+  it("preserves unknown fields when patching existing session meta", async () => {
+    mkdirSync(dirname(sessionMetaPath()), { recursive: true });
+    writeFileSync(
+      sessionMetaPath(),
+      JSON.stringify({
+        ...meta(),
+        available_commands: [{ name: "review", description: "Review code" }],
+        future_field: { enabled: true },
+      }),
+      "utf8"
+    );
+
+    await patchSessionMeta(projectPath, "session-1", {
+      title: "Updated Session",
+    });
+
+    const raw = JSON.parse(readFileSync(sessionMetaPath(), "utf8")) as Record<string, unknown>;
+    expect(raw.title).toBe("Updated Session");
+    expect(raw.available_commands).toEqual([{ name: "review", description: "Review code" }]);
+    expect(raw.future_field).toEqual({ enabled: true });
+  });
+
+  it("upserts a missing session meta file without dropping future fields", async () => {
+    await expect(
+      import("@main/infra/storage/session-store").then(({ upsertSessionMeta }) =>
+        upsertSessionMeta(
+          projectPath,
+          "session-3",
+          () => ({
+            ...meta({ sessionId: "session-3" }),
+            available_commands: [{ name: "review", description: "Review code" }],
+          }),
+          {
+            title: "Created Later",
+          }
+        )
+      )
+    ).resolves.toMatchObject({
+      sessionId: "session-3",
+      title: "Created Later",
+      available_commands: [{ name: "review", description: "Review code" }],
+    });
   });
 });

@@ -1,6 +1,6 @@
 import { EventEmitter } from "events";
 import type { SessionNotification } from "@agentclientprotocol/sdk";
-import { loadSessionMeta, saveSessionMeta } from "@main/infra/storage/session-store";
+import { loadSessionMeta, upsertSessionMeta } from "@main/infra/storage/session-store";
 import { mapSessionUpdate } from "./acp-mapper";
 import { getOrStartProcess } from "@main/infra/process/acp-process-pool";
 import type { SessionEvent } from "@main/domain/chat/session-events";
@@ -65,8 +65,7 @@ export class AcpSession extends EventEmitter {
       try {
         await connection.resumeSession({ sessionId: acpSessionId, cwd, mcpServers });
       } catch {
-        // TODO(fallback-treatment): add-system-reminder-injection tasks.md 8.1 tracks
-        // resumeSession fallback治理（历史消息回放、sessionId 迁移等） as a separate change.
+        // resumeSession fallback治理（历史消息回放、sessionId 迁移等）为独立后续工作。
         logger.warn(
           `[acp-session] resumeSession failed for ${acpSessionId}, falling back to newSession`
         );
@@ -82,17 +81,28 @@ export class AcpSession extends EventEmitter {
 
     this.acpSessionId = acpSessionId;
 
-    // Persist immediately
-    await saveSessionMeta(projectPath, {
-      sessionId: fylloSessionId,
-      acpSessionId,
-      agentId,
-      title: meta?.title ?? "New Session",
-      turnCount: (meta?.turnCount ?? 0) + 1,
-      tokenUsage: meta?.tokenUsage ?? { used: 0, size: 0 },
-      createdAt: meta?.createdAt ?? new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    });
+    // Persist immediately through the centralized session-store updater so
+    // future meta fields survive subsequent turn starts.
+    await upsertSessionMeta(
+      projectPath,
+      fylloSessionId,
+      () => ({
+        sessionId: fylloSessionId,
+        acpSessionId,
+        agentId,
+        title: meta?.title ?? "New Session",
+        turnCount: (meta?.turnCount ?? 0) + 1,
+        tokenUsage: meta?.tokenUsage ?? { used: 0, size: 0 },
+        createdAt: meta?.createdAt ?? new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }),
+      {
+        acpSessionId,
+        agentId,
+        turnCount: (meta?.turnCount ?? 0) + 1,
+        updatedAt: new Date().toISOString(),
+      }
+    );
 
     this.emit("event", { type: "session_id_resolved", acpSessionId } satisfies SessionEvent);
 

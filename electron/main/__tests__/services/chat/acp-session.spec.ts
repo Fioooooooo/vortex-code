@@ -16,7 +16,8 @@ const mocks = vi.hoisted(() => {
     sessionHandlers,
     getOrStartProcess: vi.fn(),
     loadSessionMeta: vi.fn(),
-    saveSessionMeta: vi.fn(),
+    patchSessionMeta: vi.fn(),
+    upsertSessionMeta: vi.fn(),
     getBundledMcpServers: vi.fn(),
     toAcpMcpServerEnv: vi.fn(),
     resolveSystemReminder: vi.fn(),
@@ -33,7 +34,8 @@ vi.mock("@main/infra/process/acp-process-pool", () => ({
 
 vi.mock("@main/infra/storage/session-store", () => ({
   loadSessionMeta: mocks.loadSessionMeta,
-  saveSessionMeta: mocks.saveSessionMeta,
+  patchSessionMeta: mocks.patchSessionMeta,
+  upsertSessionMeta: mocks.upsertSessionMeta,
 }));
 
 vi.mock("@main/infra/mcp/bundled-mcp-servers", () => ({
@@ -73,6 +75,19 @@ describe("AcpSession", () => {
       tokenUsage: { used: 0, size: 0 },
       createdAt: "2026-05-08T00:00:00.000Z",
       updatedAt: "2026-05-08T00:00:00.000Z",
+    });
+    mocks.upsertSessionMeta.mockImplementation(async (_projectPath, _sessionId, create, update) => {
+      const current = await mocks.loadSessionMeta();
+      const base = current ?? create();
+      const next = typeof update === "function" ? update(base) : update;
+      return { ...base, ...next };
+    });
+    mocks.patchSessionMeta.mockImplementation(async (_projectPath, _sessionId, update) => {
+      const current = await mocks.loadSessionMeta();
+      if (!current) return null;
+      return typeof update === "function"
+        ? { ...current, ...update(current) }
+        : { ...current, ...update };
     });
     mocks.getBundledMcpServers.mockReturnValue([]);
     mocks.toAcpMcpServerEnv.mockImplementation((env: unknown) => env);
@@ -204,5 +219,33 @@ describe("AcpSession", () => {
       sessionId: "acp-new",
       prompt: [{ type: "text", text: "hello" }],
     });
+  });
+
+  it("preserves available_commands when start persists the next turn", async () => {
+    mocks.loadSessionMeta.mockResolvedValue({
+      sessionId: "session-1",
+      acpSessionId: "acp-existing",
+      agentId: "claude-acp",
+      title: "Session",
+      turnCount: 1,
+      tokenUsage: { used: 0, size: 0 },
+      available_commands: [{ name: "review", description: "Review code" }],
+      createdAt: "2026-05-08T00:00:00.000Z",
+      updatedAt: "2026-05-08T00:00:00.000Z",
+    });
+
+    const session = await createSession();
+    await session.start("hello");
+
+    expect(mocks.upsertSessionMeta).toHaveBeenCalledWith(
+      "/tmp/project",
+      "session-1",
+      expect.any(Function),
+      expect.objectContaining({
+        acpSessionId: "acp-existing",
+        agentId: "claude-acp",
+        turnCount: 2,
+      })
+    );
   });
 });

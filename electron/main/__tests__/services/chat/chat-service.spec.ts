@@ -4,6 +4,9 @@ import type { SessionMeta } from "@main/infra/storage/session-store";
 const mocks = vi.hoisted(() => ({
   loadProject: vi.fn(),
   listSessionMetas: vi.fn(),
+  loadSessionMeta: vi.fn(),
+  patchSessionMeta: vi.fn(),
+  createSessionMeta: vi.fn(),
 }));
 
 vi.mock("@main/infra/storage/project-store", () => ({
@@ -12,11 +15,12 @@ vi.mock("@main/infra/storage/project-store", () => ({
 
 vi.mock("@main/infra/storage/session-store", () => ({
   appendMessage: vi.fn(),
+  createSessionMeta: mocks.createSessionMeta,
   deleteSession: vi.fn(),
   listSessionMetas: mocks.listSessionMetas,
   loadMessages: vi.fn(),
-  loadSessionMeta: vi.fn(),
-  saveSessionMeta: vi.fn(),
+  loadSessionMeta: mocks.loadSessionMeta,
+  patchSessionMeta: mocks.patchSessionMeta,
 }));
 
 import { listSessions } from "@main/services/chat/chat-service";

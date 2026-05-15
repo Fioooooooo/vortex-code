@@ -21,7 +21,8 @@ const mocks = vi.hoisted(() => {
     persistSessionMessage: vi.fn(),
     resolveProjectPath: vi.fn(),
     loadSessionMeta: vi.fn(),
-    saveSessionMeta: vi.fn(),
+    patchSessionMeta: vi.fn(),
+    upsertSessionMeta: vi.fn(),
     register: vi.fn(),
     unregister: vi.fn(),
     cancel: vi.fn(),
@@ -55,7 +56,8 @@ vi.mock("@main/services/chat/chat-service", () => ({
 vi.mock("@main/infra/storage/session-store", () => ({
   appendMessage: mocks.appendMessage,
   loadSessionMeta: mocks.loadSessionMeta,
-  saveSessionMeta: mocks.saveSessionMeta,
+  patchSessionMeta: mocks.patchSessionMeta,
+  upsertSessionMeta: mocks.upsertSessionMeta,
   sessionMessagesPath: vi.fn(
     (projectPath: string, sessionId: string) => `${projectPath}/${sessionId}.messages.jsonl`
   ),
@@ -115,6 +117,22 @@ describe("registerChatHandlers", () => {
       tokenUsage: { used: 0, size: 0 },
       createdAt: "2026-05-09T00:00:00.000Z",
       updatedAt: "2026-05-09T00:00:00.000Z",
+    });
+    mocks.patchSessionMeta.mockImplementation(async (_projectPath, _sessionId, update) => {
+      const current =
+        mocks.loadSessionMeta.mock.results.at(-1)?.value instanceof Promise
+          ? await mocks.loadSessionMeta.mock.results.at(-1)?.value
+          : await mocks.loadSessionMeta();
+      if (!current) return null;
+      return typeof update === "function"
+        ? { ...current, ...update(current) }
+        : { ...current, ...update };
+    });
+    mocks.upsertSessionMeta.mockImplementation(async (_projectPath, _sessionId, create, update) => {
+      const current = await mocks.loadSessionMeta();
+      const base = current ?? create();
+      const next = typeof update === "function" ? update(base) : update;
+      return { ...base, ...next };
     });
     mocks.assemblerFlush.mockReturnValue(null);
     const { registerChatHandlers } = await import("@main/ipc/chat");
@@ -224,8 +242,9 @@ describe("registerChatHandlers", () => {
       cost: { amount: 0.145305, currency: "USD" },
     });
     await vi.waitFor(() => {
-      expect(mocks.saveSessionMeta).toHaveBeenCalledWith(
+      expect(mocks.patchSessionMeta).toHaveBeenCalledWith(
         "/tmp/project",
+        "session-1",
         expect.objectContaining({
           tokenUsage: {
             used: 29017,
@@ -274,16 +293,10 @@ describe("registerChatHandlers", () => {
     mocks.eventHandler!({ type: "done", totalTokens: 4 });
 
     await vi.waitFor(() => {
-      expect(mocks.saveSessionMeta).toHaveBeenCalledWith(
+      expect(mocks.patchSessionMeta).toHaveBeenCalledWith(
         "/tmp/project",
-        expect.objectContaining({
-          tokenUsage: {
-            used: 29021,
-            size: 1000000,
-            cost: { amount: 0.145305, currency: "USD" },
-          },
-          available_commands: [{ name: "review", description: "Review code" }],
-        })
+        "session-1",
+        expect.any(Function)
       );
       expect(sink.sendDone).toHaveBeenCalledWith(4);
     });
@@ -428,12 +441,11 @@ describe("registerChatHandlers", () => {
       commands: [{ name: "review", description: "Review code" }],
     });
     await vi.waitFor(() => {
-      expect(mocks.saveSessionMeta).toHaveBeenCalledWith(
+      expect(mocks.patchSessionMeta).toHaveBeenCalledWith(
         "/tmp/project",
+        "session-1",
         expect.objectContaining({
           available_commands: [{ name: "review", description: "Review code" }],
-          title: "Session",
-          tokenUsage: { used: 0, size: 0 },
         })
       );
     });
@@ -467,8 +479,9 @@ describe("registerChatHandlers", () => {
       commands: [],
     });
     await vi.waitFor(() => {
-      expect(mocks.saveSessionMeta).toHaveBeenCalledWith(
+      expect(mocks.patchSessionMeta).toHaveBeenCalledWith(
         "/tmp/project",
+        "session-1",
         expect.objectContaining({
           available_commands: [],
         })
