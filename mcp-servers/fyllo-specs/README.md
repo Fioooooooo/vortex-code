@@ -131,7 +131,7 @@ Responsibility:
 - read prompt markdown through `loadPrompt()`
 - call the OpenSpec runtime adapter when OpenSpec state is needed
 - return one text payload containing:
-  - `<skill_prompt>...</skill_prompt>`
+  - `<tool_instruction>...</tool_instruction>`
   - `<state>...</state>`
 
 The tools do not spawn child processes directly and do not import `@fission-ai/openspec` as a library.

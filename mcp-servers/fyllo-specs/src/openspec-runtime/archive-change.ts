@@ -1,18 +1,14 @@
-import { existsSync, mkdirSync, readFileSync, renameSync, readdirSync, writeFileSync } from "fs";
+import { existsSync, readdirSync } from "fs";
 import { join } from "path";
-import { dump, load } from "js-yaml";
+import { resolveOpenspecCli } from "./resolve-cli";
+import { spawnOpenspec } from "./spawner";
 import type { ArchiveResult } from "./types";
-import { invalidRequest } from "../utils/mcp-errors";
 
 function changeDir(projectRoot: string, name: string): string {
   return join(projectRoot, "openspec", "changes", name);
 }
 
-function yamlPath(projectRoot: string, name: string): string {
-  return join(changeDir(projectRoot, name), ".openspec.yaml");
-}
-
-function archiveTarget(projectRoot: string, name: string): string {
+function archiveTargetPath(projectRoot: string, name: string): string {
   return join(
     projectRoot,
     "openspec",
@@ -35,26 +31,40 @@ export async function archiveChange(
 ): Promise<ArchiveResult> {
   const source = changeDir(projectRoot, name);
   if (!existsSync(source)) {
-    throw invalidRequest(`Change not found: ${name}`);
+    throw new Error(`Change not found: ${name}`);
   }
-  const target = archiveTarget(projectRoot, name);
+
+  const target = archiveTargetPath(projectRoot, name);
   const conflicts = existsSync(target) ? [target] : [];
-  const summary: ArchiveResult = {
+
+  // Preview mode: only compute info, do not modify anything
+  if (!opts.confirm) {
+    return {
+      changeName: name,
+      archiveTarget: target,
+      conflicts,
+      deltaSpecSummary: existsSync(source) ? deltaSummary(source) : null,
+    };
+  }
+
+  // Execution mode: delegate to openspec CLI
+  if (conflicts.length > 0) {
+    throw new Error(`Archive target exists: ${target}`);
+  }
+
+  const cliPath = resolveOpenspecCli();
+  await spawnOpenspec(
+    cliPath,
+    ["archive", name, "--yes"],
+    projectRoot,
+    {},
+    false // archive command output is plain text, not JSON
+  );
+
+  return {
     changeName: name,
     archiveTarget: target,
-    conflicts,
-    deltaSpecSummary: existsSync(source) ? deltaSummary(source) : null,
+    conflicts: [],
+    deltaSpecSummary: null,
   };
-
-  if (!opts.confirm || conflicts.length > 0) {
-    return summary;
-  }
-
-  const path = yamlPath(projectRoot, name);
-  const doc = (load(readFileSync(path, "utf8")) as Record<string, unknown>) ?? {};
-  doc.status = "archived";
-  writeFileSync(path, dump(doc), "utf8");
-  mkdirSync(join(projectRoot, "openspec", "changes", "archive"), { recursive: true });
-  renameSync(source, target);
-  return summary;
 }

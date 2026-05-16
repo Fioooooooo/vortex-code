@@ -1,7 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { wrapState } from "../utils/state";
-import { loadPrompt } from "../utils/load-prompt";
+import { runTool } from "../utils/state";
 import { listChanges, computeStatus } from "../openspec-runtime";
 import { resolveProjectRoot } from "../utils/project-root";
 
@@ -12,18 +11,27 @@ const exploreInputSchema = z.object({
     .describe(
       "Name of a specific change to inspect. Omit to get an overview of all active changes."
     ),
+  includeInstruction: z
+    .boolean()
+    .optional()
+    .default(true)
+    .describe(
+      "Set to false to omit the skill instruction text and return only the state JSON. Useful when the agent already knows the workflow."
+    ),
 });
 
 export async function exploreTool(input: z.infer<typeof exploreInputSchema>): Promise<string> {
-  const projectRoot = resolveProjectRoot();
-  const activeChanges = await listChanges(projectRoot);
-  const currentChange = input.changeName
-    ? await computeStatus(projectRoot, input.changeName)
-    : null;
-  return wrapState(loadPrompt("explore"), {
-    projectRoot,
-    activeChanges,
-    currentChange,
+  return runTool("explore", { includeInstruction: input.includeInstruction }, async () => {
+    const projectRoot = resolveProjectRoot();
+    const activeChanges = await listChanges(projectRoot);
+    const currentChange = input.changeName
+      ? await computeStatus(projectRoot, input.changeName)
+      : null;
+    return {
+      projectRoot,
+      activeChanges,
+      currentChange,
+    };
   });
 }
 

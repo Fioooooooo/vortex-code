@@ -1,11 +1,9 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { wrapState } from "../utils/state";
-import { loadPrompt } from "../utils/load-prompt";
+import { runTool } from "../utils/state";
 import { archiveChange } from "../openspec-runtime";
 import { resolveProjectRoot } from "../utils/project-root";
-import { invalidRequest } from "../utils/mcp-errors";
-import { readFileSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 
 const archiveChangeInputSchema = z.object({
@@ -16,36 +14,46 @@ const archiveChangeInputSchema = z.object({
     .describe(
       "Set to true to perform the actual archive move. Omit (or false) to preview conflicts and completion status first."
     ),
+  includeInstruction: z
+    .boolean()
+    .optional()
+    .default(true)
+    .describe(
+      "Set to false to omit the skill instruction text and return only the state JSON. Useful when the agent already knows the workflow."
+    ),
 });
 
 export async function archiveChangeTool(
   input: z.infer<typeof archiveChangeInputSchema>
 ): Promise<string> {
-  const projectRoot = resolveProjectRoot();
-  if (!input.changeName) {
-    throw invalidRequest("changeName is required");
-  }
-  const preview = await archiveChange(projectRoot, input.changeName ?? "", {
-    confirm: input.confirm,
-  });
-  if (input.confirm && preview.conflicts.length > 0) {
-    throw invalidRequest(`Archive target exists: ${preview.archiveTarget}`);
-  }
-  const tasksText = readFileSync(
-    join(projectRoot, "openspec", "changes", input.changeName, "tasks.md"),
-    "utf8"
-  );
-  const incompleteTasks = tasksText
-    .split("\n")
-    .filter((line) => /^- \[ \]/.test(line.trimEnd())).length;
-  return wrapState(loadPrompt("archive-change"), {
-    changeName: preview.changeName,
-    artifactStatus: (preview.deltaSpecSummary as { files?: string[] } | null)?.files ?? [],
-    incompleteTasks,
-    deltaSpecSummary: preview.deltaSpecSummary,
-    archiveTarget: preview.archiveTarget,
-    conflicts: preview.conflicts,
-    confirm: input.confirm ?? false,
+  return runTool("archive-change", { includeInstruction: input.includeInstruction }, async () => {
+    const projectRoot = resolveProjectRoot();
+    if (!input.changeName) {
+      throw new Error("changeName is required");
+    }
+
+    const changeDirPath = join(projectRoot, "openspec", "changes", input.changeName);
+    if (!existsSync(changeDirPath)) {
+      throw new Error(`Change not found: ${input.changeName}`);
+    }
+    const tasksText = readFileSync(join(changeDirPath, "tasks.md"), "utf8");
+    const incompleteTasks = tasksText
+      .split("\n")
+      .filter((line) => /^- \[ \]/.test(line.trimEnd())).length;
+
+    const result = await archiveChange(projectRoot, input.changeName ?? "", {
+      confirm: input.confirm,
+    });
+
+    return {
+      changeName: result.changeName,
+      artifactStatus: (result.deltaSpecSummary as { files?: string[] } | null)?.files ?? [],
+      incompleteTasks,
+      deltaSpecSummary: result.deltaSpecSummary,
+      archiveTarget: result.archiveTarget,
+      conflicts: result.conflicts,
+      confirm: input.confirm ?? false,
+    };
   });
 }
 
