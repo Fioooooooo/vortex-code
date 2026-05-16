@@ -55,8 +55,8 @@ function formatTime(date: Date): string {
 }
 
 async function handleSelect(): Promise<void> {
+  chatStore.resetChatState();
   await sessionStore.selectSession(session.value.id);
-  chatStore.chatStatus = "ready";
 }
 
 async function handleRename(): Promise<void> {

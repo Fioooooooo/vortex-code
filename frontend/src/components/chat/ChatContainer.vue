@@ -3,10 +3,11 @@ import { storeToRefs } from "pinia";
 import { useChatStore } from "@renderer/stores/chat";
 import { useSessionStore } from "@renderer/stores/session";
 import UIMessageList from "@renderer/components/shared/UIMessageList.vue";
+import ChatStreamError from "./ChatStreamError.vue";
 import ChatPromptPanel from "./ChatPromptPanel.vue";
 
 const store = useChatStore();
-const { chatStatus } = storeToRefs(store);
+const { chatStatus, streamError } = storeToRefs(store);
 const { activeSession } = storeToRefs(useSessionStore());
 </script>
 
@@ -20,6 +21,10 @@ const { activeSession } = storeToRefs(useSessionStore());
           type="chat"
           :agent-id="activeSession?.agentId"
         />
+
+        <div v-if="streamError" class="px-2.5">
+          <ChatStreamError />
+        </div>
       </div>
     </div>
 

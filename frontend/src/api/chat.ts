@@ -3,10 +3,15 @@ import type { Session, Message } from "@shared/types/chat";
 
 type SessionPatch = Partial<Pick<Session, "title" | "agentId">>;
 
+export interface StreamError {
+  code: string;
+  message: string;
+}
+
 export interface StreamCallbacks {
   onChunk: (data: MessageChunkData) => void;
   onDone: (data: { totalTokens: number }) => void;
-  onError: (error: { code: string; message: string }) => void;
+  onError: (error: StreamError) => void;
 }
 
 export const chatApi = {

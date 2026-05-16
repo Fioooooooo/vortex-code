@@ -4,7 +4,7 @@ import { generateId } from "ai";
 import { useToast } from "@nuxt/ui/composables";
 import type { ChatStatus, Message, ModeType, Session } from "@shared/types/chat";
 import type { MessageChunkData } from "@shared/types/ipc";
-import { chatApi } from "@renderer/api/chat";
+import { chatApi, type StreamError } from "@renderer/api/chat";
 import { useUIMessageAssembler } from "@renderer/composables/useUIMessageAssembler";
 import { useProjectStore } from "./project";
 import { useSessionStore } from "./session";
@@ -40,6 +40,28 @@ export const useChatStore = defineStore("chat", () => {
   const chatStatus = ref<ChatStatus>("ready");
   const mode = ref<ModeType>("manual");
   const cancelFn = ref<(() => void) | null>(null);
+  const streamError = ref<StreamError | null>(null);
+  const activeStreamRunId = ref(0);
+
+  function beginStreamRun(): number {
+    activeStreamRunId.value += 1;
+    return activeStreamRunId.value;
+  }
+
+  function isCurrentStreamRun(runId: number): boolean {
+    return activeStreamRunId.value === runId;
+  }
+
+  function clearActiveStreamControl(): void {
+    cancelFn.value = null;
+  }
+
+  function resetChatState(): void {
+    beginStreamRun();
+    chatStatus.value = "ready";
+    streamError.value = null;
+    clearActiveStreamControl();
+  }
 
   function queueUserMessage(
     session: Session,
@@ -73,6 +95,8 @@ export const useChatStore = defineStore("chat", () => {
       sessionId: activeSession.id,
     });
 
+    const streamRunId = beginStreamRun();
+
     cancelFn.value = chatApi.streamMessage(
       activeSession.id,
       projectId,
@@ -86,7 +110,7 @@ export const useChatStore = defineStore("chat", () => {
             return;
           }
 
-          if (chatStatus.value === "submitted") {
+          if (isCurrentStreamRun(streamRunId) && chatStatus.value === "submitted") {
             chatStatus.value = "streaming";
           }
 
@@ -113,16 +137,18 @@ export const useChatStore = defineStore("chat", () => {
               assembler.applyChunk(data);
               return;
             default: {
-              const _exhaustive: never = data;
-              void _exhaustive;
+              void data;
               throw new Error(`unhandled stream chunk: ${(data as MessageChunkData).kind}`);
             }
           }
         },
         onDone(done) {
-          cancelFn.value = null;
           assembler.resetActive();
-          chatStatus.value = "ready";
+          if (isCurrentStreamRun(streamRunId)) {
+            clearActiveStreamControl();
+            streamError.value = null;
+            chatStatus.value = "ready";
+          }
           activeSession.tokenUsage = {
             ...activeSession.tokenUsage,
             used: activeSession.tokenUsage.used + done.totalTokens,
@@ -132,9 +158,12 @@ export const useChatStore = defineStore("chat", () => {
           sessionStore.sortSessions();
         },
         onError(err) {
-          cancelFn.value = null;
           assembler.resetActive();
-          chatStatus.value = "error";
+          if (isCurrentStreamRun(streamRunId)) {
+            clearActiveStreamControl();
+            streamError.value = err;
+            chatStatus.value = "error";
+          }
           activeSession.status = "ended";
           activeSession.updatedAt = new Date();
           sessionStore.sortSessions();
@@ -172,6 +201,7 @@ export const useChatStore = defineStore("chat", () => {
         return;
       }
 
+      streamError.value = null;
       chatStatus.value = "submitted";
       const fallbackTitleSnapshot = buildFallbackSessionTitle(prompt);
 
@@ -193,6 +223,7 @@ export const useChatStore = defineStore("chat", () => {
       }
     }
 
+    streamError.value = null;
     const userMessage = queueUserMessage(activeSession, prompt, sessionStore);
     chatStatus.value = "submitted";
     persistMessage(activeSession.id, projectIdSnapshot, userMessage);
@@ -210,8 +241,11 @@ export const useChatStore = defineStore("chat", () => {
   return {
     chatStatus,
     mode,
+    cancelFn,
+    streamError,
     sendMessage,
     setMode,
+    resetChatState,
     cancelStream,
   };
 });

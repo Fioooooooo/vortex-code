@@ -144,6 +144,8 @@ describe("useChatStore", () => {
       "hello world",
       expect.any(Object)
     );
+    expect(chatStore.streamError).toBeNull();
+    expect(chatStore.chatStatus).toBe("submitted");
   });
 
   it("updates the active session message list reactively for the first draft message", async () => {
@@ -335,6 +337,9 @@ describe("useChatStore", () => {
     expect(sessionStore.activeSession?.messages).toHaveLength(2);
     expect(sessionStore.activeSession?.messages[1]?.role).toBe("assistant");
     expect(chatApi.persistMessage).toHaveBeenCalledTimes(1);
+    expect(chatStore.chatStatus).toBe("ready");
+    expect(chatStore.streamError).toBeNull();
+    expect(chatStore.cancelFn).toBeNull();
   });
 
   it("routes available_commands_update to the session store without touching the assembler path", async () => {
@@ -411,5 +416,177 @@ describe("useChatStore", () => {
     expect(sessionStore.activeSession?.messages[1]?.parts).toEqual([
       { type: "reasoning", text: "thinking" },
     ]);
+    expect(chatStore.chatStatus).toBe("streaming");
+  });
+
+  it("stores stream errors in chat state and clears active stream control", async () => {
+    const acpAgentsStore = useAcpAgentsStore();
+    acpAgentsStore.registry = mockRegistry;
+    acpAgentsStore.statuses = mockStatuses;
+
+    const projectStore = useProjectStore();
+    projectStore.currentProject = {
+      id: "project-1",
+      name: "Project 1",
+      path: "/tmp/project-1",
+      createdAt: new Date("2026-04-30T08:00:00.000Z"),
+      lastOpenedAt: new Date("2026-04-30T08:00:00.000Z"),
+    };
+
+    let callbacks: StreamCallbacks | null = null;
+    const cancel = vi.fn();
+    vi.mocked(chatApi.streamMessage).mockImplementation(
+      (_sessionId, _projectId, _agentId, _prompt, nextCallbacks) => {
+        callbacks = nextCallbacks;
+        return cancel;
+      }
+    );
+
+    const sessionStore = useSessionStore();
+    sessionStore.beginDraftSession();
+
+    const chatStore = useChatStore();
+    await chatStore.sendMessage("hello world");
+
+    expect(chatStore.cancelFn).toBe(cancel);
+
+    callbacks!.onError({
+      code: "stream_failed",
+      message: "The stream disconnected unexpectedly",
+    });
+
+    expect(chatStore.streamError).toEqual({
+      code: "stream_failed",
+      message: "The stream disconnected unexpectedly",
+    });
+    expect(chatStore.chatStatus).toBe("error");
+    expect(chatStore.cancelFn).toBeNull();
+    expect(sessionStore.activeSession?.status).toBe("ended");
+  });
+
+  it("resetChatState only resets chat transient state", async () => {
+    const acpAgentsStore = useAcpAgentsStore();
+    acpAgentsStore.registry = mockRegistry;
+    acpAgentsStore.statuses = mockStatuses;
+
+    const projectStore = useProjectStore();
+    projectStore.currentProject = {
+      id: "project-1",
+      name: "Project 1",
+      path: "/tmp/project-1",
+      createdAt: new Date("2026-04-30T08:00:00.000Z"),
+      lastOpenedAt: new Date("2026-04-30T08:00:00.000Z"),
+    };
+
+    let callbacks: StreamCallbacks | null = null;
+    vi.mocked(chatApi.streamMessage).mockImplementation(
+      (_sessionId, _projectId, _agentId, _prompt, nextCallbacks) => {
+        callbacks = nextCallbacks;
+        return () => {};
+      }
+    );
+
+    const sessionStore = useSessionStore();
+    sessionStore.beginDraftSession();
+
+    const chatStore = useChatStore();
+    await chatStore.sendMessage("hello world");
+    callbacks!.onError({ code: "stream_failed", message: "bad network" });
+
+    const sessionSnapshot = JSON.stringify({
+      sessions: sessionStore.sessions,
+      activeSessionId: sessionStore.activeSessionId,
+    });
+
+    chatStore.resetChatState();
+
+    expect(chatStore.chatStatus).toBe("ready");
+    expect(chatStore.streamError).toBeNull();
+    expect(chatStore.cancelFn).toBeNull();
+    expect(
+      JSON.stringify({
+        sessions: sessionStore.sessions,
+        activeSessionId: sessionStore.activeSessionId,
+      })
+    ).toBe(sessionSnapshot);
+  });
+
+  it("clears the previous error before starting a new send after failure", async () => {
+    const acpAgentsStore = useAcpAgentsStore();
+    acpAgentsStore.registry = mockRegistry;
+    acpAgentsStore.statuses = mockStatuses;
+
+    const projectStore = useProjectStore();
+    projectStore.currentProject = {
+      id: "project-1",
+      name: "Project 1",
+      path: "/tmp/project-1",
+      createdAt: new Date("2026-04-30T08:00:00.000Z"),
+      lastOpenedAt: new Date("2026-04-30T08:00:00.000Z"),
+    };
+
+    const streamCallbacks: StreamCallbacks[] = [];
+    vi.mocked(chatApi.streamMessage).mockImplementation(
+      (_sessionId, _projectId, _agentId, _prompt, nextCallbacks) => {
+        streamCallbacks.push(nextCallbacks);
+        return () => {};
+      }
+    );
+
+    const sessionStore = useSessionStore();
+    sessionStore.beginDraftSession();
+
+    const chatStore = useChatStore();
+    await chatStore.sendMessage("hello world");
+    streamCallbacks[0]!.onError({ code: "stream_failed", message: "bad network" });
+
+    expect(chatStore.chatStatus).toBe("error");
+    expect(chatStore.streamError).toEqual({ code: "stream_failed", message: "bad network" });
+
+    await chatStore.sendMessage("retry request");
+
+    expect(chatStore.streamError).toBeNull();
+    expect(chatStore.chatStatus).toBe("submitted");
+    expect(sessionStore.activeSession?.messages.at(-1)?.role).toBe("user");
+    expect(sessionStore.activeSession?.turnCount).toBe(2);
+  });
+
+  it("returns from error to ready when a later stream run completes", async () => {
+    const acpAgentsStore = useAcpAgentsStore();
+    acpAgentsStore.registry = mockRegistry;
+    acpAgentsStore.statuses = mockStatuses;
+
+    const projectStore = useProjectStore();
+    projectStore.currentProject = {
+      id: "project-1",
+      name: "Project 1",
+      path: "/tmp/project-1",
+      createdAt: new Date("2026-04-30T08:00:00.000Z"),
+      lastOpenedAt: new Date("2026-04-30T08:00:00.000Z"),
+    };
+
+    const streamCallbacks: StreamCallbacks[] = [];
+    vi.mocked(chatApi.streamMessage).mockImplementation(
+      (_sessionId, _projectId, _agentId, _prompt, nextCallbacks) => {
+        streamCallbacks.push(nextCallbacks);
+        return () => {};
+      }
+    );
+
+    const sessionStore = useSessionStore();
+    sessionStore.beginDraftSession();
+
+    const chatStore = useChatStore();
+    await chatStore.sendMessage("hello world");
+    streamCallbacks[0]!.onError({ code: "stream_failed", message: "bad network" });
+
+    await chatStore.sendMessage("retry request");
+    streamCallbacks[1]!.onChunk({ kind: "text_delta", text: "assistant reply" });
+    streamCallbacks[1]!.onDone({ totalTokens: 5 });
+
+    expect(chatStore.chatStatus).toBe("ready");
+    expect(chatStore.streamError).toBeNull();
+    expect(chatStore.cancelFn).toBeNull();
+    expect(sessionStore.activeSession?.messages.at(-1)?.role).toBe("assistant");
   });
 });
