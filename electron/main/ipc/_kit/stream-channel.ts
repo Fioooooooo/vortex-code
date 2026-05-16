@@ -84,7 +84,13 @@ export function makeStreamChannel(options: MakeStreamChannelOptions): IpcRespons
       .catch((err: unknown) => {
         const message = err instanceof Error ? err.message : String(err);
         const code = (err as { code?: IpcErrorCode }).code ?? IpcErrorCodes.UNKNOWN_ERROR;
-        sink.sendError(code, message);
+        if (state.started) {
+          sink.sendError(code, message);
+        } else {
+          // Renderer hasn't signalled ready yet; cache the error so it can be
+          // delivered after the ready handshake completes.
+          state.pendingError = { code, message };
+        }
       });
 
     port1.on("close", () => {
@@ -98,6 +104,13 @@ export function makeStreamChannel(options: MakeStreamChannelOptions): IpcRespons
       if (payload?.type !== "ready") return;
       if (state.started || state.finalised) return;
       state.started = true;
+
+      // If onReady failed before the renderer signalled ready, deliver the
+      // cached error now so the renderer can surface it to the user.
+      if (state.pendingError) {
+        sink.sendError(state.pendingError.code, state.pendingError.message);
+        return;
+      }
 
       // Wait for runner to exist (it may still be settling).
       const launch = (): void => {
@@ -127,6 +140,7 @@ export function makeStreamChannel(options: MakeStreamChannelOptions): IpcRespons
 interface StreamState {
   finalised: boolean;
   started: boolean;
+  pendingError: { code: IpcErrorCode; message: string } | null;
   post(msg: { type: "chunk"; data: MessageChunkData }): void;
   finalise(
     msg:
@@ -161,6 +175,7 @@ function createStreamState(port: MessagePortMain, logTag: string): StreamState {
 
   const state: StreamState = {
     started: false,
+    pendingError: null,
     get finalised() {
       return finalised;
     },
