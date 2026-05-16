@@ -11,7 +11,7 @@ export interface MarkdownTab {
 
 <script setup lang="ts">
 import { computed } from "vue";
-import ChatComark from "@renderer/components/chat/ChatComark";
+import MarkStream from "@renderer/components/shared/MarkStream.vue";
 
 const props = defineProps<{
   tabs: MarkdownTab[];
@@ -79,7 +79,7 @@ function handleModelValueUpdate(value: unknown): void {
         </div>
 
         <div v-else class="prose prose-sm dark:prose-invert max-w-none">
-          <ChatComark :markdown="activeContent" />
+          <MarkStream :content="activeContent" :is-streaming="false" />
         </div>
       </div>
     </div>

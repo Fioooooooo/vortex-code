@@ -4,7 +4,7 @@ import { storeToRefs } from "pinia";
 import type { UIMessage } from "ai";
 import { isReasoningUIPart, isTextUIPart, isToolUIPart } from "ai";
 import { isPartStreaming, isToolStreaming } from "@nuxt/ui/utils/ai";
-import ChatComark from "@renderer/components/chat/ChatComark";
+import MarkStream from "./MarkStream.vue";
 import { getToolText, getToolSuffix, getToolOutput } from "@renderer/utils/chatTool";
 import { isSystemReminderPart } from "@renderer/utils/system-reminder";
 import { useAcpAgentsStore } from "@renderer/stores/acp-agents";
@@ -70,7 +70,7 @@ const assistantAvatar = computed(() => {
             :text="part.text"
             :streaming="isPartStreaming(part)"
           >
-            <ChatComark :markdown="part.text" :streaming="isPartStreaming(part)" />
+            <MarkStream :content="part.text" :is-streaming="isPartStreaming(part)" />
           </UChatReasoning>
 
           <UChatTool
@@ -85,10 +85,10 @@ const assistantAvatar = computed(() => {
           </UChatTool>
 
           <template v-else-if="isTextUIPart(part)">
-            <ChatComark
+            <MarkStream
               v-if="message.role === 'assistant'"
-              :markdown="part.text"
-              :streaming="isPartStreaming(part)"
+              :content="part.text"
+              :is-streaming="isPartStreaming(part)"
             />
             <p
               v-else-if="message.role === 'user' && !isSystemReminderPart(part)"

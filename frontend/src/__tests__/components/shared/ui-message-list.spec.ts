@@ -68,9 +68,9 @@ function mountList(
     global: {
       plugins: [createPinia()],
       stubs: {
-        ChatComark: {
-          props: ["markdown"],
-          template: '<div data-test="markdown">{{ markdown }}</div>',
+        MarkStream: {
+          props: ["content", "isStreaming"],
+          template: '<div data-test="markdown">{{ content }}</div>',
         },
         UChatMessages: chatMessagesStub,
         ChatMessages: chatMessagesStub,
