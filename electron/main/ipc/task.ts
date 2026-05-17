@@ -1,6 +1,7 @@
 import { ipcMain } from "electron";
 import { TaskChannels } from "@shared/types/channels";
 import {
+  getTaskInputSchema,
   createTaskInputSchema,
   deleteTaskInputSchema,
   listTasksInputSchema,
@@ -14,9 +15,25 @@ import {
   resolveTaskProjectPath,
   updateTask as updateLocalTask,
 } from "@main/services/task/task-service";
-import { listTasks as listAggregatedTasks } from "@main/services/task/task-aggregator";
+import {
+  getTask as getAggregatedTask,
+  listTasks as listAggregatedTasks,
+} from "@main/services/task/task-aggregator";
+import { ipcError } from "./_kit/errors";
+import { IpcErrorCodes } from "@shared/constants/error-codes";
 
 export function registerTaskHandlers(): void {
+  ipcMain.handle(TaskChannels.get, (_event, input: unknown) =>
+    wrapHandler(async () => {
+      const { projectId, taskId } = validate(getTaskInputSchema, input);
+      const task = await getAggregatedTask(projectId, taskId);
+      if (!task) {
+        throw ipcError(IpcErrorCodes.TASK_NOT_FOUND, `Task not found: ${taskId}`);
+      }
+      return task;
+    })
+  );
+
   ipcMain.handle(TaskChannels.list, (_event, input: unknown) =>
     wrapHandler(async () => {
       const { projectId, source } = validate(listTasksInputSchema, input);

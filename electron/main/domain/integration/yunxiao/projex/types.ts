@@ -140,6 +140,14 @@ export interface SearchWorkitemsParams {
   perPage?: number;
 }
 
+/** getWorkitem 请求参数 */
+export interface GetWorkitemParams {
+  /** 组织 ID */
+  organizationId: string;
+  /** 工作项 ID */
+  id: string;
+}
+
 /** createWorkitem 请求参数 */
 export interface CreateWorkitemParams {
   /** 组织 ID */

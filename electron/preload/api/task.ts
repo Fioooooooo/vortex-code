@@ -9,6 +9,10 @@ import type {
 } from "@shared/types/task";
 
 export const taskApi = {
+  getTask(projectId: string, taskId: string): Promise<IpcResponse<TaskItem>> {
+    return ipcRenderer.invoke(TaskChannels.get, { projectId, taskId });
+  },
+
   listTasks(projectId: string, source?: TaskSource): Promise<IpcResponse<TaskItem[]>> {
     return ipcRenderer.invoke(TaskChannels.list, { projectId, source });
   },

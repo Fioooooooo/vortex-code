@@ -41,6 +41,7 @@ export const ProposalChannels = {
 } as const;
 
 export const TaskChannels = {
+  get: "task:get",
   list: "task:list",
   create: "task:create",
   update: "task:update",

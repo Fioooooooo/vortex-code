@@ -10,6 +10,9 @@ type TaskStoreStub = {
   tasks: TaskItem[];
   loading: boolean;
   error: string | null;
+  detailLoadingTaskId: string | null;
+  detailErrorTaskId: string | null;
+  detailErrorMessage: string | null;
   availableSources: VisibleTaskSource[];
   sourceTabs: Array<{ label: string; value: VisibleTaskSource }>;
   projectIntegration: unknown;
@@ -19,12 +22,15 @@ type TaskStoreStub = {
   filteredTasks: TaskItem[];
   refreshAvailableSources: ReturnType<typeof vi.fn>;
   loadTasks: typeof loadTasksMock;
+  loadTaskDetail: typeof loadTaskDetailMock;
   createTask: typeof createTaskMock;
   updateTask: typeof updateTaskMock;
   deleteTask: typeof deleteTaskMock;
+  resetDetailState: ReturnType<typeof vi.fn>;
 };
 
 const loadTasksMock = vi.fn();
+const loadTaskDetailMock = vi.fn();
 const createTaskMock = vi.fn();
 const updateTaskMock = vi.fn();
 const deleteTaskMock = vi.fn();
@@ -37,6 +43,9 @@ const taskStore = reactive<TaskStoreStub>({
   tasks: [] as TaskItem[],
   loading: false,
   error: null as string | null,
+  detailLoadingTaskId: null,
+  detailErrorTaskId: null,
+  detailErrorMessage: null,
   availableSources: ["local"],
   sourceTabs: [{ label: "本地", value: "local" as const }],
   projectIntegration: null,
@@ -46,9 +55,11 @@ const taskStore = reactive<TaskStoreStub>({
   filteredTasks: [] as TaskItem[],
   refreshAvailableSources: vi.fn(),
   loadTasks: loadTasksMock,
+  loadTaskDetail: loadTaskDetailMock,
   createTask: createTaskMock,
   updateTask: updateTaskMock,
   deleteTask: deleteTaskMock,
+  resetDetailState: vi.fn(),
 });
 
 const projectStore = reactive({
@@ -102,9 +113,10 @@ const createTaskModalStub = {
 };
 
 const taskDetailModalStub = {
-  props: ["open", "task", "error"],
+  props: ["open", "task", "error", "detailLoading", "detailError"],
   emits: ["update:open", "save"],
-  template: "<div />",
+  template:
+    '<div data-test="detail-modal">{{ task?.title }}|{{ detailLoading ? "loading" : "idle" }}|{{ detailError || "" }}</div>',
 };
 
 describe("task page", () => {
@@ -117,6 +129,9 @@ describe("task page", () => {
     taskStore.sourceTabs = [{ label: "本地", value: "local" }];
     taskStore.sourceFilter = "local";
     taskStore.statusFilter = "open";
+    taskStore.detailLoadingTaskId = null;
+    taskStore.detailErrorTaskId = null;
+    taskStore.detailErrorMessage = null;
     taskStore.tasks = [];
     taskStore.tasksBySource = [];
     taskStore.filteredTasks = [];
@@ -251,5 +266,102 @@ describe("task page", () => {
       )
     );
     expect(sendMessageMock).not.toHaveBeenCalledWith(expect.stringContaining("()"));
+  });
+
+  it("loads yunxiao task detail after opening the modal", async () => {
+    const detailTask = {
+      id: "yunxiao:space-1:102",
+      projectId: "project-1",
+      title: "云效任务详情",
+      description: "详情描述",
+      status: "open",
+      source: "yunxiao",
+      sourceMeta: {
+        source: "yunxiao",
+        key: "YX-102",
+        issueType: "任务",
+      },
+      labels: [],
+      createdAt: new Date("2026-05-10T08:00:00.000Z"),
+      updatedAt: new Date("2026-05-10T09:00:00.000Z"),
+    } satisfies TaskItem;
+    taskStore.filteredTasks = [
+      {
+        ...detailTask,
+        title: "云效任务",
+        description: "",
+      },
+    ];
+    loadTaskDetailMock.mockResolvedValue(detailTask);
+
+    const taskCardViewDetailStub = {
+      props: ["task"],
+      template:
+        '<button type="button" data-test="view-detail" @click="$emit(\'view-detail\', task)">{{ task.title }}</button>',
+    };
+
+    const wrapper = mount(TaskPage, {
+      global: {
+        stubs: {
+          TaskCard: taskCardViewDetailStub,
+          CreateTaskModal: createTaskModalStub,
+          TaskDetailModal: taskDetailModalStub,
+        },
+      },
+    });
+
+    await flushPromises();
+    await wrapper.get('[data-test="view-detail"]').trigger("click");
+    await flushPromises();
+
+    expect(loadTaskDetailMock).toHaveBeenCalledWith("yunxiao:space-1:102");
+    expect(wrapper.get('[data-test="detail-modal"]').text()).toContain("云效任务详情");
+  });
+
+  it("keeps modal open when yunxiao detail loading fails", async () => {
+    taskStore.filteredTasks = [
+      {
+        id: "yunxiao:space-1:103",
+        projectId: "project-1",
+        title: "云效任务",
+        description: "",
+        status: "open",
+        source: "yunxiao",
+        sourceMeta: {
+          source: "yunxiao",
+          key: "YX-103",
+          issueType: "任务",
+        },
+        labels: [],
+        createdAt: new Date("2026-05-10T08:00:00.000Z"),
+        updatedAt: new Date("2026-05-10T08:00:00.000Z"),
+      },
+    ];
+    loadTaskDetailMock.mockRejectedValue(new Error("boom"));
+    taskStore.detailErrorTaskId = "yunxiao:space-1:103";
+    taskStore.detailErrorMessage = "详情加载失败";
+
+    const taskCardViewDetailStub = {
+      props: ["task"],
+      template:
+        '<button type="button" data-test="view-detail" @click="$emit(\'view-detail\', task)">{{ task.title }}</button>',
+    };
+
+    const wrapper = mount(TaskPage, {
+      global: {
+        stubs: {
+          TaskCard: taskCardViewDetailStub,
+          CreateTaskModal: createTaskModalStub,
+          TaskDetailModal: taskDetailModalStub,
+        },
+      },
+    });
+
+    await flushPromises();
+    await wrapper.get('[data-test="view-detail"]').trigger("click");
+    await flushPromises();
+
+    expect(wrapper.get('[data-test="detail-modal"]').text()).toContain("云效任务");
+    expect(wrapper.text()).not.toContain("boom");
   });
 });

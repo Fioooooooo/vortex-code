@@ -141,6 +141,30 @@ describe("TaskDetailModal", () => {
     expect(wrapper.text()).toContain("暂无描述");
   });
 
+  it("shows detail loading state in description area", () => {
+    const wrapper = mount(TaskDetailModal, {
+      props: {
+        open: true,
+        task: buildTask({ source: "yunxiao", sourceMeta: { source: "yunxiao", key: "YX-1" } }),
+        detailLoading: true,
+      },
+    });
+
+    expect(wrapper.get('[data-test="detail-loading"]').text()).toContain("正在加载详情");
+  });
+
+  it("shows detail error state in description area", () => {
+    const wrapper = mount(TaskDetailModal, {
+      props: {
+        open: true,
+        task: buildTask({ source: "yunxiao", sourceMeta: { source: "yunxiao", key: "YX-1" } }),
+        detailError: "load failed",
+      },
+    });
+
+    expect(wrapper.get('[data-test="detail-error"]').text()).toContain("详情加载失败");
+  });
+
   it("displays status badge in view mode", () => {
     const wrapper = mount(TaskDetailModal, {
       props: {

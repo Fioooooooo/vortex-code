@@ -11,6 +11,7 @@ const projectStoreState = vi.hoisted(() => ({
 
 vi.mock("@renderer/api/task", () => ({
   taskApi: {
+    getTask: vi.fn(),
     listTasks: vi.fn(),
     createTask: vi.fn(),
     updateTask: vi.fn(),
@@ -55,6 +56,21 @@ describe("useTaskStore", () => {
     vi.mocked(taskApi.listTasks).mockResolvedValue({
       ok: true,
       data: [],
+    });
+    vi.mocked(taskApi.getTask).mockResolvedValue({
+      ok: true,
+      data: {
+        id: "yunxiao:space-1:task-1",
+        projectId: "project-1",
+        title: "云效任务",
+        description: "详情描述",
+        status: "open",
+        source: "yunxiao",
+        sourceMeta: { source: "yunxiao", key: "YX-1", issueType: "任务" },
+        labels: [],
+        createdAt: new Date("2026-05-10T08:00:00.000Z"),
+        updatedAt: new Date("2026-05-10T08:00:00.000Z"),
+      },
     });
     vi.mocked(integrationApi.getProjectIntegration).mockResolvedValue({
       ok: true,
@@ -121,5 +137,35 @@ describe("useTaskStore", () => {
     expect(store.availableSources).toEqual(["local"]);
     expect(store.sourceFilter).toBe("local");
     expect(taskApi.listTasks).toHaveBeenLastCalledWith("project-2", "local");
+  });
+
+  it("loads task detail with isolated loading state", async () => {
+    const store = useTaskStore();
+
+    const detail = await store.loadTaskDetail("yunxiao:space-1:task-1");
+
+    expect(detail.description).toBe("详情描述");
+    expect(store.detailLoadingTaskId).toBeNull();
+    expect(store.detailErrorTaskId).toBeNull();
+    expect(store.error).toBeNull();
+    expect(taskApi.getTask).toHaveBeenCalledWith("project-1", "yunxiao:space-1:task-1");
+  });
+
+  it("keeps list error clean when detail loading fails", async () => {
+    vi.mocked(taskApi.getTask).mockResolvedValueOnce({
+      ok: false,
+      error: {
+        code: "TASK_NOT_FOUND",
+        message: "missing",
+      },
+    });
+
+    const store = useTaskStore();
+
+    await expect(store.loadTaskDetail("yunxiao:space-1:missing")).rejects.toThrow("missing");
+    expect(store.error).toBeNull();
+    expect(store.detailLoadingTaskId).toBeNull();
+    expect(store.detailErrorTaskId).toBe("yunxiao:space-1:missing");
+    expect(store.detailErrorMessage).toBe("missing");
   });
 });

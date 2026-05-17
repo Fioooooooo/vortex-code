@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   getYunxiaoOrganizationId: vi.fn(() => "org-1"),
   getYunxiaoUserId: vi.fn(() => "user-1"),
   searchWorkitems: vi.fn(),
+  getWorkitem: vi.fn(),
   info: vi.fn(),
   warn: vi.fn(),
 }));
@@ -22,6 +23,7 @@ vi.mock("@main/infra/storage/yunxiao-credentials", () => ({
 
 vi.mock("@main/domain/integration/yunxiao/projex", () => ({
   searchWorkitems: mocks.searchWorkitems,
+  getWorkitem: mocks.getWorkitem,
 }));
 
 vi.mock("@main/infra/logger", () => ({
@@ -318,5 +320,59 @@ describe("yunxiao-task-adapter", () => {
         value: ["user-88"],
       }),
     ]);
+  });
+
+  it("gets a single workitem detail without falling back to list scanning", async () => {
+    mocks.getWorkitem.mockResolvedValue(
+      buildWorkitem("detail-102", {
+        categoryId: "Task",
+        formatType: "MARKDOWN",
+        description: "detail markdown body",
+        serialNumber: "YX-102",
+        space: { id: "space-1", name: "项目一" },
+        workitemType: { id: "type-1", name: "任务" },
+      })
+    );
+
+    const result = await yunxiaoTaskAdapter.get("yunxiao:space-1:detail-102", "project-1");
+
+    expect(mocks.getWorkitem).toHaveBeenCalledWith({
+      organizationId: "org-1",
+      id: "detail-102",
+    });
+    expect(mocks.searchWorkitems).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      id: "yunxiao:space-1:detail-102",
+      description: "detail markdown body",
+      sourceMeta: {
+        key: "YX-102",
+        issueType: "任务",
+      },
+    });
+  });
+
+  it("returns null for invalid namespaced task ids", async () => {
+    const result = await yunxiaoTaskAdapter.get("yunxiao:missing", "project-1");
+
+    expect(result).toBeNull();
+    expect(mocks.getWorkitem).not.toHaveBeenCalled();
+  });
+
+  it("keeps description raw for richtext details", async () => {
+    mocks.getWorkitem.mockResolvedValue(
+      buildWorkitem("detail-201", {
+        categoryId: "Req",
+        formatType: "RICHTEXT",
+        description: "<p>富文本描述</p>",
+        serialNumber: "YX-201",
+        space: { id: "space-1", name: "项目一" },
+        workitemType: { id: "type-2", name: "需求" },
+      })
+    );
+
+    const result = await yunxiaoTaskAdapter.get("yunxiao:space-1:detail-201", "project-1");
+
+    expect(result?.description).toBe("<p>富文本描述</p>");
+    expect(result?.sourceMeta).toMatchObject({ issueType: "需求" });
   });
 });

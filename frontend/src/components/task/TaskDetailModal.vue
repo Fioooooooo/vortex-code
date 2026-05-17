@@ -8,6 +8,8 @@ const props = defineProps<{
   open: boolean;
   task: TaskItem | null;
   error?: string | null;
+  detailLoading?: boolean;
+  detailError?: string | null;
 }>();
 
 const emit = defineEmits<{
@@ -151,7 +153,21 @@ watch(
           </div>
 
           <div class="rounded-lg border border-default bg-muted/30 px-4 py-3">
-            <p v-if="task.description" class="whitespace-pre-wrap text-sm leading-6 text-toned">
+            <div
+              v-if="detailLoading"
+              class="flex items-center gap-2 text-sm text-muted"
+              data-test="detail-loading"
+            >
+              <UIcon name="i-lucide-loader-2" class="h-4 w-4 animate-spin" />
+              <span>正在加载详情</span>
+            </div>
+            <p v-else-if="detailError" class="text-sm italic text-muted" data-test="detail-error">
+              详情加载失败
+            </p>
+            <p
+              v-else-if="task.description"
+              class="whitespace-pre-wrap text-sm leading-6 text-toned"
+            >
               {{ task.description }}
             </p>
             <p v-else class="text-sm italic text-muted">暂无描述</p>

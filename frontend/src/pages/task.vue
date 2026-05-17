@@ -89,9 +89,19 @@ async function handleDeleteTask(task: TaskItem): Promise<void> {
   await taskStore.deleteTask(task.id);
 }
 
-function handleViewDetail(task: TaskItem): void {
+async function handleViewDetail(task: TaskItem): Promise<void> {
   activeDetailTask.value = task;
   showDetailModal.value = true;
+
+  if (task.source !== "yunxiao") {
+    return;
+  }
+
+  try {
+    activeDetailTask.value = await taskStore.loadTaskDetail(task.id);
+  } catch {
+    // 详情错误由 taskStore 的独立详情状态承载，弹窗保持打开。
+  }
 }
 
 async function handleSaveDetail(payload: {
@@ -108,6 +118,16 @@ async function handleSaveDetail(payload: {
   }
 }
 
+function handleDetailOpenChange(open: boolean): void {
+  showDetailModal.value = open;
+  if (open) {
+    return;
+  }
+
+  taskStore.resetDetailState();
+  activeDetailTask.value = null;
+}
+
 async function startChatFromTask(task: TaskItem): Promise<void> {
   const projectId = projectStore.currentProject?.id;
   if (!projectId) {
@@ -122,6 +142,9 @@ async function startChatFromTask(task: TaskItem): Promise<void> {
 watch(
   () => projectStore.currentProject?.id,
   () => {
+    taskStore.resetDetailState();
+    activeDetailTask.value = null;
+    showDetailModal.value = false;
     void loadCurrentSource();
   },
   { immediate: true }
@@ -215,6 +238,11 @@ watch(
     v-model:open="showDetailModal"
     :task="activeDetailTask"
     :error="taskStore.error"
+    :detail-loading="taskStore.detailLoadingTaskId === activeDetailTask?.id"
+    :detail-error="
+      taskStore.detailErrorTaskId === activeDetailTask?.id ? taskStore.detailErrorMessage : null
+    "
     @save="handleSaveDetail"
+    @update:open="handleDetailOpenChange"
   />
 </template>

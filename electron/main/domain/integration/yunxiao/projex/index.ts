@@ -2,6 +2,7 @@ import { YunxiaoClient } from "../client";
 import { getYunxiaoToken } from "@main/infra/storage/yunxiao-credentials";
 import type {
   SearchWorkitemsParams,
+  GetWorkitemParams,
   CreateWorkitemParams,
   CreateWorkitemResult,
   UpdateWorkitemParams,
@@ -16,6 +17,7 @@ export type {
   CustomFieldValue,
   Workitem,
   SearchWorkitemsParams,
+  GetWorkitemParams,
   CreateWorkitemParams,
   CreateWorkitemResult,
   UpdateWorkitemParams,
@@ -81,6 +83,18 @@ export async function searchWorkitems(params: SearchWorkitemsParams): Promise<Wo
     `/oapi/v1/projex/organizations/${organizationId}/workitems:search`,
     token,
     body as Record<string, unknown>
+  );
+}
+
+/**
+ * 获取单条工作项详情
+ */
+export async function getWorkitem(params: GetWorkitemParams): Promise<Workitem> {
+  const { organizationId, id } = params;
+  const token = getYunxiaoToken();
+  return client.get<Workitem>(
+    `/oapi/v1/projex/organizations/${organizationId}/workitems/${id}`,
+    token
   );
 }
 

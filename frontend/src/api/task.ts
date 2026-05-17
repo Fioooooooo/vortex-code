@@ -7,6 +7,10 @@ import type {
 } from "@shared/types/task";
 
 export const taskApi = {
+  getTask(projectId: string, taskId: string): Promise<IpcResponse<TaskItem>> {
+    return window.api.task.getTask(projectId, taskId);
+  },
+
   listTasks(projectId: string, source?: TaskSource): Promise<IpcResponse<TaskItem[]>> {
     return window.api.task.listTasks(projectId, source);
   },

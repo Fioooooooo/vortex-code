@@ -5,6 +5,7 @@ import {
 } from "@main/infra/storage/yunxiao-credentials";
 import { loadProjectIntegrationConfig } from "@main/infra/storage/project-integration-store";
 import {
+  getWorkitem,
   searchWorkitems,
   type SearchWorkitemsParams,
   type Workitem,
@@ -58,6 +59,20 @@ const ISSUE_TYPE_BY_CATEGORY: Record<YunxiaoCategory, YunxiaoIssueType> = {
   Task: "任务",
   Bug: "缺陷",
 };
+
+function parseYunxiaoTaskId(taskId: string): { spaceId: string; workitemId: string } | null {
+  const parts = taskId.split(":");
+  if (parts.length !== 3) {
+    return null;
+  }
+
+  const [namespace, spaceId, workitemId] = parts;
+  if (namespace !== "yunxiao" || !spaceId || !workitemId) {
+    return null;
+  }
+
+  return { spaceId, workitemId };
+}
 
 export function buildWorkitemUrl(
   category: YunxiaoCategory,
@@ -149,6 +164,34 @@ function buildLabels(workitem: Workitem, issueType: YunxiaoIssueType): TaskLabel
       name: workitem.status.displayName,
     },
   ];
+}
+
+function resolveCategory(workitem: Workitem): YunxiaoCategory {
+  if (
+    workitem.categoryId === "Req" ||
+    workitem.categoryId === "Task" ||
+    workitem.categoryId === "Bug"
+  ) {
+    return workitem.categoryId;
+  }
+
+  if (
+    workitem.category?.id === "Req" ||
+    workitem.category?.id === "Task" ||
+    workitem.category?.id === "Bug"
+  ) {
+    return workitem.category.id;
+  }
+
+  const workitemTypeName = workitem.workitemType?.name?.toLowerCase?.() ?? "";
+  if (workitemTypeName.includes("bug") || workitem.workitemType?.name === "缺陷") {
+    return "Bug";
+  }
+  if (workitemTypeName.includes("req") || workitem.workitemType?.name === "需求") {
+    return "Req";
+  }
+
+  return "Task";
 }
 
 function mapToTaskItem(
@@ -282,9 +325,20 @@ export class YunxiaoTaskAdapter implements TaskAdapter {
   }
 
   async get(taskId: string, projectId: string): Promise<TaskItem | null> {
-    const tasks = await this.list(projectId);
-    return tasks.find((task) => task.id === taskId) ?? null;
+    const parsed = parseYunxiaoTaskId(taskId);
+    if (!parsed) {
+      return null;
+    }
+
+    const organizationId = getYunxiaoOrganizationId();
+    const workitem = await getWorkitem({
+      organizationId,
+      id: parsed.workitemId,
+    });
+    const category = resolveCategory(workitem);
+    return mapToTaskItem(projectId, parsed.spaceId, category, workitem);
   }
 }
 
 export const yunxiaoTaskAdapter = new YunxiaoTaskAdapter();
+export { parseYunxiaoTaskId };

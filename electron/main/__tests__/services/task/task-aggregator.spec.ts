@@ -3,29 +3,35 @@ import type { TaskItem } from "@shared/types/task";
 
 const mocks = vi.hoisted(() => ({
   localList: vi.fn(),
+  localGet: vi.fn(),
   yunxiaoList: vi.fn(),
+  yunxiaoGet: vi.fn(),
   githubList: vi.fn(),
+  githubGet: vi.fn(),
 }));
 
 vi.mock("@main/services/task/adapters/local-task-adapter", () => ({
   localTaskAdapter: {
     list: mocks.localList,
+    get: mocks.localGet,
   },
 }));
 
 vi.mock("@main/services/task/adapters/yunxiao-task-adapter", () => ({
   yunxiaoTaskAdapter: {
     list: mocks.yunxiaoList,
+    get: mocks.yunxiaoGet,
   },
 }));
 
 vi.mock("@main/services/task/adapters/github-task-adapter", () => ({
   githubTaskAdapter: {
     list: mocks.githubList,
+    get: mocks.githubGet,
   },
 }));
 
-import { listTasks } from "@main/services/task/task-aggregator";
+import { getTask, listTasks } from "@main/services/task/task-aggregator";
 
 function buildTask(id: string, source: TaskItem["source"], updatedAt: string): TaskItem {
   return {
@@ -51,8 +57,11 @@ describe("task-aggregator", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.localList.mockResolvedValue([]);
+    mocks.localGet.mockResolvedValue(null);
     mocks.yunxiaoList.mockResolvedValue([]);
+    mocks.yunxiaoGet.mockResolvedValue(null);
     mocks.githubList.mockResolvedValue([]);
+    mocks.githubGet.mockResolvedValue(null);
   });
 
   it("returns the real yunxiao adapter result when source is yunxiao", async () => {
@@ -72,5 +81,23 @@ describe("task-aggregator", () => {
     mocks.yunxiaoList.mockResolvedValue([yunxiaoTask]);
 
     await expect(listTasks("project-1")).resolves.toEqual([yunxiaoTask, localTask]);
+  });
+
+  it("dispatches getTask to yunxiao adapter when taskId starts with yunxiao", async () => {
+    const yunxiaoTask = buildTask("yunxiao:space-1:102", "yunxiao", "2026-05-10T10:00:00.000Z");
+    mocks.yunxiaoGet.mockResolvedValue(yunxiaoTask);
+
+    await expect(getTask("project-1", "yunxiao:space-1:102")).resolves.toEqual(yunxiaoTask);
+    expect(mocks.yunxiaoGet).toHaveBeenCalledWith("yunxiao:space-1:102", "project-1");
+    expect(mocks.localGet).not.toHaveBeenCalled();
+  });
+
+  it("dispatches getTask to local adapter for non-namespaced local ids", async () => {
+    const localTask = buildTask("task-1", "local", "2026-05-10T08:00:00.000Z");
+    mocks.localGet.mockResolvedValue(localTask);
+
+    await expect(getTask("project-1", "task-1")).resolves.toEqual(localTask);
+    expect(mocks.localGet).toHaveBeenCalledWith("task-1", "project-1");
+    expect(mocks.yunxiaoGet).not.toHaveBeenCalled();
   });
 });

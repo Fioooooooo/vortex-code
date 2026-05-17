@@ -26,3 +26,15 @@ export async function listTasks(projectId: string, source?: TaskSource): Promise
     ...(await githubTaskAdapter.list(projectId)),
   ]);
 }
+
+export async function getTask(projectId: string, taskId: string): Promise<TaskItem | null> {
+  if (taskId.startsWith("yunxiao:")) {
+    return yunxiaoTaskAdapter.get(taskId, projectId);
+  }
+
+  if (taskId.startsWith("github:")) {
+    return githubTaskAdapter.get(taskId, projectId);
+  }
+
+  return localTaskAdapter.get(taskId, projectId);
+}

@@ -77,6 +77,16 @@
 | `workflow:save`   | `WorkflowChannels.save`   | handle |
 | `workflow:delete` | `WorkflowChannels.delete` | handle |
 
+### Task（`window.api.task`）
+
+| Channel       | 常量                  | 类型   |
+| ------------- | --------------------- | ------ |
+| `task:get`    | `TaskChannels.get`    | handle |
+| `task:list`   | `TaskChannels.list`   | handle |
+| `task:create` | `TaskChannels.create` | handle |
+| `task:update` | `TaskChannels.update` | handle |
+| `task:delete` | `TaskChannels.delete` | handle |
+
 ### Integration（`window.api.integration`）
 
 | Channel                                | 常量                                         | 类型   |

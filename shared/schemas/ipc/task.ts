@@ -20,6 +20,11 @@ export const listTasksInputSchema = z.object({
   source: taskSourceSchema.optional(),
 });
 
+export const getTaskInputSchema = z.object({
+  projectId: z.string().min(1),
+  taskId: z.string().min(1),
+});
+
 export const createTaskInputSchema = z.object({
   projectId: z.string().min(1),
   title: z.string().min(1),

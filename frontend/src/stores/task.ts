@@ -45,6 +45,9 @@ export const useTaskStore = defineStore("task", () => {
   const tasks = ref<TaskItem[]>([]);
   const loading = ref(false);
   const error = ref<string | null>(null);
+  const detailLoadingTaskId = ref<string | null>(null);
+  const detailErrorTaskId = ref<string | null>(null);
+  const detailErrorMessage = ref<string | null>(null);
   const sourceFilter = ref<TaskSourceFilter>("all");
   const statusFilter = ref<TaskStatus>("open");
   const availableSources = ref<TaskSource[]>(["local"]);
@@ -71,6 +74,12 @@ export const useTaskStore = defineStore("task", () => {
 
   function getCurrentProjectId(): string | undefined {
     return useProjectStore().currentProject?.id;
+  }
+
+  function resetDetailState(): void {
+    detailLoadingTaskId.value = null;
+    detailErrorTaskId.value = null;
+    detailErrorMessage.value = null;
   }
 
   function normalizeAvailableSources(): void {
@@ -128,12 +137,14 @@ export const useTaskStore = defineStore("task", () => {
       tasks.value = [];
       availableSources.value = ["local"];
       projectIntegration.value = null;
+      resetDetailState();
       error.value = "当前没有选中的项目";
       return;
     }
 
     loading.value = true;
     error.value = null;
+    resetDetailState();
 
     try {
       await refreshAvailableSources(projectId);
@@ -209,10 +220,41 @@ export const useTaskStore = defineStore("task", () => {
     tasks.value = tasks.value.filter((task) => task.id !== taskId);
   }
 
+  async function loadTaskDetail(taskId: string): Promise<TaskItem> {
+    const projectId = getCurrentProjectId();
+    if (!projectId) {
+      detailErrorTaskId.value = taskId;
+      detailErrorMessage.value = "当前没有选中的项目";
+      throw new Error(detailErrorMessage.value);
+    }
+
+    detailLoadingTaskId.value = taskId;
+    detailErrorTaskId.value = null;
+    detailErrorMessage.value = null;
+
+    try {
+      const result = await taskApi.getTask(projectId, taskId);
+      if (!result.ok) {
+        throw new Error(result.error.message);
+      }
+
+      return normalizeTask(result.data);
+    } catch (err: unknown) {
+      detailErrorTaskId.value = taskId;
+      detailErrorMessage.value = err instanceof Error ? err.message : String(err);
+      throw err;
+    } finally {
+      detailLoadingTaskId.value = null;
+    }
+  }
+
   return {
     tasks,
     loading,
     error,
+    detailLoadingTaskId,
+    detailErrorTaskId,
+    detailErrorMessage,
     availableSources,
     sourceTabs,
     projectIntegration,
@@ -225,5 +267,7 @@ export const useTaskStore = defineStore("task", () => {
     createTask,
     updateTask,
     deleteTask,
+    loadTaskDetail,
+    resetDetailState,
   };
 });
