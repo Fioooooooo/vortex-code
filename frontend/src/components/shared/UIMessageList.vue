@@ -83,7 +83,7 @@ const assistantAvatar = computed(() => {
             :text="getToolText(part)"
             :suffix="getToolSuffix(part)"
           >
-            <pre v-if="getToolOutput(part)" class="whitespace-pre-wrap text-xs">{{
+            <pre v-if="getToolOutput(part)" class="whitespace-pre-wrap wrap-anywhere text-xs">{{
               getToolOutput(part)
             }}</pre>
           </UChatTool>
@@ -97,7 +97,7 @@ const assistantAvatar = computed(() => {
             />
             <p
               v-else-if="message.role === 'user' && !isSystemReminderPart(part)"
-              class="whitespace-pre-wrap"
+              class="whitespace-pre-wrap wrap-anywhere"
             >
               {{ part.text }}
             </p>
