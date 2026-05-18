@@ -48,6 +48,22 @@ Create or inspect an OpenSpec change using the provided `state`.
 - Read dependency artifacts for context before creating new ones
 - **IMPORTANT**: instruction, context, and rules are constraints for YOU, not content for the file. Do NOT copy them into the artifact output.
 
+**Artifact Detail Bar**
+
+The agents that later implement this proposal will start fresh — they will NOT see this conversation, and will NOT inherit the context you have right now about the user's intent, the constraints discussed, or the trade-offs already resolved. Treat the artifacts as the _only_ contract between this stage and Apply.
+
+- Write artifacts so that an agent with zero prior context can understand both **what** to build and **how** to build it after reading them.
+- No ambiguity. If a sentence could be read two ways, rewrite it.
+- Tasks in `tasks.md` MUST be concrete. Each task should specify, where applicable:
+  - File paths to create or modify (e.g. `electron/main/services/foo/bar.ts`)
+  - Function / method / class / type names involved
+  - Existing patterns, modules, or utilities to reuse — name them explicitly
+  - Acceptance criteria so the implementer knows when the task is done
+- Avoid hand-wave verbs like "improve X", "refactor Y", "handle edge cases". Replace them with concrete operations against named code locations.
+- Capture decisions made in this conversation (e.g. chose library A over B, picked schema X over Y) and the rationale in the appropriate artifact. A future implementer cannot reconstruct that from the codebase alone.
+
+**Self-check before marking any artifact `done`**: imagine handing it to an engineer who has never seen this codebase or this conversation. Could they execute it without asking questions? If not, the artifact is not yet `done` — add the missing detail.
+
 **Guardrails**
 
 - Do not invoke the OpenSpec CLI directly. Change creation, status lookup, and artifact instruction lookup are handled by this MCP server.
