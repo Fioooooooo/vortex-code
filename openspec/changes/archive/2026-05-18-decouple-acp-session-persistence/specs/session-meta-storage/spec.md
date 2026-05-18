@@ -1,8 +1,4 @@
-## Purpose
-
-Session meta storage 规范定义主线程 session meta 的单点持久化边界，以及字段级更新不得覆盖未变更字段的约束。
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Session meta updates are centralized in session-store
 
@@ -41,25 +37,3 @@ Session meta storage 规范定义主线程 session meta 的单点持久化边界
 - **THEN** 持久化通过 `updateArchiveRunAcpSessionId` 写入 `archive.json` 的 `acpSessionId` 字段
 - **AND** 不调用 `loadSessionMeta` / `upsertSessionMeta` / `saveSessionMeta`
 - **AND** 不创建 `data/projects/<encoded>/sessions/` 下的任何文件
-
-### Requirement: Session meta field updates preserve unrelated fields
-
-系统 SHALL 将 session meta 的增量修改视为字段级合并，而不是整对象覆盖。任何一次更新只允许改变本次明确指定的字段，其余已持久化字段 MUST 原样保留，包括当前未知但合法的扩展字段。
-
-#### Scenario: available_commands survives second-turn session writes
-
-- **WHEN** 某 session 在第一轮对话中已持久化 `available_commands`
-- **AND** 第二轮对话启动时 `AcpSession.start()` 更新 `acpSessionId`、`turnCount` 或 `updatedAt`
-- **THEN** 写回后的 session meta 仍包含原有 `available_commands`
-
-#### Scenario: usage update does not erase future meta fields
-
-- **WHEN** chat 流式处理 `usage_update` 并更新 `tokenUsage`
-- **THEN** session-store 仅修改 `tokenUsage` 与本次需要变化的字段
-- **AND** 不删除 `available_commands`、`acpSessionId` 或未来新增的其他 meta 字段
-
-#### Scenario: explicit empty available_commands remains persisted
-
-- **WHEN** agent 推送 `available_commands_update`，其 `commands` 为空数组
-- **THEN** session-store 将 `available_commands` 持久化为 `[]`
-- **AND** 后续任何其他 session meta 更新都 SHALL 保留该空数组，而不是删除该字段

@@ -1,5 +1,6 @@
 import { promises as fs } from "fs";
 import { join } from "path";
+import logger from "@main/infra/logger";
 import { applyRunsDir } from "@main/infra/storage/project-paths";
 import type { ApplyRunMeta, ArchiveRunMeta } from "@shared/types/proposal";
 import type { MessageMeta } from "@shared/types/chat";
@@ -54,6 +55,34 @@ export async function loadApplyRunMeta(
   }
 }
 
+export async function updateRunMetaIfCurrent(
+  projectPath: string,
+  changeId: string,
+  runId: string,
+  updater: (meta: ApplyRunMeta) => ApplyRunMeta
+): Promise<void> {
+  const current = await loadApplyRunMeta(projectPath, changeId);
+  if (!current || current.runId !== runId) return;
+  await saveApplyRunMeta(projectPath, updater(current));
+}
+
+export async function updateApplyRunStageAcpSessionId(
+  projectPath: string,
+  changeId: string,
+  runId: string,
+  stageIndex: number,
+  acpSessionId: string
+): Promise<void> {
+  await updateRunMetaIfCurrent(projectPath, changeId, runId, (meta) => ({
+    ...meta,
+    stageAcpSessionIds: {
+      ...meta.stageAcpSessionIds,
+      [stageIndex]: acpSessionId,
+    },
+    updatedAt: new Date().toISOString(),
+  }));
+}
+
 export async function appendApplyRunMessage(
   projectPath: string,
   changeId: string,
@@ -103,6 +132,26 @@ export async function loadArchiveRunMeta(
   } catch {
     return null;
   }
+}
+
+export async function updateArchiveRunAcpSessionId(
+  projectPath: string,
+  changeId: string,
+  acpSessionId: string
+): Promise<void> {
+  const existing = await loadArchiveRunMeta(projectPath, changeId);
+  if (!existing) {
+    logger.warn(
+      `[apply-run-store] archive run meta missing while persisting acpSessionId for change ${changeId}`
+    );
+    return;
+  }
+
+  await saveArchiveRunMeta(projectPath, {
+    ...existing,
+    acpSessionId,
+    updatedAt: new Date().toISOString(),
+  });
 }
 
 export async function appendArchiveMessage(

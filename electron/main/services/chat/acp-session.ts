@@ -4,8 +4,7 @@ import type {
   InitializeResponse,
   SessionNotification,
 } from "@agentclientprotocol/sdk";
-import { loadSessionMeta, upsertSessionMeta } from "@main/infra/storage/session-store";
-import type { SessionMeta } from "@main/infra/storage/session-store";
+import type { AcpSessionStore } from "@main/domain/chat/acp-session-store";
 import { mapSessionUpdate } from "./acp-mapper";
 import { getOrStartProcess } from "@main/infra/process/acp-process-pool";
 import type { SessionEvent } from "@main/domain/chat/session-events";
@@ -41,7 +40,6 @@ type AcpMcpServers = NonNullable<Parameters<ClientSideConnection["newSession"]>[
 
 interface StartContext {
   entry: Awaited<ReturnType<typeof getOrStartProcess>>;
-  meta: SessionMeta | null;
   mcpServers: AcpMcpServers;
   runtimeState: SessionRuntimeState;
   persistedSessionId: string | null;
@@ -53,6 +51,7 @@ export interface AcpSessionOpts {
   projectPath: string;
   cwd: string;
   owner: SessionOwner;
+  sessionStore: AcpSessionStore;
   reminderContext?: ReminderContext;
   onReminderInjected?: (reminderPart: TextUIPart) => Promise<void>;
   recoveryContext?: Partial<RecoveryContext>;
@@ -109,8 +108,7 @@ export class AcpSession extends EventEmitter {
       ...spec,
       env: toAcpMcpServerEnv(spec.env),
     }));
-    const meta = await loadSessionMeta(this.opts.projectPath, this.opts.fylloSessionId);
-    const persistedSessionId = meta?.acpSessionId ?? null;
+    const persistedSessionId = await this.opts.sessionStore.loadAcpSessionId();
     const runtimeState = createSessionRuntimeState();
 
     logger.info(
@@ -119,7 +117,6 @@ export class AcpSession extends EventEmitter {
 
     return {
       entry,
-      meta,
       mcpServers,
       runtimeState,
       persistedSessionId,
@@ -150,7 +147,7 @@ export class AcpSession extends EventEmitter {
       connection: context.entry.connection,
       initializeResponse: context.entry.initializeResponse,
       runtimeState: context.runtimeState,
-      meta: context.meta,
+      persistedSessionId: context.persistedSessionId,
       mcpServers: context.mcpServers,
       prompt,
     });
@@ -178,7 +175,7 @@ export class AcpSession extends EventEmitter {
 
     if (directPromptResult.status === "completed") {
       logger.info(`${this.logPrefix(persistedSessionId)} direct prompt succeeded`);
-      await this.persistResolvedSession(context.meta, persistedSessionId);
+      await this.persistResolvedSession(persistedSessionId);
       this.emitDone(directPromptResult.result);
       return true;
     }
@@ -209,7 +206,7 @@ export class AcpSession extends EventEmitter {
     }
 
     this.acpSessionId = recovery.sessionId;
-    await this.persistResolvedSession(context.meta, recovery.sessionId);
+    await this.persistResolvedSession(recovery.sessionId);
 
     if (this.cancelled) {
       logger.warn(
@@ -245,11 +242,8 @@ export class AcpSession extends EventEmitter {
     this.emitDone(result);
   }
 
-  private async persistResolvedSession(
-    meta: SessionMeta | null,
-    acpSessionId: string
-  ): Promise<void> {
-    await this.persistSessionMeta(meta, acpSessionId, this.opts.agentId);
+  private async persistResolvedSession(acpSessionId: string): Promise<void> {
+    await this.opts.sessionStore.persistAcpSessionId(acpSessionId);
     logger.info(`${this.logPrefix(acpSessionId)} persisted resolved session metadata`);
     this.emit("event", {
       type: "session_id_resolved",
@@ -327,12 +321,12 @@ export class AcpSession extends EventEmitter {
     connection: ClientSideConnection;
     initializeResponse: InitializeResponse;
     runtimeState: SessionRuntimeState;
-    meta: SessionMeta | null;
+    persistedSessionId: string | null;
     mcpServers: AcpMcpServers;
     prompt: string;
   }): Promise<RecoveryOutcome> {
-    const { connection, initializeResponse, runtimeState, meta, mcpServers, prompt } = args;
-    const persistedSessionId = meta?.acpSessionId;
+    const { connection, initializeResponse, runtimeState, persistedSessionId, mcpServers, prompt } =
+      args;
     const resumeSupported = supportsResume(initializeResponse);
     const loadSupported = supportsLoad(initializeResponse);
 
@@ -516,34 +510,5 @@ export class AcpSession extends EventEmitter {
       `${this.logPrefix(this.acpSessionId)} prompt completed; totalTokens=${totalTokens}`
     );
     this.emit("event", { type: "done", totalTokens } satisfies SessionEvent);
-  }
-
-  private async persistSessionMeta(
-    meta: SessionMeta | null,
-    acpSessionId: string,
-    agentId: string
-  ): Promise<void> {
-    await upsertSessionMeta(
-      this.opts.projectPath,
-      this.opts.fylloSessionId,
-      () => ({
-        sessionId: this.opts.fylloSessionId,
-        acpSessionId,
-        agentId,
-        title: meta?.title ?? "New Session",
-        turnCount: (meta?.turnCount ?? 0) + 1,
-        tokenUsage: meta?.tokenUsage ?? { used: 0, size: 0 },
-        available_commands: meta?.available_commands,
-        createdAt: meta?.createdAt ?? new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      }),
-      {
-        acpSessionId,
-        agentId,
-        turnCount: (meta?.turnCount ?? 0) + 1,
-        available_commands: meta?.available_commands,
-        updatedAt: new Date().toISOString(),
-      }
-    );
   }
 }

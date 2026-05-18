@@ -5,11 +5,12 @@ import type { ApplyRunMeta, ProposalStatus } from "@shared/types/proposal";
 import type { WorkflowStage, WorkflowTemplate } from "@shared/types/workflow";
 import { IpcErrorCodes } from "@shared/constants/error-codes";
 import { loadProject } from "@main/infra/storage/project-store";
-import { loadApplyRunMeta, saveApplyRunMeta } from "@main/infra/storage/apply-run-store";
+import { saveApplyRunMeta } from "@main/infra/storage/apply-run-store";
 import { resolveApplyRunChangeId, resolveChangeDir } from "@main/domain/proposal/openspec-reader";
 import { loadAllWorkflowTemplates } from "@main/services/workflow/workflow-service";
 import { newRunId } from "@main/infra/ids";
 import { ipcError } from "@main/ipc/_kit/errors";
+export { updateRunMetaIfCurrent } from "@main/infra/storage/apply-run-store";
 
 export async function resolveProjectPath(projectId: string): Promise<string> {
   const project = await loadProject(projectId);
@@ -45,17 +46,6 @@ export async function updateChangeStatus(
   const nextDoc = parsed && typeof parsed === "object" ? parsed : {};
   (nextDoc as Record<string, unknown>).status = nextStatus;
   await fs.writeFile(yamlPath, dump(nextDoc), "utf8");
-}
-
-export async function updateRunMetaIfCurrent(
-  projectPath: string,
-  changeId: string,
-  runId: string,
-  updater: (meta: ApplyRunMeta) => ApplyRunMeta
-): Promise<void> {
-  const current = await loadApplyRunMeta(projectPath, changeId);
-  if (!current || current.runId !== runId) return;
-  await saveApplyRunMeta(projectPath, updater(current));
 }
 
 export function getCompletedApplyStageIndex(runMeta: ApplyRunMeta): number {

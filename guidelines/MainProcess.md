@@ -177,17 +177,18 @@ registerDisposable({
 
 ## 路径 / ID / 默认值单点化
 
-| 需求                   | 使用                                    | 位置                                  |
-| ---------------------- | --------------------------------------- | ------------------------------------- |
-| 项目根目录             | `projectDir(projectPath)`               | `@main/infra/storage/project-paths`   |
-| 会话目录               | `sessionsDir(projectPath)`              | 同上                                  |
-| Apply run 目录         | `applyRunsDir(projectPath)`             | 同上                                  |
-| 工作流目录             | `workflowsDir(projectPath)`             | 同上                                  |
-| 应用随附资源根目录     | `getResourcesPath()`                    | `@main/infra/paths`                   |
-| 内置 MCP server 描述符 | `getBundledMcpServers({ projectPath })` | `@main/infra/mcp/bundled-mcp-servers` |
-| 新建 session id        | `newSessionId()`                        | `@main/infra/ids`                     |
-| 新建 apply run id      | `newRunId()`                            | 同上                                  |
-| Stage 级 Fyllo 会话 id | `newStageFylloSessionId(runId, index)`  | 同上                                  |
+| 需求                     | 使用                                    | 位置                                  |
+| ------------------------ | --------------------------------------- | ------------------------------------- |
+| 项目根目录               | `projectDir(projectPath)`               | `@main/infra/storage/project-paths`   |
+| 会话目录                 | `sessionsDir(projectPath)`              | 同上                                  |
+| Apply run 目录           | `applyRunsDir(projectPath)`             | 同上                                  |
+| 工作流目录               | `workflowsDir(projectPath)`             | 同上                                  |
+| 应用随附资源根目录       | `getResourcesPath()`                    | `@main/infra/paths`                   |
+| 内置 MCP server 描述符   | `getBundledMcpServers({ projectPath })` | `@main/infra/mcp/bundled-mcp-servers` |
+| 新建 session id          | `newSessionId()`                        | `@main/infra/ids`                     |
+| 新建 apply run id        | `newRunId()`                            | 同上                                  |
+| Stage 级 Fyllo 会话 id   | `newStageFylloSessionId(runId, index)`  | 同上                                  |
+| Archive 级 Fyllo 会话 id | `newArchiveFylloSessionId(runId)`       | 同上                                  |
 
 **禁止** 在 service / ipc 层直接 `join + encodeProjectPath`、`` `session-${Date.now()}` ``、硬编码具体 ACP agent id 字面量（例如 `"claude-acp"`）。`agentId` 由调用方在请求边界显式提供，主进程不维护系统级默认 agentId。
 

@@ -4,6 +4,7 @@ import { ChatChannels, ChatStreamChannels } from "@shared/types/channels";
 import { IpcErrorCodes } from "@shared/constants/error-codes";
 import type { SessionEvent } from "@main/domain/chat/session-events";
 import type { AcpSessionOpts } from "@main/services/chat/acp-session";
+import { ChatAcpSessionStore } from "@main/infra/storage/chat-acp-session-store";
 
 const mocks = vi.hoisted(() => {
   let eventHandler: ((ev: SessionEvent) => void) | null = null;
@@ -399,6 +400,7 @@ describe("registerChatHandlers", () => {
         projectPath: "/tmp/project",
       })
     );
+    expect(opts.sessionStore).toBeInstanceOf(ChatAcpSessionStore);
 
     await opts.onReminderInjected(reminderPart);
 

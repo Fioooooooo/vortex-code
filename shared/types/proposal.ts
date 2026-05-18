@@ -31,4 +31,5 @@ export interface ArchiveRunMeta {
   status: "running" | "done" | "error";
   startedAt: string;
   updatedAt: string;
+  acpSessionId?: string;
 }

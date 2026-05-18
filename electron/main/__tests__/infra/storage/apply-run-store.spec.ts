@@ -2,21 +2,34 @@ import { rmSync } from "fs";
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 import type { UIMessage } from "ai";
 import type { MessageMeta } from "@shared/types/chat";
-import type { ArchiveRunMeta } from "@shared/types/proposal";
+import type { ApplyRunMeta, ArchiveRunMeta } from "@shared/types/proposal";
 
-const { tempRoot } = vi.hoisted(() => ({
+const { tempRoot, loggerWarn } = vi.hoisted(() => ({
   tempRoot: `/private/tmp/fyllocode-apply-run-${Math.random().toString(36).slice(2)}`,
+  loggerWarn: vi.fn(),
 }));
 
 vi.mock("@main/infra/paths", () => ({
   getDataSubPath: vi.fn((subPath: string) => `${tempRoot}/${subPath}`),
 }));
 
+vi.mock("@main/infra/logger", () => ({
+  default: {
+    warn: loggerWarn,
+    info: vi.fn(),
+    error: vi.fn(),
+  },
+}));
+
 import {
   appendArchiveMessage,
+  loadApplyRunMeta,
   loadArchiveMessages,
   loadArchiveRunMeta,
+  saveApplyRunMeta,
   saveArchiveRunMeta,
+  updateApplyRunStageAcpSessionId,
+  updateArchiveRunAcpSessionId,
 } from "@main/infra/storage/apply-run-store";
 
 function message(id: string, text: string): UIMessage<MessageMeta> {
@@ -32,11 +45,30 @@ function persisted(message: UIMessage<MessageMeta>): UIMessage<MessageMeta> {
   return JSON.parse(JSON.stringify(message)) as UIMessage<MessageMeta>;
 }
 
+function runMeta(overrides: Partial<ApplyRunMeta> = {}): ApplyRunMeta {
+  return {
+    runId: "run-1",
+    changeId: "change-1",
+    workflowId: "workflow-1",
+    stages: [],
+    currentStageIndex: 1,
+    stageAcpSessionIds: { 0: "acp-0" },
+    status: "running",
+    startedAt: "2026-05-08T00:00:00.000Z",
+    updatedAt: "2026-05-08T00:00:00.000Z",
+    ...overrides,
+  };
+}
+
 beforeEach(() => {
   rmSync(tempRoot, { recursive: true, force: true });
+  loggerWarn.mockReset();
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date("2026-05-18T11:00:00.000Z"));
 });
 
 afterEach(() => {
+  vi.useRealTimers();
   rmSync(tempRoot, { recursive: true, force: true });
 });
 
@@ -71,5 +103,59 @@ describe("apply-run-store archive storage", () => {
       persisted(first),
       persisted(second),
     ]);
+  });
+
+  it("updates only the target stage acpSessionId for the current run", async () => {
+    await saveApplyRunMeta("/tmp/project", runMeta());
+
+    await updateApplyRunStageAcpSessionId("/tmp/project", "change-1", "run-1", 1, "acp-1");
+
+    await expect(loadApplyRunMeta("/tmp/project", "change-1")).resolves.toEqual({
+      runId: "run-1",
+      changeId: "change-1",
+      workflowId: "workflow-1",
+      stages: [],
+      currentStageIndex: 1,
+      stageAcpSessionIds: { 0: "acp-0", 1: "acp-1" },
+      status: "running",
+      startedAt: "2026-05-08T00:00:00.000Z",
+      updatedAt: "2026-05-18T11:00:00.000Z",
+    });
+  });
+
+  it("does nothing when updating a stage for a stale runId", async () => {
+    await saveApplyRunMeta("/tmp/project", runMeta({ runId: "run-2" }));
+
+    await updateApplyRunStageAcpSessionId("/tmp/project", "change-1", "run-1", 1, "acp-1");
+
+    await expect(loadApplyRunMeta("/tmp/project", "change-1")).resolves.toEqual(
+      runMeta({ runId: "run-2" })
+    );
+  });
+
+  it("updates archive acpSessionId without dropping archive fields", async () => {
+    const meta: ArchiveRunMeta = {
+      runId: "archive-1",
+      changeId: "change-1",
+      status: "done",
+      startedAt: "2026-05-08T00:00:00.000Z",
+      updatedAt: "2026-05-08T00:00:00.000Z",
+    };
+    await saveArchiveRunMeta("/tmp/project", meta);
+
+    await updateArchiveRunAcpSessionId("/tmp/project", "change-1", "acp-archive");
+
+    await expect(loadArchiveRunMeta("/tmp/project", "change-1")).resolves.toEqual({
+      ...meta,
+      acpSessionId: "acp-archive",
+      updatedAt: "2026-05-18T11:00:00.000Z",
+    });
+  });
+
+  it("warns and no-ops when archive meta is missing", async () => {
+    await updateArchiveRunAcpSessionId("/tmp/project", "change-1", "acp-archive");
+
+    await expect(loadArchiveRunMeta("/tmp/project", "change-1")).resolves.toBeNull();
+    expect(loggerWarn).toHaveBeenCalledOnce();
   });
 });

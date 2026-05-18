@@ -4,6 +4,8 @@ import { ProposalChannels } from "@shared/types/channels";
 import { IpcErrorCodes } from "@shared/constants/error-codes";
 import type { SessionEvent } from "@main/domain/chat/session-events";
 import type { AcpSessionOpts } from "@main/services/chat/acp-session";
+import { ApplyStageAcpSessionStore } from "@main/infra/storage/apply-stage-acp-session-store";
+import { ArchiveAcpSessionStore } from "@main/infra/storage/archive-acp-session-store";
 
 const mocks = vi.hoisted(() => {
   let eventHandler: ((ev: SessionEvent) => void) | null = null;
@@ -24,7 +26,8 @@ const mocks = vi.hoisted(() => {
     loadArchiveRunMeta: vi.fn(),
     loadArchiveMessages: vi.fn(),
     saveArchiveRunMeta: vi.fn(),
-    loadSessionMeta: vi.fn(),
+    updateApplyRunStageAcpSessionId: vi.fn(),
+    updateArchiveRunAcpSessionId: vi.fn(),
     resolveProjectPath: vi.fn(),
     resolveApplyRunChangeId: vi.fn(),
     updateRunMetaIfCurrent: vi.fn(),
@@ -60,6 +63,8 @@ vi.mock("@main/infra/storage/apply-run-store", () => ({
   loadArchiveRunMeta: mocks.loadArchiveRunMeta,
   loadArchiveMessages: mocks.loadArchiveMessages,
   saveArchiveRunMeta: mocks.saveArchiveRunMeta,
+  updateApplyRunStageAcpSessionId: mocks.updateApplyRunStageAcpSessionId,
+  updateArchiveRunAcpSessionId: mocks.updateArchiveRunAcpSessionId,
   stageMessagesPath: vi.fn(
     (projectPath: string, changeId: string, stageIndex: number) =>
       `${projectPath}/${changeId}/stage-${stageIndex}.messages.jsonl`
@@ -68,10 +73,6 @@ vi.mock("@main/infra/storage/apply-run-store", () => ({
 
 vi.mock("@main/infra/storage/message-reminder-store", () => ({
   prependReminderToLastUserMessage: mocks.prependReminderToLastUserMessage,
-}));
-
-vi.mock("@main/infra/storage/session-store", () => ({
-  loadSessionMeta: mocks.loadSessionMeta,
 }));
 
 vi.mock("@main/services/proposal/apply-run-service", () => ({
@@ -130,7 +131,7 @@ const runMeta = {
   workflowId: "workflow-1",
   stages: [{ id: "stage-1", name: "Apply", type: "proposal-apply", agent: "claude-acp" }],
   currentStageIndex: 0,
-  stageAcpSessionIds: {},
+  stageAcpSessionIds: { 0: "acp-1" },
   status: "running",
   startedAt: "2026-05-08T00:00:00.000Z",
   updatedAt: "2026-05-08T00:00:00.000Z",
@@ -144,7 +145,9 @@ describe("registerProposalApplyHandlers", () => {
     mocks.resolveProjectPath.mockResolvedValue("/tmp/project");
     mocks.resolveApplyRunChangeId.mockResolvedValue("change-1");
     mocks.loadApplyRunMeta.mockResolvedValue(runMeta);
-    mocks.loadSessionMeta.mockResolvedValue({ acpSessionId: "acp-1", agentId: "claude-acp" });
+    mocks.loadArchiveRunMeta.mockResolvedValue(null);
+    mocks.updateApplyRunStageAcpSessionId.mockResolvedValue(undefined);
+    mocks.updateArchiveRunAcpSessionId.mockResolvedValue(undefined);
     mocks.getCompletedApplyStageIndex.mockReturnValue(0);
     mocks.assemblerFlush.mockReturnValue(null);
     const { registerProposalApplyHandlers } = await import("@main/ipc/proposal-apply");
@@ -331,6 +334,15 @@ describe("registerProposalApplyHandlers", () => {
         },
       })
     );
+    expect(opts.sessionStore).toBeInstanceOf(ApplyStageAcpSessionStore);
+    await opts.sessionStore.persistAcpSessionId("acp-stage-2");
+    expect(mocks.updateApplyRunStageAcpSessionId).toHaveBeenCalledWith(
+      "/tmp/project",
+      "change-1",
+      "run-1",
+      0,
+      "acp-stage-2"
+    );
 
     await opts.onReminderInjected(reminderPart);
 
@@ -341,6 +353,20 @@ describe("registerProposalApplyHandlers", () => {
     expect(
       sink.sendChunk.mock.calls.filter(([chunk]) => chunk.kind === "user_message")
     ).toHaveLength(1);
+  });
+
+  it("does not persist stage acpSessionId from the session_id_resolved event in the handler", async () => {
+    handler(ProposalChannels.stageStream)(
+      { sender: { postMessage: vi.fn() } },
+      { runId: "run-1", stageIndex: 0, projectId: "project-1", changeId: "change-1" }
+    );
+
+    const sink = { sendChunk: vi.fn(), sendDone: vi.fn(), sendError: vi.fn() };
+    await mocks.onReady!(sink);
+
+    mocks.eventHandler!({ type: "session_id_resolved", acpSessionId: "acp-stage-3" });
+
+    expect(mocks.updateRunMetaIfCurrent).not.toHaveBeenCalled();
   });
 
   it("forwards stage reasoning_delta through assembler and sink", async () => {
@@ -410,12 +436,21 @@ describe("registerProposalApplyHandlers", () => {
 
     expect(typedOpts).toEqual(
       expect.objectContaining({
+        fylloSessionId: "run-1-archive",
         owner: "archive",
         reminderContext: expect.objectContaining({
           changeId: "change-1",
           runId: expect.stringMatching(/^archive-/),
         }),
       })
+    );
+    expect(typedOpts.sessionStore).toBeInstanceOf(ArchiveAcpSessionStore);
+    await expect(typedOpts.sessionStore.loadAcpSessionId()).resolves.toBeNull();
+    await typedOpts.sessionStore.persistAcpSessionId("acp-archive");
+    expect(mocks.updateArchiveRunAcpSessionId).toHaveBeenCalledWith(
+      "/tmp/project",
+      "change-1",
+      "acp-archive"
     );
 
     await typedOpts.onReminderInjected(reminderPart);
@@ -427,6 +462,44 @@ describe("registerProposalApplyHandlers", () => {
     expect(
       sink.sendChunk.mock.calls.filter(([chunk]) => chunk.kind === "user_message")
     ).toHaveLength(1);
+  });
+
+  it("rejects archive when the completed stage acpSessionId is missing", async () => {
+    mocks.loadApplyRunMeta.mockResolvedValueOnce({
+      ...runMeta,
+      status: "done",
+      stageAcpSessionIds: {},
+    });
+
+    handler(ProposalChannels.archive)(
+      { sender: { postMessage: vi.fn() } },
+      { projectId: "project-1", changeId: "change-1" }
+    );
+
+    const sink = { sendChunk: vi.fn(), sendDone: vi.fn(), sendError: vi.fn() };
+    await expect(mocks.onReady!(sink)).rejects.toMatchObject({
+      code: IpcErrorCodes.APPLY_SESSION_NOT_READY,
+    });
+    expect(mocks.saveArchiveRunMeta).not.toHaveBeenCalled();
+  });
+
+  it("rejects archive when the completed stage agent is missing", async () => {
+    mocks.loadApplyRunMeta.mockResolvedValueOnce({
+      ...runMeta,
+      status: "done",
+      stages: [{ id: "stage-1", name: "Apply", type: "proposal-apply" }],
+    });
+
+    handler(ProposalChannels.archive)(
+      { sender: { postMessage: vi.fn() } },
+      { projectId: "project-1", changeId: "change-1" }
+    );
+
+    const sink = { sendChunk: vi.fn(), sendDone: vi.fn(), sendError: vi.fn() };
+    await expect(mocks.onReady!(sink)).rejects.toMatchObject({
+      code: IpcErrorCodes.VALIDATION_ERROR,
+    });
+    expect(mocks.saveArchiveRunMeta).not.toHaveBeenCalled();
   });
 
   it("forwards archive reasoning_delta through assembler and sink", async () => {
@@ -472,5 +545,37 @@ describe("registerProposalApplyHandlers", () => {
     expect(sink.sendChunk).not.toHaveBeenCalled();
     expect(mocks.appendArchiveMessage).toHaveBeenCalledTimes(1);
     expect(mocks.saveArchiveRunMeta).toHaveBeenCalledTimes(1);
+  });
+
+  it("preserves archive acpSessionId when marking archive done", async () => {
+    mocks.loadApplyRunMeta.mockResolvedValueOnce({ ...runMeta, status: "done" });
+    mocks.loadArchiveRunMeta.mockResolvedValueOnce({
+      runId: "archive-1",
+      changeId: "change-1",
+      status: "running",
+      startedAt: "2026-05-08T00:00:00.000Z",
+      updatedAt: "2026-05-08T00:00:00.000Z",
+      acpSessionId: "acp-archive",
+    });
+
+    handler(ProposalChannels.archive)(
+      { sender: { postMessage: vi.fn() } },
+      { projectId: "project-1", changeId: "change-1" }
+    );
+
+    const sink = { sendChunk: vi.fn(), sendDone: vi.fn(), sendError: vi.fn() };
+    await mocks.onReady!(sink);
+
+    mocks.eventHandler!({ type: "done", totalTokens: 2 });
+
+    await vi.waitFor(() => {
+      expect(mocks.saveArchiveRunMeta).toHaveBeenLastCalledWith(
+        "/tmp/project",
+        expect.objectContaining({
+          status: "done",
+          acpSessionId: "acp-archive",
+        })
+      );
+    });
   });
 });

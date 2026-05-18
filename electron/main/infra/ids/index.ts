@@ -14,3 +14,7 @@ export function newRunId(): string {
 export function newStageFylloSessionId(runId: string, stageIndex: number): string {
   return `${runId}-${stageIndex}`;
 }
+
+export function newArchiveFylloSessionId(runId: string): string {
+  return `${runId}-archive`;
+}

@@ -20,7 +20,6 @@ import type { SessionEvent } from "@main/domain/chat/session-events";
 import { AcpSession } from "@main/services/chat/acp-session";
 import { sessionRegistry } from "@main/services/chat/session-registry";
 import { MessageAssembler } from "@main/services/chat/message-assembler";
-import { loadSessionMeta } from "@main/infra/storage/session-store";
 import { toMessageChunk } from "@main/services/chat/session-event-mapper";
 import {
   appendArchiveMessage,
@@ -42,13 +41,15 @@ import {
   resolveProjectPath,
   updateRunMetaIfCurrent,
 } from "@main/services/proposal/apply-run-service";
-import { newStageFylloSessionId } from "@main/infra/ids";
+import { newArchiveFylloSessionId, newStageFylloSessionId } from "@main/infra/ids";
 import { wrapHandler } from "./_kit/wrap-handler";
 import { validate } from "./_kit/schema";
 import { ipcError } from "./_kit/errors";
 import { makeStreamChannel } from "./_kit/stream-channel";
 import logger from "@main/infra/logger";
 import { prependReminderToLastUserMessage } from "@main/infra/storage/message-reminder-store";
+import { ApplyStageAcpSessionStore } from "@main/infra/storage/apply-stage-acp-session-store";
+import { ArchiveAcpSessionStore } from "@main/infra/storage/archive-acp-session-store";
 
 function mapAcpErrorCode(raw: string): IpcErrorCode {
   if (raw === IpcErrorCodes.ACP_NOT_READY) return IpcErrorCodes.ACP_NOT_READY;
@@ -118,12 +119,19 @@ export function registerProposalApplyHandlers(): void {
         sink.sendChunk({ kind: "user_message", message: userMessage });
 
         const assembler = new MessageAssembler(fylloSessionId);
+        const sessionStore = new ApplyStageAcpSessionStore(
+          projectPath,
+          form.changeId,
+          form.runId,
+          form.stageIndex
+        );
         const session = new AcpSession({
           fylloSessionId,
           agentId,
           projectPath,
           cwd: projectPath,
           owner: "apply",
+          sessionStore,
           reminderContext: {
             changeId: form.changeId,
             stageIndex: form.stageIndex,
@@ -147,16 +155,6 @@ export function registerProposalApplyHandlers(): void {
         session.on("event", (ev: SessionEvent) => {
           switch (ev.type) {
             case "session_id_resolved":
-              void updateRunMetaIfCurrent(projectPath, form.changeId, form.runId, (meta) => ({
-                ...meta,
-                stageAcpSessionIds: {
-                  ...meta.stageAcpSessionIds,
-                  [form.stageIndex]: ev.acpSessionId,
-                },
-                updatedAt: new Date().toISOString(),
-              })).catch((error: unknown) => {
-                logger.error("[proposal-apply] failed to persist acp session id", error);
-              });
               break;
             case "text_delta":
             case "reasoning_delta":
@@ -277,16 +275,23 @@ export function registerProposalApplyHandlers(): void {
           );
         }
 
-        const fylloSessionId = newStageFylloSessionId(runMeta.runId, completedStageIndex);
-        const sessionMeta = await loadSessionMeta(projectPath, fylloSessionId);
-        if (!sessionMeta?.acpSessionId) {
+        const agentId = runMeta.stages[completedStageIndex]?.agent;
+        if (!agentId) {
+          throw ipcError(
+            IpcErrorCodes.VALIDATION_ERROR,
+            `stage.agent is required for stage ${completedStageIndex}`
+          );
+        }
+
+        if (!runMeta.stageAcpSessionIds[completedStageIndex]) {
           throw ipcError(
             IpcErrorCodes.APPLY_SESSION_NOT_READY,
             `Apply session not ready for archive: ${form.changeId}`
           );
         }
 
-        const stage = buildArchiveStage(sessionMeta.agentId);
+        const fylloSessionId = newArchiveFylloSessionId(runMeta.runId);
+        const stage = buildArchiveStage(agentId);
         const prompt = buildStagePrompt({
           changeId: form.changeId,
           projectPath,
@@ -302,6 +307,15 @@ export function registerProposalApplyHandlers(): void {
           updatedAt: startedAt,
         };
         const userMessage = buildUserMessage(fylloSessionId, prompt);
+        const sessionStore = new ArchiveAcpSessionStore(projectPath, form.changeId);
+        const persistArchiveStatus = async (status: ArchiveRunMeta["status"]): Promise<void> => {
+          const current = await loadArchiveRunMeta(projectPath, form.changeId);
+          await saveArchiveRunMeta(projectPath, {
+            ...(current ?? archiveMeta),
+            status,
+            updatedAt: new Date().toISOString(),
+          });
+        };
 
         try {
           await saveArchiveRunMeta(projectPath, archiveMeta);
@@ -315,10 +329,11 @@ export function registerProposalApplyHandlers(): void {
 
         const session = new AcpSession({
           fylloSessionId,
-          agentId: sessionMeta.agentId,
+          agentId,
           projectPath,
           cwd: projectPath,
           owner: "archive",
+          sessionStore,
           reminderContext: {
             changeId: form.changeId,
             runId: archiveRunId,
@@ -360,11 +375,7 @@ export function registerProposalApplyHandlers(): void {
                 if (message) {
                   await appendArchiveMessage(projectPath, form.changeId, message);
                 }
-                await saveArchiveRunMeta(projectPath, {
-                  ...archiveMeta,
-                  status: "done",
-                  updatedAt: new Date().toISOString(),
-                });
+                await persistArchiveStatus("done");
                 sink.sendDone(ev.totalTokens);
                 sessionRegistry.unregister("archive", sessionKey);
               })().catch((error: unknown) => {
@@ -381,11 +392,7 @@ export function registerProposalApplyHandlers(): void {
               break;
             case "error":
               void (async () => {
-                await saveArchiveRunMeta(projectPath, {
-                  ...archiveMeta,
-                  status: "error",
-                  updatedAt: new Date().toISOString(),
-                });
+                await persistArchiveStatus("error");
                 sink.sendError(mapAcpErrorCode(ev.code), ev.message);
                 sessionRegistry.unregister("archive", sessionKey);
               })().catch((error: unknown) => {

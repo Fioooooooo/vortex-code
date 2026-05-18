@@ -18,8 +18,10 @@ const mocks = vi.hoisted(() => {
     connection,
     sessionHandlers,
     getOrStartProcess: vi.fn(),
-    loadSessionMeta: vi.fn(),
-    upsertSessionMeta: vi.fn(),
+    sessionStore: {
+      loadAcpSessionId: vi.fn(),
+      persistAcpSessionId: vi.fn(),
+    },
     getBundledMcpServers: vi.fn(),
     toAcpMcpServerEnv: vi.fn(),
     resolveSystemReminder: vi.fn(),
@@ -33,11 +35,6 @@ const mocks = vi.hoisted(() => {
 
 vi.mock("@main/infra/process/acp-process-pool", () => ({
   getOrStartProcess: mocks.getOrStartProcess,
-}));
-
-vi.mock("@main/infra/storage/session-store", () => ({
-  loadSessionMeta: mocks.loadSessionMeta,
-  upsertSessionMeta: mocks.upsertSessionMeta,
 }));
 
 vi.mock("@main/infra/mcp/bundled-mcp-servers", () => ({
@@ -85,22 +82,8 @@ describe("AcpSession", () => {
     mocks.connection.loadSession.mockResolvedValue(undefined);
     mocks.connection.newSession.mockResolvedValue({ sessionId: "acp-new" });
     mocks.connection.prompt.mockResolvedValue({ usage: { outputTokens: 12 } });
-    mocks.loadSessionMeta.mockResolvedValue({
-      sessionId: "session-1",
-      acpSessionId: undefined,
-      agentId: "claude-acp",
-      title: "Session",
-      turnCount: 0,
-      tokenUsage: { used: 0, size: 0 },
-      createdAt: "2026-05-08T00:00:00.000Z",
-      updatedAt: "2026-05-08T00:00:00.000Z",
-    });
-    mocks.upsertSessionMeta.mockImplementation(async (_projectPath, _sessionId, create, update) => {
-      const current = await mocks.loadSessionMeta();
-      const base = current ?? create();
-      const patch = typeof update === "function" ? update(base) : update;
-      return { ...base, ...patch };
-    });
+    mocks.sessionStore.loadAcpSessionId.mockResolvedValue(null);
+    mocks.sessionStore.persistAcpSessionId.mockResolvedValue(undefined);
     mocks.getBundledMcpServers.mockReturnValue([]);
     mocks.toAcpMcpServerEnv.mockImplementation((env: unknown) => env);
     mocks.resolveSystemReminder.mockResolvedValue(null);
@@ -116,6 +99,7 @@ describe("AcpSession", () => {
       projectPath: "/tmp/project",
       cwd: "/tmp/project",
       owner: "chat",
+      sessionStore: mocks.sessionStore,
       ...overrides,
     });
   }
@@ -132,6 +116,7 @@ describe("AcpSession", () => {
     await session.start("hello");
 
     expect(mocks.connection.newSession).toHaveBeenCalledTimes(1);
+    expect(mocks.sessionStore.persistAcpSessionId).toHaveBeenCalledWith("acp-new");
     expect(onReminderInjected).toHaveBeenCalledWith(reminderPart);
     expect(mocks.connection.prompt).toHaveBeenCalledWith({
       sessionId: "acp-new",
@@ -140,16 +125,7 @@ describe("AcpSession", () => {
   });
 
   it("uses direct prompt first when persisted acpSessionId exists", async () => {
-    mocks.loadSessionMeta.mockResolvedValue({
-      sessionId: "session-1",
-      acpSessionId: "acp-existing",
-      agentId: "claude-acp",
-      title: "Session",
-      turnCount: 1,
-      tokenUsage: { used: 0, size: 0 },
-      createdAt: "2026-05-08T00:00:00.000Z",
-      updatedAt: "2026-05-08T00:00:00.000Z",
-    });
+    mocks.sessionStore.loadAcpSessionId.mockResolvedValue("acp-existing");
 
     const session = await createSession();
     await session.start("hello");
@@ -160,20 +136,12 @@ describe("AcpSession", () => {
     });
     expect(mocks.connection.resumeSession).not.toHaveBeenCalled();
     expect(mocks.connection.loadSession).not.toHaveBeenCalled();
+    expect(mocks.sessionStore.persistAcpSessionId).toHaveBeenCalledWith("acp-existing");
     expect(mocks.resolveSystemReminder).not.toHaveBeenCalled();
   });
 
   it("falls back to resumeSession on classified direct prompt missing-session failure", async () => {
-    mocks.loadSessionMeta.mockResolvedValue({
-      sessionId: "session-1",
-      acpSessionId: "acp-existing",
-      agentId: "claude-acp",
-      title: "Session",
-      turnCount: 1,
-      tokenUsage: { used: 0, size: 0 },
-      createdAt: "2026-05-08T00:00:00.000Z",
-      updatedAt: "2026-05-08T00:00:00.000Z",
-    });
+    mocks.sessionStore.loadAcpSessionId.mockResolvedValue("acp-existing");
     mocks.connection.prompt
       .mockRejectedValueOnce({
         code: -32603,
@@ -191,6 +159,8 @@ describe("AcpSession", () => {
       mcpServers: [],
     });
     expect(mocks.connection.loadSession).not.toHaveBeenCalled();
+    expect(mocks.sessionStore.persistAcpSessionId).toHaveBeenCalledWith("acp-existing");
+    expect(mocks.resolveSystemReminder).not.toHaveBeenCalled();
     expect(mocks.connection.prompt).toHaveBeenLastCalledWith({
       sessionId: "acp-existing",
       prompt: [{ type: "text", text: "hello" }],
@@ -208,16 +178,7 @@ describe("AcpSession", () => {
         },
       }),
     });
-    mocks.loadSessionMeta.mockResolvedValue({
-      sessionId: "session-1",
-      acpSessionId: "acp-existing",
-      agentId: "claude-acp",
-      title: "Session",
-      turnCount: 1,
-      tokenUsage: { used: 0, size: 0 },
-      createdAt: "2026-05-08T00:00:00.000Z",
-      updatedAt: "2026-05-08T00:00:00.000Z",
-    });
+    mocks.sessionStore.loadAcpSessionId.mockResolvedValue("acp-existing");
     mocks.connection.prompt
       .mockRejectedValueOnce({ code: -32602, message: "Session not found: acp-existing" })
       .mockResolvedValueOnce({ usage: { outputTokens: 4 } });
@@ -239,16 +200,7 @@ describe("AcpSession", () => {
   });
 
   it("does not auto-recover when direct prompt failure happens after an update", async () => {
-    mocks.loadSessionMeta.mockResolvedValue({
-      sessionId: "session-1",
-      acpSessionId: "acp-existing",
-      agentId: "claude-acp",
-      title: "Session",
-      turnCount: 1,
-      tokenUsage: { used: 0, size: 0 },
-      createdAt: "2026-05-08T00:00:00.000Z",
-      updatedAt: "2026-05-08T00:00:00.000Z",
-    });
+    mocks.sessionStore.loadAcpSessionId.mockResolvedValue("acp-existing");
     mocks.connection.prompt.mockImplementationOnce(async () => {
       const handler = mocks.sessionHandlers.get("acp-existing");
       handler?.({
@@ -284,16 +236,7 @@ describe("AcpSession", () => {
         },
       }),
     });
-    mocks.loadSessionMeta.mockResolvedValue({
-      sessionId: "session-1",
-      acpSessionId: "acp-existing",
-      agentId: "claude-acp",
-      title: "Session",
-      turnCount: 1,
-      tokenUsage: { used: 0, size: 0 },
-      createdAt: "2026-05-08T00:00:00.000Z",
-      updatedAt: "2026-05-08T00:00:00.000Z",
-    });
+    mocks.sessionStore.loadAcpSessionId.mockResolvedValue("acp-existing");
     mocks.connection.prompt
       .mockRejectedValueOnce({ code: -32602, message: "Session not found: acp-existing" })
       .mockImplementationOnce(async () => ({ usage: { outputTokens: 4 } }));
@@ -326,6 +269,7 @@ describe("AcpSession", () => {
     await session.start("hello");
 
     expect(seen).not.toContainEqual({ type: "text_delta", text: "replayed" });
+    expect(mocks.sessionStore.persistAcpSessionId).toHaveBeenCalledWith("acp-existing");
     expect(seen).toContainEqual({
       type: "session_info_update",
       title: "Recovered title",
@@ -352,16 +296,7 @@ describe("AcpSession", () => {
       },
     ];
 
-    mocks.loadSessionMeta.mockResolvedValue({
-      sessionId: "session-1",
-      acpSessionId: "acp-existing",
-      agentId: "claude-acp",
-      title: "Session",
-      turnCount: 1,
-      tokenUsage: { used: 0, size: 0 },
-      createdAt: "2026-05-08T00:00:00.000Z",
-      updatedAt: "2026-05-08T00:00:00.000Z",
-    });
+    mocks.sessionStore.loadAcpSessionId.mockResolvedValue("acp-existing");
     mocks.connection.prompt.mockRejectedValueOnce({
       code: -32602,
       message: "Session not found: acp-existing",
@@ -387,6 +322,7 @@ describe("AcpSession", () => {
     await session.start("hello");
 
     expect(mocks.connection.newSession).toHaveBeenCalledTimes(1);
+    expect(mocks.sessionStore.persistAcpSessionId).toHaveBeenCalledWith("acp-new");
     expect(onReminderInjected).toHaveBeenCalledTimes(2);
     expect(mocks.connection.prompt).toHaveBeenLastCalledWith({
       sessionId: "acp-new",
@@ -400,34 +336,5 @@ describe("AcpSession", () => {
       ],
     });
     expect(mocks.sessionHandlers.has("acp-existing")).toBe(false);
-  });
-
-  it("preserves available_commands when persisting the next turn", async () => {
-    mocks.loadSessionMeta.mockResolvedValue({
-      sessionId: "session-1",
-      acpSessionId: "acp-existing",
-      agentId: "claude-acp",
-      title: "Session",
-      turnCount: 1,
-      tokenUsage: { used: 0, size: 0 },
-      available_commands: [{ name: "review", description: "Review code" }],
-      createdAt: "2026-05-08T00:00:00.000Z",
-      updatedAt: "2026-05-08T00:00:00.000Z",
-    });
-
-    const session = await createSession();
-    await session.start("hello");
-
-    expect(mocks.upsertSessionMeta).toHaveBeenCalledWith(
-      "/tmp/project",
-      "session-1",
-      expect.any(Function),
-      expect.objectContaining({
-        acpSessionId: "acp-existing",
-        agentId: "claude-acp",
-        turnCount: 2,
-        available_commands: [{ name: "review", description: "Review code" }],
-      })
-    );
   });
 });

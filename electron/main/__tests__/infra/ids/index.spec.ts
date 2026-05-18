@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { newRunId, newSessionId, newStageFylloSessionId } from "@main/infra/ids";
+import {
+  newArchiveFylloSessionId,
+  newRunId,
+  newSessionId,
+  newStageFylloSessionId,
+} from "@main/infra/ids";
 
 describe("infra/ids", () => {
   it("newSessionId produces strictly-ordered unique values", async () => {
@@ -19,5 +24,9 @@ describe("infra/ids", () => {
   it("newStageFylloSessionId composes from runId + stageIndex", () => {
     expect(newStageFylloSessionId("run-1", 0)).toBe("run-1-0");
     expect(newStageFylloSessionId("run-1", 7)).toBe("run-1-7");
+  });
+
+  it("newArchiveFylloSessionId composes from runId", () => {
+    expect(newArchiveFylloSessionId("run-1")).toBe("run-1-archive");
   });
 });

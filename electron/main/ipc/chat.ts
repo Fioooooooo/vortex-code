@@ -42,6 +42,7 @@ import { prependReminderToLastUserMessage } from "@main/infra/storage/message-re
 import { toMessageChunk } from "@main/services/chat/session-event-mapper";
 import type { SessionEvent } from "@main/domain/chat/session-events";
 import logger from "@main/infra/logger";
+import { ChatAcpSessionStore } from "@main/infra/storage/chat-acp-session-store";
 
 function mapAcpErrorCode(raw: string): IpcErrorCode {
   if (raw === IpcErrorCodes.ACP_NOT_READY) return IpcErrorCodes.ACP_NOT_READY;
@@ -139,6 +140,7 @@ export function registerChatHandlers(): void {
         if (!agentId) {
           throw ipcError(IpcErrorCodes.VALIDATION_ERROR, "agentId is required");
         }
+        const sessionStore = new ChatAcpSessionStore(projectPath, sessionId, agentId);
 
         const session = new AcpSession({
           fylloSessionId: sessionId,
@@ -146,6 +148,7 @@ export function registerChatHandlers(): void {
           projectPath,
           cwd: projectPath,
           owner: "chat",
+          sessionStore,
           onReminderInjected: async (reminderPart) => {
             await prependReminderToLastUserMessage(
               sessionMessagesPath(projectPath, sessionId),
