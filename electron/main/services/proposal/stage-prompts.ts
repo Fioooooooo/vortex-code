@@ -10,7 +10,7 @@ type StageRunner = (ctx: StageRunnerContext) => string;
 
 export const stageRunners: Partial<Record<WorkflowStageType, StageRunner>> = {
   "proposal-apply": ({ changeId }) => `实现 ${changeId}`,
-  "proposal-archive": ({ changeId }) => `归档 ${changeId}`,
+  "proposal-archive": ({ changeId }) => `归档 ${changeId} 并提交代码`,
   "code-review": ({ stage }) => stage.prompt ?? `审查当前变更的正确性、可维护性与测试覆盖。`,
   "security-check": ({ stage }) => stage.prompt ?? `检查当前变更是否存在安全风险。`,
   "create-pr": ({ stage }) => stage.prompt ?? `创建 Pull Request。`,

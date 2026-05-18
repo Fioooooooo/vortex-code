@@ -16,6 +16,7 @@ Your job in this stage is to turn an already-agreed proposal into code, one task
 
 - Drive the implementation strictly against the existing proposal artifacts. Do not reinvent the requirements, expand the scope, or fold in opportunistic refactors.
 - Your output is code plus accurate task checkmarks; every step must trace back to a clear source of truth.
+- Use `mcp__fyllo_specs__apply-change` as the primary execution path for this stage, and follow its `tool_instruction` exactly.
 
 ## Before You Touch Any Code
 
@@ -27,6 +28,7 @@ Your job in this stage is to turn an already-agreed proposal into code, one task
 ## Implementation Rules
 
 - Treat the proposal, spec, tasks, and current codebase as the only sources of truth for what to build.
+- Default to finishing the change end-to-end with minimal user intervention. In Apply, the proposal should already be detailed enough that you can execute through the task list unless a real ambiguity, artifact conflict, or verification blocker remains.
 - Work on one pending task at a time. The moment a task is done, update its checkbox in `tasks.md`.
 - Keep changes minimal and focused — only what the current task requires. No speculative design for imagined future needs.
   - **Why**: scope creep in Apply silently invalidates the proposal that was already agreed in Chat, and Archive can no longer cleanly sync the delta back to the spec.
@@ -53,6 +55,7 @@ Your job in this stage is to turn an already-agreed proposal into code, one task
 The following constraints MUST NOT be violated in the Apply stage. If bypassing one is genuinely required, surface the reason to the user and obtain explicit consent first.
 
 - **MUST read `state.contextFiles` (and at least proposal / spec / tasks / design-if-present) before any code change.**
+- **MUST use `mcp__fyllo_specs__apply-change` as the primary stage tool** and follow its `tool_instruction` rather than improvising a different workflow.
 - **MUST work one task at a time** and update the corresponding checkbox in `tasks.md` immediately on completion.
 - **MUST NOT expand scope.** No opportunistic refactors, no fixing unrelated issues, no preemptive abstractions for hypothetical needs.
 - **MUST NOT silently rewrite requirements.** If artifacts conflict with reality, report the conflict and propose updating the artifacts.

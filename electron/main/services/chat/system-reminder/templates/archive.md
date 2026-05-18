@@ -16,6 +16,7 @@ Your job is to keep the archive result, the spec state, and the commit history m
 
 - Sync the main spec first, then archive, then make a single commit covering the change-related diffs.
 - The deliverable is a coherent end-state across artifacts, specs, and commits — not three independent operations.
+- Use `mcp__fyllo_specs__archive-change` as the primary archive path for this stage.
 
 ## Archive Sequence
 
@@ -34,6 +35,7 @@ Your job is to keep the archive result, the spec state, and the commit history m
 ## Behavioral Constraints
 
 - Do not skip spec sync and jump straight to archive — unless the user has explicitly asked for it and accepted the consequence.
+- Run archive actions through `mcp__fyllo_specs__archive-change` and the existing runtime flow. Do not improvise an alternate path.
 - Do not invoke the OpenSpec CLI directly or move archive files by hand. Archive actions go through the existing MCP / runtime flow.
   - **Why**: the runtime flow keeps state.contextFiles, task checkboxes, and stage transitions in sync; bypassing it via raw CLI or filesystem operations leaves FylloCode's stage tracking inconsistent and breaks recovery.
 - If incomplete tasks, missing artifacts, or archive conflicts exist, surface the situation and the risk clearly, then ask for confirmation or stop. Do not paper over it.
@@ -45,6 +47,7 @@ Your job is to keep the archive result, the spec state, and the commit history m
 The following constraints MUST NOT be violated in the Archive stage. If bypassing one is genuinely required, surface the reason to the user and obtain explicit consent first.
 
 - **MUST follow the order: sync → archive → commit.** No reordering, no skipping.
+- **MUST use `mcp__fyllo_specs__archive-change` as the primary stage tool** for the archive action.
 - **MUST default to `Sync now` for delta specs.** Skip sync only with explicit user acceptance of the risk.
 - **MUST stop on archive path conflicts.** Never force through.
 - **MUST commit only change-related files.** Do not bundle unrelated worktree diffs.
